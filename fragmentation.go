@@ -1,7 +1,9 @@
 package prekeyserver
 
 import (
+	"encoding/binary"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -120,4 +122,44 @@ func (fc *fragmentationContext) done() bool {
 
 func (fc *fragmentationContext) complete() string {
 	return strings.Join(fc.pieces, "")
+}
+
+func generateRandomId(r WithRandom) uint32 {
+	var dst [4]byte
+	randomInto(r, dst[:])
+	return binary.BigEndian.Uint32(dst[:])
+}
+
+func fragmentStart(i, fraglen int) int {
+	return i * fraglen
+}
+
+func min(l, r int) int {
+	if l < r {
+		return l
+	}
+	return r
+}
+
+func fragmentEnd(i, fraglen, l int) int {
+	return min((i+1)*fraglen, l)
+}
+
+func fragmentData(data string, i, fraglen, l int) string {
+	return data[fragmentStart(i, fraglen):fragmentEnd(i, fraglen, l)]
+}
+
+func potentiallyFragment(msg string, fragLen int, r WithRandom) []string {
+	l := len(msg)
+	if fragLen == 0 || l <= fragLen {
+		return []string{msg}
+	}
+	prefix := fmt.Sprintf("?OTRP|%d|BEEF|CADE,", generateRandomId(r))
+
+	numFragments := (l / fragLen) + 1
+	ret := make([]string, numFragments)
+	for i := 0; i < numFragments; i++ {
+		ret[i] = fmt.Sprintf("%s%d,%d,%s,", prefix, uint16(i+1), uint16(numFragments), fragmentData(msg, i, fragLen, l))
+	}
+	return ret
 }

@@ -3,14 +3,18 @@ package prekeyserver
 import (
 	"encoding/base64"
 	"errors"
+	"io"
 )
 
 // GenericServer represents the main entry point for the prekey server functionality.
 type GenericServer struct {
-	identity string
-	padding  uint32
+	identity       string
+	fragLen        int
+	fragmentations *fragmentations
 
 	messageHandler messageHandler
+
+	rand io.Reader
 }
 
 func (g *GenericServer) handleMessage(from string, message []byte) ([]byte, error) {
@@ -33,11 +37,20 @@ func (g *GenericServer) Handle(from, message string) (returns []string, err erro
 		return nil, errors.New("empty message")
 	}
 
+	if isFragment(message) {
+		m, c, e := g.fragmentations.newFragmentReceived(message)
+		if e != nil {
+			return nil, e
+		}
+		if !c {
+			return nil, nil
+		}
+		message = m
+	}
+
 	if message[len(message)-1] != '.' {
 		return nil, errors.New("invalid message format - missing ending punctuation")
 	}
-
-	// Check if it's fragmented
 
 	decoded, ok := decodeMessage(message[:len(message)-1])
 	if !ok {
@@ -51,9 +64,11 @@ func (g *GenericServer) Handle(from, message string) (returns []string, err erro
 
 	encoded := encodeMessage(msg) + "."
 
-	// Fragment the returned message
+	msgs := potentiallyFragment(encoded, g.fragLen, g)
 
-	return []string{encoded}, nil
+	g.cleanupAfter(from)
+
+	return msgs, nil
 }
 
 func (g *GenericServer) cleanupAfter(from string) {
