@@ -1,0 +1,4 @@
+bin/
+
+# direnv related files
+.envrc
