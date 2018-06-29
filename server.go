@@ -1,12 +1,25 @@
 package prekeyserver
 
-import "errors"
+import (
+	"encoding/base64"
+	"errors"
+)
 
 // GenericServer represents the main entry point for the prekey server functionality.
 type GenericServer struct {
-	// key, fingerprint?
 	identity string
-	padding  uint
+	padding  uint32
+
+	messageHandler messageHandler
+}
+
+func (g *GenericServer) handleMessage(from string, message []byte) ([]byte, error) {
+	if g.messageHandler != nil {
+		return g.messageHandler.handleMessage(g, from, message)
+	}
+
+	//	panic("programmer error, missing message handler")
+	return []byte(""), nil
 }
 
 // Handle should receive the message in its original form
@@ -16,14 +29,47 @@ type GenericServer struct {
 // Each message to return should be sent in a separate network package, back to the original sender
 // The Handle function should be called from its own goroutine to ensure asynchronous behavior of the server
 func (g *GenericServer) Handle(from, message string) (returns []string, err error) {
+	if message == "" {
+		return nil, errors.New("empty message")
+	}
+
+	if message[len(message)-1] != '.' {
+		return nil, errors.New("invalid message format - missing ending punctuation")
+	}
+
 	// Check if it's fragmented
-	// Decode it from base64
-	// Find a possible Session with the sender, or create a new one
-	// Figure out which message it us, and get a return
-	// Base64 encode the return
+
+	decoded, ok := decodeMessage(message[:len(message)-1])
+	if !ok {
+		return nil, errors.New("invalid message format - corrupted base64 encoding")
+	}
+
+	msg, e := g.handleMessage(from, decoded)
+	if e != nil {
+		return nil, e
+	}
+
+	encoded := encodeMessage(msg) + "."
+
 	// Fragment the returned message
+
+	return []string{encoded}, nil
+}
+
+func (g *GenericServer) cleanupAfter(from string) {
 	// Clean up
 	//  - If everything is done, kill Session
 	//  - Clean up fragmented message that never got complete
-	return nil, errors.New("empty message")
+}
+
+func decodeMessage(inp string) ([]byte, bool) {
+	decoded, err := base64.StdEncoding.DecodeString(inp)
+	if err != nil {
+		return nil, false
+	}
+	return decoded, true
+}
+
+func encodeMessage(inp []byte) string {
+	return base64.StdEncoding.EncodeToString(inp)
 }
