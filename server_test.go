@@ -17,5 +17,5 @@ func (s *GenericServerSuite) Test_Handle_ReturnsErrorIfGivenEmptyMessage(c *C) {
 	gs := &GenericServer{}
 	msgs, e := gs.Handle("myname", "")
 	c.Assert(msgs, IsNil)
-	c.Assert(e, Equals, errors.New("empty message"))
+	c.Assert(e, DeepEquals, errors.New("empty message"))
 }

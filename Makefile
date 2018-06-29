@@ -3,8 +3,7 @@ TAG_VERSION=$(shell git tag -l --contains $$GIT_VERSION | tail -1)
 
 # BUILD_DIR=bin
 
-# GOTEST=govendor test +local
-# GOLIST=govendor list -no-status +local
+GOLIST=go list ./...
 
 default: test
 
@@ -23,7 +22,7 @@ deps:
 #	go get -u github.com/modocache/gover
 #	go get -u github.com/rosatolen/esc
 
-# lint:
-# 	for pkg in $$($(GOLIST) ./...) ; do \
-# 		golint $$pkg ; \
-# 	done
+lint:
+	for pkg in $$($(GOLIST) ./...) ; do \
+		golint $$pkg ; \
+	done
