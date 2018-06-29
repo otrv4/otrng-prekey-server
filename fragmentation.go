@@ -163,3 +163,5 @@ func potentiallyFragment(msg string, fragLen int, r WithRandom) []string {
 	}
 	return ret
 }
+
+// TODO: we should make sure we don't mix up fragments from different users but with same ID

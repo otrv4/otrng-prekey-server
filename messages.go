@@ -1,5 +1,10 @@
 package prekeyserver
 
+import (
+	"errors"
+	"fmt"
+)
+
 type publicationMessage struct {
 	// Protocol version (SHORT)
 	//   The version number of this protocol is 0x0004.
@@ -34,6 +39,11 @@ type publicationMessage struct {
 	// 	the Prekey Profiles, if present.
 }
 
+func (m *publicationMessage) parseMe([]byte) error {
+	panic("implement me")
+	return nil
+}
+
 type storageInformationRequestMessage struct {
 	// Protocol version (SHORT)
 	//   The version number of this protocol is 0x0004.
@@ -43,6 +53,11 @@ type storageInformationRequestMessage struct {
 
 	// Storage Information MAC (MAC)
 	//   The MAC with the appropriate MAC key of the message type.
+}
+
+func (m *storageInformationRequestMessage) parseMe([]byte) error {
+	panic("implement me")
+	return nil
 }
 
 type storageStatusMessage struct {
@@ -64,6 +79,11 @@ type storageStatusMessage struct {
 	//   the stored prekey messages number.
 }
 
+func (m *storageStatusMessage) parseMe([]byte) error {
+	panic("implement me")
+	return nil
+}
+
 type successMessage struct {
 	// Protocol version (SHORT)
 	//   The version number of this protocol is 0x0004.
@@ -77,6 +97,11 @@ type successMessage struct {
 	// Success MAC (MAC)
 	//   The MAC with the appropriate MAC key of everything: from the message type to
 	// 	the Success message.
+}
+
+func (m *successMessage) parseMe([]byte) error {
+	panic("implement me")
+	return nil
 }
 
 type failureMessage struct {
@@ -94,7 +119,15 @@ type failureMessage struct {
 	//   the Failure message.
 }
 
+func (m *failureMessage) parseMe([]byte) error {
+	panic("implement me")
+	return nil
+}
+
 type ensembleRetrievalQueryMessage struct {
+	// Protocol version (SHORT)
+	//   The version number of this OTR protocol is 0x0004.
+
 	// Message type (BYTE)
 	//   The message has type 0x09.
 
@@ -113,7 +146,15 @@ type ensembleRetrievalQueryMessage struct {
 	//   ignored.
 }
 
+func (m *ensembleRetrievalQueryMessage) parseMe([]byte) error {
+	panic("implement me")
+	return nil
+}
+
 type ensembleRetrievalMessage struct {
+	// Protocol version (SHORT)
+	//   The version number of this OTR protocol is 0x0004.
+
 	// Message type (BYTE)
 	//   The message has type 0x10.
 
@@ -133,7 +174,15 @@ type ensembleRetrievalMessage struct {
 	//       'Prekey Message'.
 }
 
+func (m *ensembleRetrievalMessage) parseMe([]byte) error {
+	panic("implement me")
+	return nil
+}
+
 type noPrekeyEnsemblesMessage struct {
+	// Protocol version (SHORT)
+	//   The version number of this OTR protocol is 0x0004.
+
 	// Message type (BYTE)
 	//   The message has type 0x11.
 
@@ -144,3 +193,84 @@ type noPrekeyEnsemblesMessage struct {
 	//   The human-readable details of this message. It contains the string "No Prekey
 	//   Messages available for this identity".
 }
+
+func (m *noPrekeyEnsemblesMessage) parseMe([]byte) error {
+	panic("implement me")
+	return nil
+}
+
+type parseable interface {
+	parseMe([]byte) error
+}
+
+var (
+	messageTypeDAKE1                     = uint8(0x01)
+	messageTypeDAKE2                     = uint8(0x02)
+	messageTypeDAKE3                     = uint8(0x03)
+	messageTypePublication               = uint8(0x04)
+	messageTypeStorageInformationRequest = uint8(0x05)
+	messageTypeStorageStatusMessage      = uint8(0x06)
+	messageTypeSuccess                   = uint8(0x07)
+	messageTypeFailure                   = uint8(0x08)
+	messageTypeEnsembleRetrievalQuery    = uint8(0x09)
+	messageTypeEnsembleRetrieval         = uint8(0x10)
+	messageTypeNoPrekeyEnsembles         = uint8(0x11)
+)
+
+const indexOfMessageType = 2
+
+func parseMessage(message []byte) (interface{}, error) {
+	if len(message) <= indexOfMessageType {
+		return nil, errors.New("message too short to be a valid message")
+	}
+
+	messageType := message[indexOfMessageType]
+
+	var r parseable
+	switch messageType {
+	case messageTypeDAKE1:
+		r = &dake1Message{}
+	case messageTypeDAKE2:
+		r = &dake2Message{}
+	case messageTypeDAKE3:
+		r = &dake3Message{}
+	case messageTypePublication:
+		r = &publicationMessage{}
+	case messageTypeStorageInformationRequest:
+		r = &storageInformationRequestMessage{}
+	case messageTypeStorageStatusMessage:
+		r = &storageStatusMessage{}
+	case messageTypeSuccess:
+		r = &successMessage{}
+	case messageTypeFailure:
+		r = &failureMessage{}
+	case messageTypeEnsembleRetrievalQuery:
+		r = &ensembleRetrievalQueryMessage{}
+	case messageTypeEnsembleRetrieval:
+		r = &ensembleRetrievalMessage{}
+	case messageTypeNoPrekeyEnsembles:
+		r = &noPrekeyEnsemblesMessage{}
+	default:
+		return nil, fmt.Errorf("unknown message type: 0x%x", messageType)
+	}
+
+	return r, r.parseMe(message)
+}
+
+// What messages can we as a server receive at the top level?
+
+// DAKE1
+// DAKE3
+// ensembleRetrievalQueryMessage
+
+// What messages are NOT top level?
+//    publicationMessage
+//    storageInformationRequestMessage
+
+// What messages can we as a server SEND:
+// DAKE2
+// storageStatusMessage
+// successMessage
+// failureMessage
+// ensembleRetrievalMessage
+// noPrekeyEnsemblesMessage
