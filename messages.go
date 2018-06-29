@@ -218,10 +218,20 @@ var (
 )
 
 const indexOfMessageType = 2
+const indexContentStarts = 2
+
+func parseVersion(message []byte) uint16 {
+	_, v, _ := extractShort(message)
+	return v
+}
 
 func parseMessage(message []byte) (interface{}, error) {
 	if len(message) <= indexOfMessageType {
 		return nil, errors.New("message too short to be a valid message")
+	}
+
+	if v := parseVersion(message); v != uint16(4) {
+		return nil, errors.New("invalid protocol version")
 	}
 
 	messageType := message[indexOfMessageType]
@@ -254,7 +264,7 @@ func parseMessage(message []byte) (interface{}, error) {
 		return nil, fmt.Errorf("unknown message type: 0x%x", messageType)
 	}
 
-	return r, r.parseMe(message)
+	return r, r.parseMe(message[indexContentStarts:])
 }
 
 // What messages can we as a server receive at the top level?
