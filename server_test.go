@@ -27,64 +27,72 @@ type mockMessageHandler struct {
 	toReturnError   error
 }
 
-func (m *mockMessageHandler) handleMessage(s *GenericServer, from string, message []byte) ([]byte, error) {
+func (m *mockMessageHandler) handleMessage(from string, message []byte) ([]byte, error) {
 	m.receivedFrom = from
 	m.receivedMessage = message
 	return m.toReturnMessage, m.toReturnError
 }
 
 func (s *GenericServerSuite) Test_Handle_WillPassOnTheIdentityToTheMessageHandler(c *C) {
+	gs := &GenericServer{}
 	m := &mockMessageHandler{}
-	gs := &GenericServer{messageHandler: m}
+	gs.messageHandler = m
 	gs.Handle("myname", "aGksIHRoaXMgaXMgbm90IGEgdmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4=.")
 	c.Assert(m.receivedFrom, Equals, "myname")
 }
 
 func (s *GenericServerSuite) Test_Handle_WillDecodeBase64EncodedMessage(c *C) {
+	gs := &GenericServer{}
 	m := &mockMessageHandler{}
-	gs := &GenericServer{messageHandler: m}
+	gs.messageHandler = m
 	gs.Handle("myname", "aGksIHRoaXMgaXMgbm90IGEgdmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4=.")
 	c.Assert(m.receivedMessage, DeepEquals, []byte("hi, this is not a valid otr4 message, but still..."))
 }
 
 func (s *GenericServerSuite) Test_Handle_AMessageWithoutProperFormatSHhouldGenerateAnError(c *C) {
-	gs := &GenericServer{messageHandler: &mockMessageHandler{}}
+	gs := &GenericServer{}
+	m := &mockMessageHandler{}
+	gs.messageHandler = m
 	_, e := gs.Handle("myname", "aGksIHRoaXMgaXMgbm90IGEgdmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4=")
 	c.Assert(e, DeepEquals, errors.New("invalid message format - missing ending punctuation"))
 }
 
 func (s *GenericServerSuite) Test_Handle_ACorruptedBase64MessageGeneratesAnError(c *C) {
-	gs := &GenericServer{messageHandler: &mockMessageHandler{}}
+	gs := &GenericServer{}
+	m := &mockMessageHandler{}
+	gs.messageHandler = m
 	_, e := gs.Handle("myname", "aGksIHRoaXMgaXMgbm90IGEgdmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4.")
 	c.Assert(e, DeepEquals, errors.New("invalid message format - corrupted base64 encoding"))
 }
 
 func (s *GenericServerSuite) Test_Handle_WillBase64EncodeAndFormatReturnValues(c *C) {
+	gs := &GenericServer{}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
 	}
-	gs := &GenericServer{messageHandler: m}
+	gs.messageHandler = m
 	msgs, _ := gs.Handle("myname", "aGksIHRoaXMgaXMgbm90IGEgdmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4=.")
 	c.Assert(len(msgs), Equals, 1)
 	c.Assert(msgs[0], Equals, "dGhpcyBpcyBvdXIgZmFuY3kgcmV0dXJu.")
 }
 
 func (s *GenericServerSuite) Test_Handle_ReturnsAnErrorFromMessageHandler(c *C) {
+	gs := &GenericServer{}
 	m := &mockMessageHandler{
 		toReturnError: errors.New("yipii"),
 	}
-	gs := &GenericServer{messageHandler: m}
+	gs.messageHandler = m
 	msgs, e := gs.Handle("myname", "aGksIHRoaXMgaXMgbm90IGEgdmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4=.")
 	c.Assert(msgs, IsNil)
 	c.Assert(e, DeepEquals, errors.New("yipii"))
 }
 
 func (s *GenericServerSuite) Test_Handle_HandlesAFragmentedMessage(c *C) {
+	gs := &GenericServer{fragmentations: newFragmentations()}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
 	}
-
-	gs := &GenericServer{messageHandler: m, fragmentations: newFragmentations()}
+	gs.messageHandler = m
 
 	msgs, e := gs.Handle("myname", "?OTRP|1234|BEEF|CADE,2,2,dmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4=.,")
 	c.Assert(e, IsNil)
@@ -97,21 +105,22 @@ func (s *GenericServerSuite) Test_Handle_HandlesAFragmentedMessage(c *C) {
 }
 
 func (s *GenericServerSuite) Test_Handle_PassesOnAFragmentationError(c *C) {
+	gs := &GenericServer{fragmentations: newFragmentations()}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
 	}
-
-	gs := &GenericServer{messageHandler: m, fragmentations: newFragmentations()}
+	gs.messageHandler = m
 	_, e := gs.Handle("myname", "?OTRP|1234|BEEF|CADE,3,2,aGksIHRoaXMgaXMgbm90IGEg,")
 	c.Assert(e, Not(IsNil))
 	c.Assert(e, DeepEquals, errors.New("invalid fragmentation parse"))
 }
 
 func (s *GenericServerSuite) Test_Handle_WillPotentiallyFragmentReturnValues(c *C) {
+	gs := &GenericServer{fragLen: 7, rand: fixtureRand()}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
 	}
-	gs := &GenericServer{messageHandler: m, fragLen: 7, rand: fixtureRand()}
+	gs.messageHandler = m
 	msgs, _ := gs.Handle("myname", "aGksIHRoaXMgaXMgbm90IGEgdmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4=.")
 	c.Assert(len(msgs), Equals, 5)
 	c.Assert(msgs[0], Equals, "?OTRP|2882382797|BEEF|CADE,1,5,dGhpcyB,")

@@ -19,7 +19,7 @@ type GenericServer struct {
 
 func (g *GenericServer) handleMessage(from string, message []byte) ([]byte, error) {
 	if g.messageHandler != nil {
-		return g.messageHandler.handleMessage(g, from, message)
+		return g.messageHandler.handleMessage(from, message)
 	}
 
 	//	panic("programmer error, missing message handler")

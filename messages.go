@@ -1,9 +1,5 @@
 package prekeyserver
 
-type messageHandler interface {
-	handleMessage(s *GenericServer, from string, message []byte) ([]byte, error)
-}
-
 type publicationMessage struct {
 	// Protocol version (SHORT)
 	//   The version number of this protocol is 0x0004.
