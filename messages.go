@@ -5,38 +5,13 @@ import (
 	"fmt"
 )
 
+const macLength = 64
+
 type publicationMessage struct {
-	// Protocol version (SHORT)
-	//   The version number of this protocol is 0x0004.
-
-	// Message type (BYTE)
-	//   This message has type 0x04.
-
-	// N (BYTE)
-	//    The number of Prekey Messages present in this message.
-
-	// Prekey Messages (DATA)
-	//    All 'N' Prekey Messages serialized according to OTRv4 specification.
-
-	// J (BYTE)
-	//    A number that shows if a Client Profile is present or not. If present, set it
-	//    to one; otherwise, to zero.
-
-	// Client Profile (CLIENT-PROF)
-	//   The Client Profiles created as described in the section "Creating a Client
-	//   Profile" of the OTRv4 specification. This value is optional.
-
-	// J (BYTE)
-	//    The number of Prekey Profiles present in this message. If there are none,
-	//    the value is zero.
-
-	// Prekey Profiles (PREKEY-PROF)
-	//   All 'J' Prekey Profiles created as described in the section "Creating a Prekey
-	//   Profile" of the OTRv4 specification.
-
-	// Prekey MAC (MAC)
-	//   The MAC with the appropriate MAC key of everything: from the message type to
-	// 	the Prekey Profiles, if present.
+	prekeyMessages []prekeyMessage
+	clientProfile  *clientProfile
+	prekeyProfiles []prekeyProfile
+	mac            [macLength]byte
 }
 
 func (m *publicationMessage) parseMe([]byte) error {
@@ -45,14 +20,7 @@ func (m *publicationMessage) parseMe([]byte) error {
 }
 
 type storageInformationRequestMessage struct {
-	// Protocol version (SHORT)
-	//   The version number of this protocol is 0x0004.
-
-	// Message type (BYTE)
-	//   This message has type 0x05.
-
-	// Storage Information MAC (MAC)
-	//   The MAC with the appropriate MAC key of the message type.
+	mac [macLength]byte
 }
 
 func (m *storageInformationRequestMessage) parseMe([]byte) error {
@@ -61,22 +29,9 @@ func (m *storageInformationRequestMessage) parseMe([]byte) error {
 }
 
 type storageStatusMessage struct {
-	// Protocol version (SHORT)
-	//   The version number of this protocol is 0x0004.
-
-	// Message type (BYTE)
-	//   The message has type 0x06.
-
-	// Receiver instance tag (INT)
-	//   The instance tag of the intended recipient.
-
-	// Stored prekey messages number (INT)
-	//   The number of prekey messages stored in the Prekey Server for the
-	//   long-term public key and instance tag used during the DAKE.
-
-	// Status MAC (MAC)
-	//   The MAC with the appropriate MAC key of everything: from the message type to
-	//   the stored prekey messages number.
+	instanceTag uint32
+	number      uint32
+	mac         [macLength]byte
 }
 
 func (m *storageStatusMessage) parseMe([]byte) error {
@@ -85,18 +40,8 @@ func (m *storageStatusMessage) parseMe([]byte) error {
 }
 
 type successMessage struct {
-	// Protocol version (SHORT)
-	//   The version number of this protocol is 0x0004.
-
-	// Message type (BYTE)
-	//   The message has type 0x07.
-
-	// Receiver instance tag (INT)
-	//   The instance tag of the intended recipient.
-
-	// Success MAC (MAC)
-	//   The MAC with the appropriate MAC key of everything: from the message type to
-	// 	the Success message.
+	instanceTag uint32
+	mac         [macLength]byte
 }
 
 func (m *successMessage) parseMe([]byte) error {
@@ -105,18 +50,8 @@ func (m *successMessage) parseMe([]byte) error {
 }
 
 type failureMessage struct {
-	// Protocol version (SHORT)
-	//   The version number of this protocol is 0x0004.
-
-	// Message type (BYTE)
-	//   The message has type 0x08.
-
-	// Receiver instance tag (INT)
-	//   The instance tag of the intended recipient.
-
-	// Failure MAC (MAC)
-	//   The MAC with the appropriate MAC key of everything: from the message type to
-	//   the Failure message.
+	instanceTag uint32
+	mac         [macLength]byte
 }
 
 func (m *failureMessage) parseMe([]byte) error {
@@ -125,25 +60,9 @@ func (m *failureMessage) parseMe([]byte) error {
 }
 
 type ensembleRetrievalQueryMessage struct {
-	// Protocol version (SHORT)
-	//   The version number of this OTR protocol is 0x0004.
-
-	// Message type (BYTE)
-	//   The message has type 0x09.
-
-	// Sender instance tag (INT)
-	//   The instance tag of the sender.
-
-	// Participant Identity (DATA)
-	//   The identity of the participant you are asking Prekey Ensembles for. In the
-	//   case of XMPP, for example, this is the bare jid.
-
-	// Versions (DATA)
-	//   The OTR versions you are asking Prekey Ensembles for. A valid versions string
-	//   can be created by concatenating the version numbers together in any order.
-	//   For example, a user who wants Prekey Ensembles for versions 4 and 5 will have
-	//   the 2-byte version string "45" or "54". Unrecognized versions should be
-	//   ignored.
+	instanceTag uint32
+	identity    string
+	versions    []uint32
 }
 
 func (m *ensembleRetrievalQueryMessage) parseMe([]byte) error {
@@ -152,26 +71,8 @@ func (m *ensembleRetrievalQueryMessage) parseMe([]byte) error {
 }
 
 type ensembleRetrievalMessage struct {
-	// Protocol version (SHORT)
-	//   The version number of this OTR protocol is 0x0004.
-
-	// Message type (BYTE)
-	//   The message has type 0x10.
-
-	// Receiver instance tag (INT)
-	//   The instance tag of the intended recipient.
-
-	// L (INT)
-	//   The number of Prekey Ensembles
-
-	// Ensembles (DATA)
-	//   The concatenated Prekey Ensembles. Each Ensemble is encoded as:
-
-	//    Client Profile (CLIENT-PROF)
-	//    Prekey Profile (PREKEY-PROF)
-	//    Prekey Message
-	//       Prekey Messages are encoded as specified in OTRv4 specification, section
-	//       'Prekey Message'.
+	instanceTag uint32
+	ensembles   []prekeyEnsemble
 }
 
 func (m *ensembleRetrievalMessage) parseMe([]byte) error {
@@ -180,18 +81,8 @@ func (m *ensembleRetrievalMessage) parseMe([]byte) error {
 }
 
 type noPrekeyEnsemblesMessage struct {
-	// Protocol version (SHORT)
-	//   The version number of this OTR protocol is 0x0004.
-
-	// Message type (BYTE)
-	//   The message has type 0x11.
-
-	// Receiver instance tag (INT)
-	//   The instance tag of the intended recipient.
-
-	// No Prekey-Messages message (DATA)
-	//   The human-readable details of this message. It contains the string "No Prekey
-	//   Messages available for this identity".
+	instanceTag uint32
+	message     string
 }
 
 func (m *noPrekeyEnsemblesMessage) parseMe([]byte) error {
@@ -199,8 +90,9 @@ func (m *noPrekeyEnsemblesMessage) parseMe([]byte) error {
 	return nil
 }
 
-type parseable interface {
+type message interface {
 	parseMe([]byte) error
+	//	validate() error
 }
 
 var (
@@ -225,18 +117,18 @@ func parseVersion(message []byte) uint16 {
 	return v
 }
 
-func parseMessage(message []byte) (interface{}, error) {
-	if len(message) <= indexOfMessageType {
+func parseMessage(msg []byte) (interface{}, error) {
+	if len(msg) <= indexOfMessageType {
 		return nil, errors.New("message too short to be a valid message")
 	}
 
-	if v := parseVersion(message); v != uint16(4) {
+	if v := parseVersion(msg); v != uint16(4) {
 		return nil, errors.New("invalid protocol version")
 	}
 
-	messageType := message[indexOfMessageType]
+	messageType := msg[indexOfMessageType]
 
-	var r parseable
+	var r message
 	switch messageType {
 	case messageTypeDAKE1:
 		r = &dake1Message{}
@@ -264,7 +156,7 @@ func parseMessage(message []byte) (interface{}, error) {
 		return nil, fmt.Errorf("unknown message type: 0x%x", messageType)
 	}
 
-	return r, r.parseMe(message[indexContentStarts:])
+	return r, r.parseMe(msg[indexContentStarts:])
 }
 
 // What messages can we as a server receive at the top level?
