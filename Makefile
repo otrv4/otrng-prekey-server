@@ -6,15 +6,15 @@ TAG_VERSION=$(shell git tag -l --contains $$GIT_VERSION | tail -1)
 # GOTEST=govendor test +local
 # GOLIST=govendor list -no-status +local
 
-# default: test
+default: test
 
-# test:
-# 	$(GOTEST) -cover -v ./...
-# .PHONY: test
+test:
+	go test -cover -v ./...
 
 build:
 	go build -i
-.PHONY: build
+
+.PHONY: build test
 
 deps:
 	go get -u github.com/golang/lint/golint
