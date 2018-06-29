@@ -14,6 +14,18 @@
   version = "v0.1.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/twstrike/ed448"
+  packages = ["."]
+  revision = "650f4c8d2b16723ccc4cf4b57bc7fad7f1f41ccd"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["sha3"]
+  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
+
+[[projects]]
   branch = "v1"
   name = "gopkg.in/check.v1"
   packages = ["."]
@@ -22,6 +34,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "686461821cd069a5ebe1a2dc6eaf96425f678b6db5e49ec2a6a9569646509f3d"
+  inputs-digest = "3427ef70e46411a4f56cafa9dd2d228271c8d165a001288970f8828efbad72e7"
   solver-name = "gps-cdcl"
   solver-version = 1
