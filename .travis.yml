@@ -9,3 +9,8 @@ go:
 install: make deps
 script: make test build
 
+matrix:
+  allow_failures:
+    - go: tip
+  fast_finish: true
+
