@@ -16,8 +16,8 @@ const usageSK = 0x01
 // the key generation is slightly different, but the struct retains all needed information
 type keypair struct {
 	sym  [symKeyLength]byte
-	priv privateKey
-	pub  publicKey
+	priv *privateKey
+	pub  *publicKey
 }
 
 type publicKey struct {
@@ -71,10 +71,11 @@ func deriveKeypair(digest [privKeyLength]byte, sym [symKeyLength]byte) *keypair 
 	r.Halve(r)
 	h := ed448.PrecomputedScalarMul(r)
 
-	kp := &keypair{}
+	kp := &keypair{
+		priv: &privateKey{k: r},
+		pub:  &publicKey{k: h},
+	}
 	copy(kp.sym[:], sym[:])
-	kp.priv.k = r
-	kp.pub.k = h
 
 	return kp
 }
@@ -90,4 +91,16 @@ func (p *publicKey) fingerprint() fingerprint {
 	rep := p.k.DSAEncode()
 	kdf_otrv4(usageFingerprint, f[:], rep)
 	return f
+}
+
+func (p *publicKey) serialize() []byte {
+	return p.k.DSAEncode()
+}
+
+func (s *eddsaSignature) serialize() []byte {
+	return s.s[:]
+}
+
+func serializePoint(p ed448.Point) []byte {
+	return p.DSAEncode()
 }

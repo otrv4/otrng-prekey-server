@@ -8,13 +8,14 @@ import (
 const macLength = 64
 
 type publicationMessage struct {
-	prekeyMessages []prekeyMessage
+	prekeyMessages []*prekeyMessage
 	clientProfile  *clientProfile
-	prekeyProfiles []prekeyProfile
+	prekeyProfiles []*prekeyProfile
 	mac            [macLength]byte
 }
 
 func (m *publicationMessage) deserialize([]byte) error {
+	// TODO: implement
 	panic("implement me")
 	return nil
 }
@@ -24,6 +25,7 @@ type storageInformationRequestMessage struct {
 }
 
 func (m *storageInformationRequestMessage) deserialize([]byte) error {
+	// TODO: implement
 	panic("implement me")
 	return nil
 }
@@ -35,6 +37,7 @@ type storageStatusMessage struct {
 }
 
 func (m *storageStatusMessage) deserialize([]byte) error {
+	// TODO: implement
 	panic("implement me")
 	return nil
 }
@@ -45,6 +48,7 @@ type successMessage struct {
 }
 
 func (m *successMessage) deserialize([]byte) error {
+	// TODO: implement
 	panic("implement me")
 	return nil
 }
@@ -55,6 +59,7 @@ type failureMessage struct {
 }
 
 func (m *failureMessage) deserialize([]byte) error {
+	// TODO: implement
 	panic("implement me")
 	return nil
 }
@@ -62,7 +67,7 @@ func (m *failureMessage) deserialize([]byte) error {
 type ensembleRetrievalQueryMessage struct {
 	instanceTag uint32
 	identity    string
-	versions    []uint32
+	versions    []byte
 }
 
 func (m *ensembleRetrievalQueryMessage) deserialize([]byte) error {
@@ -72,10 +77,11 @@ func (m *ensembleRetrievalQueryMessage) deserialize([]byte) error {
 
 type ensembleRetrievalMessage struct {
 	instanceTag uint32
-	ensembles   []prekeyEnsemble
+	ensembles   []*prekeyEnsemble
 }
 
 func (m *ensembleRetrievalMessage) deserialize([]byte) error {
+	// TODO: implement
 	panic("implement me")
 	return nil
 }
@@ -86,6 +92,7 @@ type noPrekeyEnsemblesMessage struct {
 }
 
 func (m *noPrekeyEnsemblesMessage) deserialize([]byte) error {
+	// TODO: implement
 	panic("implement me")
 	return nil
 }

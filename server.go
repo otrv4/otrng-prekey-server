@@ -78,6 +78,7 @@ func (g *GenericServer) Handle(from, message string) (returns []string, err erro
 }
 
 func (g *GenericServer) cleanupAfter(from string) {
+	// TODO: implement
 	// Clean up
 	//  - If everything is done, kill Session
 	//  - Clean up fragmented message that never got complete

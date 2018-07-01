@@ -9,6 +9,7 @@ type otrngMessageHandler struct {
 }
 
 func (mh *otrngMessageHandler) handleMessage(from string, message []byte) ([]byte, error) {
+	// TODO: implement
 	parseMessage(message)
 	return nil, nil
 }
