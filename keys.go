@@ -57,6 +57,10 @@ func deriveKeypair(digest [privKeyLength]byte, sym [symKeyLength]byte) *keypair 
 	digest[privKeyLength-2] |= 0x80
 
 	r := ed448.NewScalar(digest[:])
+
+	// We are halving the scalar two times here, because the Ed448 library will
+	// multiply it again when we are encoding it in DSA format.
+
 	r.Halve(r)
 	r.Halve(r)
 	h := ed448.PrecomputedScalarMul(r)
