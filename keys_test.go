@@ -91,3 +91,28 @@ func (s *GenericServerSuite) Test_deriveECDHKeypair_derivesTheCorrectData(c *C) 
 	c.Assert(kp.priv.k.Encode(), DeepEquals, expectedPrivateKey)
 	c.Assert(kp.pub.k.DSAEncode(), DeepEquals, expectedPublicKey)
 }
+
+func (s *GenericServerSuite) Test_fingerprint_returnsCorrectFingerprint(c *C) {
+	sym := [57]byte{
+		0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00,
+	}
+
+	expectedFpr := fingerprint{
+		0X7B, 0XDC, 0XB0, 0X56, 0X44, 0XEB, 0X07, 0XD1, 0XA8, 0XCD, 0X4D, 0XCB,
+		0X82, 0XA6, 0X0B, 0XFF, 0X3F, 0X29, 0X3C, 0X83, 0X3A, 0XD6, 0XBC, 0XC9,
+		0XC9, 0X97, 0XCC, 0X92, 0X82, 0XD5, 0X0E, 0X49, 0XC6, 0X89, 0XD1, 0XDB,
+		0X4D, 0X42, 0XD7, 0X26, 0X37, 0X49, 0X91, 0XCE, 0X68, 0XE0, 0X54, 0X57,
+		0X81, 0XBF, 0XE4, 0X7D, 0X46, 0X73, 0X9F, 0X40,
+	}
+
+	kp := deriveEDDSAKeypair(sym)
+	fpr := kp.fingerprint()
+	c.Assert(fpr, DeepEquals, expectedFpr)
+}

@@ -7,7 +7,9 @@ import (
 
 const symKeyLength = 57
 const privKeyLength = 57
+const fingerprintLength = 56
 
+const usageFingerprint = 0x00
 const usageSK = 0x01
 
 // keypair represents and can be used for either an ecdh keypair, or for an eddsa keypiar
@@ -24,6 +26,10 @@ type publicKey struct {
 
 type privateKey struct {
 	k ed448.Scalar
+}
+
+type eddsaSignature struct {
+	s [114]byte
 }
 
 func generateEDDSAKeypair(r WithRandom) *keypair {
@@ -71,4 +77,17 @@ func deriveKeypair(digest [privKeyLength]byte, sym [symKeyLength]byte) *keypair 
 	kp.pub.k = h
 
 	return kp
+}
+
+type fingerprint [fingerprintLength]byte
+
+func (kp *keypair) fingerprint() fingerprint {
+	return kp.pub.fingerprint()
+}
+
+func (p *publicKey) fingerprint() fingerprint {
+	var f fingerprint
+	rep := p.k.DSAEncode()
+	kdf_otrv4(usageFingerprint, f[:], rep)
+	return f
 }

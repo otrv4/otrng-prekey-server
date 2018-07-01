@@ -8,9 +8,12 @@ import (
 
 // GenericServer represents the main entry point for the prekey server functionality.
 type GenericServer struct {
-	identity  string
-	secretKey *privateKey
-	publicKey *publicKey
+	// The identity, for example prekey.example.org
+	identity string
+	// The fingerprint of the long term key for the server
+	fingerprint fingerprint
+
+	key *keypair
 
 	fragLen        int
 	fragmentations *fragmentations
