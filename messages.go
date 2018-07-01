@@ -14,7 +14,7 @@ type publicationMessage struct {
 	mac            [macLength]byte
 }
 
-func (m *publicationMessage) parseMe([]byte) error {
+func (m *publicationMessage) deserialize([]byte) error {
 	panic("implement me")
 	return nil
 }
@@ -23,7 +23,7 @@ type storageInformationRequestMessage struct {
 	mac [macLength]byte
 }
 
-func (m *storageInformationRequestMessage) parseMe([]byte) error {
+func (m *storageInformationRequestMessage) deserialize([]byte) error {
 	panic("implement me")
 	return nil
 }
@@ -34,7 +34,7 @@ type storageStatusMessage struct {
 	mac         [macLength]byte
 }
 
-func (m *storageStatusMessage) parseMe([]byte) error {
+func (m *storageStatusMessage) deserialize([]byte) error {
 	panic("implement me")
 	return nil
 }
@@ -44,7 +44,7 @@ type successMessage struct {
 	mac         [macLength]byte
 }
 
-func (m *successMessage) parseMe([]byte) error {
+func (m *successMessage) deserialize([]byte) error {
 	panic("implement me")
 	return nil
 }
@@ -54,7 +54,7 @@ type failureMessage struct {
 	mac         [macLength]byte
 }
 
-func (m *failureMessage) parseMe([]byte) error {
+func (m *failureMessage) deserialize([]byte) error {
 	panic("implement me")
 	return nil
 }
@@ -65,7 +65,7 @@ type ensembleRetrievalQueryMessage struct {
 	versions    []uint32
 }
 
-func (m *ensembleRetrievalQueryMessage) parseMe([]byte) error {
+func (m *ensembleRetrievalQueryMessage) deserialize([]byte) error {
 	panic("implement me")
 	return nil
 }
@@ -75,7 +75,7 @@ type ensembleRetrievalMessage struct {
 	ensembles   []prekeyEnsemble
 }
 
-func (m *ensembleRetrievalMessage) parseMe([]byte) error {
+func (m *ensembleRetrievalMessage) deserialize([]byte) error {
 	panic("implement me")
 	return nil
 }
@@ -85,13 +85,18 @@ type noPrekeyEnsemblesMessage struct {
 	message     string
 }
 
-func (m *noPrekeyEnsemblesMessage) parseMe([]byte) error {
+func (m *noPrekeyEnsemblesMessage) deserialize([]byte) error {
 	panic("implement me")
 	return nil
 }
 
+type serializable interface {
+	deserialize([]byte) error
+	//	serialize() ([]byte, error)
+}
+
 type message interface {
-	parseMe([]byte) error
+	serializable
 	//	validate() error
 }
 
@@ -156,7 +161,7 @@ func parseMessage(msg []byte) (interface{}, error) {
 		return nil, fmt.Errorf("unknown message type: 0x%x", messageType)
 	}
 
-	return r, r.parseMe(msg[indexContentStarts:])
+	return r, r.deserialize(msg[indexContentStarts:])
 }
 
 // What messages can we as a server receive at the top level?

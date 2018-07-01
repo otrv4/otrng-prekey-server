@@ -8,7 +8,7 @@ type dake1Message struct {
 	i             ed448.Point
 }
 
-func (m *dake1Message) parseMe([]byte) error {
+func (m *dake1Message) deserialize([]byte) error {
 	panic("implement me")
 	return nil
 }
@@ -22,7 +22,7 @@ type dake2Message struct {
 	//   The 'RING-SIG' proof of authentication value.
 }
 
-func (m *dake2Message) parseMe([]byte) error {
+func (m *dake2Message) deserialize([]byte) error {
 	panic("implement me")
 	return nil
 }
@@ -34,7 +34,7 @@ type dake3Message struct {
 	message []byte // can be either publication or storage information request
 }
 
-func (m *dake3Message) parseMe([]byte) error {
+func (m *dake3Message) deserialize([]byte) error {
 	panic("implement me")
 	return nil
 }
