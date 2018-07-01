@@ -11,7 +11,7 @@ type ringSignature struct {
 	r3 ed448.Scalar
 }
 
-func rsig(a1 *privateKey, A1, A2, A3 *publicKey, m []byte) (*ringSignature, error) {
+func generateSignature(a1 *privateKey, A1, A2, A3 *publicKey, m []byte) (*ringSignature, error) {
 
 	// A1, A2, and A3 should be checked to verify that they are on the curve Ed448. See Verifying that a point is on the curve section for details.
 	// Pick random values t1, c2, c3, r2, r3 in q.
@@ -27,7 +27,7 @@ func rsig(a1 *privateKey, A1, A2, A3 *publicKey, m []byte) (*ringSignature, erro
 	return nil, nil
 }
 
-func (r *ringSignature) rvrf() bool {
+func (r *ringSignature) verify() bool {
 	// TODO: implement
 	return false
 }
