@@ -101,14 +101,27 @@ type ensembleRetrievalQueryMessage struct {
 }
 
 func (m *ensembleRetrievalQueryMessage) serialize() []byte {
-	// TODO: implement
-	panic("implement me")
-	return nil
+	out := appendShort(nil, version)
+	out = append(out, messageTypeEnsembleRetrievalQuery)
+	out = appendWord(out, m.instanceTag)
+	out = appendData(out, []byte(m.identity))
+	out = appendData(out, m.versions)
+	return out
 }
 
-func (m *ensembleRetrievalQueryMessage) deserialize([]byte) ([]byte, bool) {
-	panic("implement me")
-	return nil, false
+func (m *ensembleRetrievalQueryMessage) deserialize(buf []byte) ([]byte, bool) {
+	buf, _, _ = extractShort(buf) // version
+	buf = buf[1:]                 // message type
+
+	buf, m.instanceTag, _ = extractWord(buf)
+
+	var tmp []byte
+	buf, tmp, _ = extractData(buf)
+	m.identity = string(tmp)
+
+	buf, m.versions, _ = extractData(buf)
+
+	return buf, true
 }
 
 type ensembleRetrievalMessage struct {
