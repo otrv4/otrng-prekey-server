@@ -120,15 +120,31 @@ func (cp *clientProfile) deserialize(buf []byte) ([]byte, bool) {
 }
 
 func (pp *prekeyProfile) serialize() []byte {
-	// TODO: implement
-	panic("implement me")
-	return nil
+	var out []byte
+	// out := appendShort(nil, version)
+	// out = append(out, messageTypePrekeyProfile)
+	out = appendWord(out, pp.identifier)
+	out = appendWord(out, pp.instanceTag)
+	out = append(out, serializeExpiry(pp.expiration)...)
+	out = append(out, pp.sharedPrekey.serialize()...)
+	out = append(out, pp.sig.serialize()...)
+
+	return out
 }
 
 func (pp *prekeyProfile) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: implement
-	panic("implement me")
-	return nil, false
+	//	buf, _, _ = extractShort(buf) // version
+	//	buf = buf[1:]                 // message type
+
+	buf, pp.identifier, _ = extractWord(buf)
+	buf, pp.instanceTag, _ = extractWord(buf)
+	buf, pp.expiration, _ = extractTime(buf)
+	pp.sharedPrekey = &publicKey{}
+	buf, _ = pp.sharedPrekey.deserialize(buf)
+	pp.sig = &eddsaSignature{}
+	buf, _ = pp.sig.deserialize(buf)
+
+	return buf, true
 }
 
 func (pm *prekeyMessage) serialize() []byte {
