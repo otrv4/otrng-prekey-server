@@ -77,7 +77,6 @@ func (s *GenericServerSuite) Test_serializeVersions_shouldSerializeCorrectly(c *
 func (s *GenericServerSuite) Test_serializeExpiry_shouldSerializeCorrectly(c *C) {
 	t := time.Date(2034, 11, 5, 13, 46, 20, 12, time.UTC)
 
-	// TODO: is this the right endian-ness for time?
 	expected := []byte{0x00, 0x00, 0x00, 0x00, 0x79, 0xf8, 0xc7, 0xac}
 
 	c.Assert(serializeExpiry(t), DeepEquals, expected)

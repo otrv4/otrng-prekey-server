@@ -15,15 +15,59 @@ type publicationMessage struct {
 }
 
 func (m *publicationMessage) serialize() []byte {
-	// TODO: implement
-	panic("implement me")
-	return nil
+	out := appendShort(nil, version)
+	out = append(out, messageTypePublication)
+	out = append(out, uint8(len(m.prekeyMessages)))
+	for _, pm := range m.prekeyMessages {
+		out = append(out, pm.serialize()...)
+	}
+
+	if m.clientProfile != nil {
+		out = append(out, uint8(1))
+		out = append(out, m.clientProfile.serialize()...)
+	} else {
+		out = append(out, uint8(0))
+	}
+
+	out = append(out, uint8(len(m.prekeyProfiles)))
+	for _, pp := range m.prekeyProfiles {
+		out = append(out, pp.serialize()...)
+	}
+
+	out = append(out, m.mac[:]...)
+	return out
 }
 
-func (m *publicationMessage) deserialize([]byte) ([]byte, bool) {
-	// TODO: implement
-	panic("implement me")
-	return nil, false
+func (m *publicationMessage) deserialize(buf []byte) ([]byte, bool) {
+	buf, _, _ = extractShort(buf) // version
+	buf = buf[1:]                 // message type
+
+	var tmp uint8
+	buf, tmp, _ = extractByte(buf)
+	m.prekeyMessages = make([]*prekeyMessage, tmp)
+	for ix := range m.prekeyMessages {
+		m.prekeyMessages[ix] = &prekeyMessage{}
+		buf, _ = m.prekeyMessages[ix].deserialize(buf)
+	}
+
+	buf, tmp, _ = extractByte(buf)
+	if tmp == 1 {
+		m.clientProfile = &clientProfile{}
+		buf, _ = m.clientProfile.deserialize(buf)
+	}
+
+	buf, tmp, _ = extractByte(buf)
+	m.prekeyProfiles = make([]*prekeyProfile, tmp)
+	for ix := range m.prekeyProfiles {
+		m.prekeyProfiles[ix] = &prekeyProfile{}
+		buf, _ = m.prekeyProfiles[ix].deserialize(buf)
+	}
+
+	var tmpb []byte
+	buf, tmpb, _ = extractFixedData(buf, 64)
+	copy(m.mac[:], tmpb)
+
+	return buf, true
 }
 
 type storageInformationRequestMessage struct {

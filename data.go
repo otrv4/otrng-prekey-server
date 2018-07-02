@@ -21,6 +21,14 @@ func appendData(l, r []byte) []byte {
 	return append(appendWord(l, uint32(len(r))), r...)
 }
 
+func extractByte(d []byte) ([]byte, uint8, bool) {
+	if len(d) < 1 {
+		return nil, 0, false
+	}
+
+	return d[1:], uint8(d[0]), true
+}
+
 func extractShort(d []byte) ([]byte, uint16, bool) {
 	if len(d) < 2 {
 		return nil, 0, false
