@@ -118,3 +118,39 @@ func (cp *clientProfile) deserialize(buf []byte) ([]byte, bool) {
 
 	return buf, true
 }
+
+func (pp *prekeyProfile) serialize() []byte {
+	// TODO: implement
+	panic("implement me")
+	return nil
+}
+
+func (pp *prekeyProfile) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: implement
+	panic("implement me")
+	return nil, false
+}
+
+func (pm *prekeyMessage) serialize() []byte {
+	// TODO: implement
+	panic("implement me")
+	return nil
+}
+
+func (pm *prekeyMessage) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: implement
+	panic("implement me")
+	return nil, false
+}
+
+func (pe *prekeyEnsemble) serialize() []byte {
+	// TODO: implement
+	panic("implement me")
+	return nil
+}
+
+func (pe *prekeyEnsemble) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: implement
+	panic("implement me")
+	return nil, false
+}

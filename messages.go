@@ -14,6 +14,12 @@ type publicationMessage struct {
 	mac            [macLength]byte
 }
 
+func (m *publicationMessage) serialize() []byte {
+	// TODO: implement
+	panic("implement me")
+	return nil
+}
+
 func (m *publicationMessage) deserialize([]byte) ([]byte, bool) {
 	// TODO: implement
 	panic("implement me")
@@ -22,6 +28,12 @@ func (m *publicationMessage) deserialize([]byte) ([]byte, bool) {
 
 type storageInformationRequestMessage struct {
 	mac [macLength]byte
+}
+
+func (m *storageInformationRequestMessage) serialize() []byte {
+	// TODO: implement
+	panic("implement me")
+	return nil
 }
 
 func (m *storageInformationRequestMessage) deserialize([]byte) ([]byte, bool) {
@@ -36,6 +48,12 @@ type storageStatusMessage struct {
 	mac         [macLength]byte
 }
 
+func (m *storageStatusMessage) serialize() []byte {
+	// TODO: implement
+	panic("implement me")
+	return nil
+}
+
 func (m *storageStatusMessage) deserialize([]byte) ([]byte, bool) {
 	// TODO: implement
 	panic("implement me")
@@ -47,6 +65,12 @@ type successMessage struct {
 	mac         [macLength]byte
 }
 
+func (m *successMessage) serialize() []byte {
+	// TODO: implement
+	panic("implement me")
+	return nil
+}
+
 func (m *successMessage) deserialize([]byte) ([]byte, bool) {
 	// TODO: implement
 	panic("implement me")
@@ -56,6 +80,12 @@ func (m *successMessage) deserialize([]byte) ([]byte, bool) {
 type failureMessage struct {
 	instanceTag uint32
 	mac         [macLength]byte
+}
+
+func (m *failureMessage) serialize() []byte {
+	// TODO: implement
+	panic("implement me")
+	return nil
 }
 
 func (m *failureMessage) deserialize([]byte) ([]byte, bool) {
@@ -70,6 +100,12 @@ type ensembleRetrievalQueryMessage struct {
 	versions    []byte
 }
 
+func (m *ensembleRetrievalQueryMessage) serialize() []byte {
+	// TODO: implement
+	panic("implement me")
+	return nil
+}
+
 func (m *ensembleRetrievalQueryMessage) deserialize([]byte) ([]byte, bool) {
 	panic("implement me")
 	return nil, false
@@ -78,6 +114,12 @@ func (m *ensembleRetrievalQueryMessage) deserialize([]byte) ([]byte, bool) {
 type ensembleRetrievalMessage struct {
 	instanceTag uint32
 	ensembles   []*prekeyEnsemble
+}
+
+func (m *ensembleRetrievalMessage) serialize() []byte {
+	// TODO: implement
+	panic("implement me")
+	return nil
 }
 
 func (m *ensembleRetrievalMessage) deserialize([]byte) ([]byte, bool) {
@@ -113,7 +155,7 @@ func (m *noPrekeyEnsemblesMessage) deserialize(buf []byte) ([]byte, bool) {
 
 type serializable interface {
 	deserialize([]byte) ([]byte, bool)
-	//	serialize() ([]byte, error)
+	serialize() []byte
 }
 
 type message interface {
