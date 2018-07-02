@@ -55,15 +55,25 @@ type storageStatusMessage struct {
 }
 
 func (m *storageStatusMessage) serialize() []byte {
-	// TODO: implement
-	panic("implement me")
-	return nil
+	out := appendShort(nil, version)
+	out = append(out, messageTypeStorageStatusMessage)
+	out = appendWord(out, m.instanceTag)
+	out = appendWord(out, m.number)
+	out = append(out, m.mac[:]...)
+	return out
 }
 
-func (m *storageStatusMessage) deserialize([]byte) ([]byte, bool) {
-	// TODO: implement
-	panic("implement me")
-	return nil, false
+func (m *storageStatusMessage) deserialize(buf []byte) ([]byte, bool) {
+	buf, _, _ = extractShort(buf) // version
+	buf = buf[1:]                 // message type
+
+	buf, m.instanceTag, _ = extractWord(buf)
+	buf, m.number, _ = extractWord(buf)
+	var tmp []byte
+	buf, tmp, _ = extractFixedData(buf, 64)
+	copy(m.mac[:], tmp)
+
+	return buf, true
 }
 
 type successMessage struct {
