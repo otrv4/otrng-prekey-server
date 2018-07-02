@@ -104,3 +104,40 @@ func (s *eddsaSignature) serialize() []byte {
 func serializePoint(p ed448.Point) []byte {
 	return p.DSAEncode()
 }
+
+var One ed448.Scalar
+var OneFourth ed448.Scalar
+
+func init() {
+	oneBuf := [privKeyLength]byte{0x01}
+	One = ed448.NewScalar(oneBuf[:])
+	OneFourth = ed448.NewScalar(oneBuf[:])
+	OneFourth.Halve(OneFourth)
+	OneFourth.Halve(OneFourth)
+}
+
+func deserializePoint(buf []byte) ([]byte, ed448.Point, bool) {
+	tp := ed448.NewPointFromBytes([]byte{
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	})
+	tp.DSADecode(buf[0:57])
+	tp = ed448.PointScalarMul(tp, OneFourth)
+	return buf[57:], tp, true
+}
+
+func (p *publicKey) deserialize(buf []byte) ([]byte, bool) {
+	buf, p.k, _ = deserializePoint(buf)
+	return buf, true
+}
+
+func (s *eddsaSignature) deserialize(buf []byte) ([]byte, bool) {
+	buf, res, _ := extractFixedData(buf, 114)
+	copy(s.s[:], res)
+	return buf, true
+}

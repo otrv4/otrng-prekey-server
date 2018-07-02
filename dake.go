@@ -13,9 +13,17 @@ type dake1Message struct {
 	i             ed448.Point
 }
 
-func (m *dake1Message) deserialize([]byte) error {
-	// TODO: implement
-	panic("implement me")
+func (m *dake1Message) deserialize(buf []byte) error {
+	buf, _, _ = extractShort(buf) // version
+	buf = buf[1:]                 // message type
+
+	buf, m.instanceTag, _ = extractWord(buf)
+
+	m.clientProfile = &clientProfile{}
+	buf, _ = m.clientProfile.deserialize(buf)
+
+	buf, m.i, _ = deserializePoint(buf)
+
 	return nil
 }
 

@@ -37,9 +37,9 @@ func (r *ringSignature) deserialize([]byte) error {
 	return nil
 }
 
-func (r *ringSignature) serialize() ([]byte, error) {
+func (r *ringSignature) serialize() []byte {
 	// TODO: implement
-	return nil, nil
+	return nil
 }
 
 func (r *ringSignature) validate() error {

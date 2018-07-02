@@ -1,5 +1,7 @@
 package prekeyserver
 
+import "time"
+
 func appendWord(l []byte, r uint32) []byte {
 	return append(l, byte(r>>24), byte(r>>16), byte(r>>8), byte(r))
 }
@@ -24,4 +26,59 @@ func extractShort(d []byte) ([]byte, uint16, bool) {
 
 	return d[2:], uint16(d[0])<<8 |
 		uint16(d[1]), true
+}
+
+func extractWord(d []byte) ([]byte, uint32, bool) {
+	if len(d) < 4 {
+		return nil, 0, false
+	}
+
+	return d[4:], uint32(d[0])<<24 |
+		uint32(d[1])<<16 |
+		uint32(d[2])<<8 |
+		uint32(d[3]), true
+}
+
+func extractDoubleWord(d []byte) ([]byte, uint64, bool) {
+	if len(d) < 8 {
+		return nil, 0, false
+	}
+
+	return d[8:], uint64(d[0])<<56 |
+		uint64(d[1])<<48 |
+		uint64(d[2])<<40 |
+		uint64(d[3])<<32 |
+		uint64(d[4])<<24 |
+		uint64(d[5])<<16 |
+		uint64(d[6])<<8 |
+		uint64(d[7]), true
+}
+
+func extractData(d []byte) (newPoint []byte, data []byte, ok bool) {
+	newPoint, length, ok := extractWord(d)
+	if !ok || len(newPoint) < int(length) {
+		return d, nil, false
+	}
+
+	data = newPoint[:int(length)]
+	newPoint = newPoint[int(length):]
+	ok = true
+	return
+}
+
+func extractTime(d []byte) (newPoint []byte, t time.Time, ok bool) {
+	newPoint, tt, ok := extractDoubleWord(d)
+	if !ok {
+		return d, time.Time{}, false
+	}
+	t = time.Unix(int64(tt), 0).In(time.UTC)
+	ok = true
+	return
+}
+
+func extractFixedData(d []byte, l int) (newPoint []byte, data []byte, ok bool) {
+	if len(d) < l {
+		return d, nil, false
+	}
+	return d[l:], d[0:l], true
 }

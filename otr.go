@@ -1,6 +1,8 @@
 package prekeyserver
 
-import "time"
+import (
+	"time"
+)
 
 type clientProfile struct {
 	identifier            uint32
@@ -83,4 +85,36 @@ func (cp *clientProfile) serialize() []byte {
 	out = append(out, cp.sig.serialize()...)
 
 	return out
+}
+
+func (cp *clientProfile) deserializeField(buf []byte) ([]byte, bool) {
+	var tp uint16
+	buf, tp, _ = extractShort(buf)
+	switch tp {
+	case uint16(1):
+		buf, cp.identifier, _ = extractWord(buf)
+	case uint16(2):
+		buf, cp.instanceTag, _ = extractWord(buf)
+	case uint16(3):
+		cp.publicKey = &publicKey{}
+		buf, _ = cp.publicKey.deserialize(buf)
+	case uint16(5):
+		buf, cp.versions, _ = extractData(buf)
+	case uint16(6):
+		buf, cp.expiration, _ = extractTime(buf)
+	}
+	return buf, true
+}
+
+func (cp *clientProfile) deserialize(buf []byte) ([]byte, bool) {
+	var fields uint32
+	buf, fields, _ = extractWord(buf)
+	for i := uint32(0); i < fields; i++ {
+		buf, _ = cp.deserializeField(buf)
+	}
+
+	cp.sig = &eddsaSignature{}
+	buf, _ = cp.sig.deserialize(buf)
+
+	return buf, true
 }
