@@ -32,17 +32,27 @@ func (r *ringSignature) verify() bool {
 	return false
 }
 
-func (r *ringSignature) deserialize([]byte) error {
+func (r *ringSignature) deserialize(buf []byte) ([]byte, bool) {
 	// TODO: implement
-	return nil
+	return nil, false
 }
 
 func (r *ringSignature) serialize() []byte {
-	// TODO: implement
-	return nil
+	var out []byte
+	out = append(out, serializeScalar(r.c1)...)
+	out = append(out, serializeScalar(r.r1)...)
+	out = append(out, serializeScalar(r.c2)...)
+	out = append(out, serializeScalar(r.r2)...)
+	out = append(out, serializeScalar(r.c3)...)
+	out = append(out, serializeScalar(r.r3)...)
+	return out
 }
 
 func (r *ringSignature) validate() error {
 	// TODO: implement
 	return nil
+}
+
+func serializeScalar(s ed448.Scalar) []byte {
+	return s.Encode()
 }

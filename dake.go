@@ -5,6 +5,7 @@ import "github.com/twstrike/ed448"
 const (
 	version          = uint16(4)
 	dake1MessageType = uint8(0x01)
+	dake2MessageType = uint8(0x02)
 )
 
 type dake1Message struct {
@@ -13,7 +14,7 @@ type dake1Message struct {
 	i             ed448.Point
 }
 
-func (m *dake1Message) deserialize(buf []byte) error {
+func (m *dake1Message) deserialize(buf []byte) ([]byte, bool) {
 	buf, _, _ = extractShort(buf) // version
 	buf = buf[1:]                 // message type
 
@@ -24,7 +25,7 @@ func (m *dake1Message) deserialize(buf []byte) error {
 
 	buf, m.i, _ = deserializePoint(buf)
 
-	return nil
+	return buf, true
 }
 
 func (m *dake1Message) serialize() []byte {
@@ -37,16 +38,28 @@ func (m *dake1Message) serialize() []byte {
 }
 
 type dake2Message struct {
-	instanceTag    uint32
-	serverIdentity []byte
-	s              ed448.Point
-	sigma          *ringSignature
+	instanceTag       uint32
+	serverIdentity    []byte
+	serverFingerprint fingerprint
+	s                 ed448.Point
+	sigma             *ringSignature
 }
 
-func (m *dake2Message) deserialize([]byte) error {
+func (m *dake2Message) serialize() []byte {
+	out := appendShort(nil, version)
+	out = append(out, dake2MessageType)
+	out = appendWord(out, m.instanceTag)
+	out = appendData(out, m.serverIdentity)
+	out = appendData(out, m.serverFingerprint[:])
+	out = append(out, serializePoint(m.s)...)
+	out = append(out, m.sigma.serialize()...)
+	return out
+}
+
+func (m *dake2Message) deserialize(buf []byte) ([]byte, bool) {
 	// TODO: implement
 	panic("implement me")
-	return nil
+	return nil, false
 }
 
 type dake3Message struct {
@@ -55,8 +68,8 @@ type dake3Message struct {
 	message     []byte // can be either publication or storage information request
 }
 
-func (m *dake3Message) deserialize([]byte) error {
+func (m *dake3Message) deserialize(buf []byte) ([]byte, bool) {
 	// TODO: implement
 	panic("implement me")
-	return nil
+	return nil, false
 }

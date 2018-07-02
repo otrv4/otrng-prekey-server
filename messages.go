@@ -14,20 +14,20 @@ type publicationMessage struct {
 	mac            [macLength]byte
 }
 
-func (m *publicationMessage) deserialize([]byte) error {
+func (m *publicationMessage) deserialize([]byte) ([]byte, bool) {
 	// TODO: implement
 	panic("implement me")
-	return nil
+	return nil, false
 }
 
 type storageInformationRequestMessage struct {
 	mac [macLength]byte
 }
 
-func (m *storageInformationRequestMessage) deserialize([]byte) error {
+func (m *storageInformationRequestMessage) deserialize([]byte) ([]byte, bool) {
 	// TODO: implement
 	panic("implement me")
-	return nil
+	return nil, false
 }
 
 type storageStatusMessage struct {
@@ -36,10 +36,10 @@ type storageStatusMessage struct {
 	mac         [macLength]byte
 }
 
-func (m *storageStatusMessage) deserialize([]byte) error {
+func (m *storageStatusMessage) deserialize([]byte) ([]byte, bool) {
 	// TODO: implement
 	panic("implement me")
-	return nil
+	return nil, false
 }
 
 type successMessage struct {
@@ -47,10 +47,10 @@ type successMessage struct {
 	mac         [macLength]byte
 }
 
-func (m *successMessage) deserialize([]byte) error {
+func (m *successMessage) deserialize([]byte) ([]byte, bool) {
 	// TODO: implement
 	panic("implement me")
-	return nil
+	return nil, false
 }
 
 type failureMessage struct {
@@ -58,10 +58,10 @@ type failureMessage struct {
 	mac         [macLength]byte
 }
 
-func (m *failureMessage) deserialize([]byte) error {
+func (m *failureMessage) deserialize([]byte) ([]byte, bool) {
 	// TODO: implement
 	panic("implement me")
-	return nil
+	return nil, false
 }
 
 type ensembleRetrievalQueryMessage struct {
@@ -70,9 +70,9 @@ type ensembleRetrievalQueryMessage struct {
 	versions    []byte
 }
 
-func (m *ensembleRetrievalQueryMessage) deserialize([]byte) error {
+func (m *ensembleRetrievalQueryMessage) deserialize([]byte) ([]byte, bool) {
 	panic("implement me")
-	return nil
+	return nil, false
 }
 
 type ensembleRetrievalMessage struct {
@@ -80,10 +80,10 @@ type ensembleRetrievalMessage struct {
 	ensembles   []*prekeyEnsemble
 }
 
-func (m *ensembleRetrievalMessage) deserialize([]byte) error {
+func (m *ensembleRetrievalMessage) deserialize([]byte) ([]byte, bool) {
 	// TODO: implement
 	panic("implement me")
-	return nil
+	return nil, false
 }
 
 type noPrekeyEnsemblesMessage struct {
@@ -91,14 +91,14 @@ type noPrekeyEnsemblesMessage struct {
 	message     string
 }
 
-func (m *noPrekeyEnsemblesMessage) deserialize([]byte) error {
+func (m *noPrekeyEnsemblesMessage) deserialize([]byte) ([]byte, bool) {
 	// TODO: implement
 	panic("implement me")
-	return nil
+	return nil, false
 }
 
 type serializable interface {
-	deserialize([]byte) error
+	deserialize([]byte) ([]byte, bool)
 	//	serialize() ([]byte, error)
 }
 
@@ -168,7 +168,9 @@ func parseMessage(msg []byte) (interface{}, error) {
 		return nil, fmt.Errorf("unknown message type: 0x%x", messageType)
 	}
 
-	return r, r.deserialize(msg[indexContentStarts:])
+	r.deserialize(msg[indexContentStarts:])
+
+	return r, nil
 }
 
 // What messages can we as a server receive at the top level?
