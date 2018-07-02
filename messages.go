@@ -227,21 +227,3 @@ func parseMessage(msg []byte) (interface{}, error) {
 
 	return r, nil
 }
-
-// What messages can we as a server receive at the top level?
-
-// DAKE1
-// DAKE3
-// ensembleRetrievalQueryMessage
-
-// What messages are NOT top level?
-//    publicationMessage
-//    storageInformationRequestMessage
-
-// What messages can we as a server SEND:
-// DAKE2
-// storageStatusMessage
-// successMessage
-// failureMessage
-// ensembleRetrievalMessage
-// noPrekeyEnsemblesMessage
