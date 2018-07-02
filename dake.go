@@ -57,9 +57,21 @@ func (m *dake2Message) serialize() []byte {
 }
 
 func (m *dake2Message) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: implement
-	panic("implement me")
-	return nil, false
+	buf, _, _ = extractShort(buf) // version
+	buf = buf[1:]                 // message type
+
+	buf, m.instanceTag, _ = extractWord(buf)
+	buf, m.serverIdentity, _ = extractData(buf)
+	var tmp []byte
+	buf, tmp, _ = extractData(buf)
+	copy(m.serverFingerprint[:], tmp)
+
+	buf, m.s, _ = deserializePoint(buf)
+
+	m.sigma = &ringSignature{}
+	buf, _ = m.sigma.deserialize(buf)
+
+	return buf, true
 }
 
 type dake3Message struct {

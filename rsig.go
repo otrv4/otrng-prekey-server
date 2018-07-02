@@ -33,8 +33,13 @@ func (r *ringSignature) verify() bool {
 }
 
 func (r *ringSignature) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: implement
-	return nil, false
+	buf, r.c1, _ = deserializeScalar(buf)
+	buf, r.r1, _ = deserializeScalar(buf)
+	buf, r.c2, _ = deserializeScalar(buf)
+	buf, r.r2, _ = deserializeScalar(buf)
+	buf, r.c3, _ = deserializeScalar(buf)
+	buf, r.r3, _ = deserializeScalar(buf)
+	return buf, true
 }
 
 func (r *ringSignature) serialize() []byte {
@@ -55,4 +60,19 @@ func (r *ringSignature) validate() error {
 
 func serializeScalar(s ed448.Scalar) []byte {
 	return s.Encode()
+}
+
+func deserializeScalar(buf []byte) ([]byte, ed448.Scalar, bool) {
+	ts := ed448.NewScalar([]byte{
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	})
+	ts.Decode(buf[0:56])
+	return buf[56:], ts, true
+
 }
