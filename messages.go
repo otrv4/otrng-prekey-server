@@ -91,10 +91,24 @@ type noPrekeyEnsemblesMessage struct {
 	message     string
 }
 
-func (m *noPrekeyEnsemblesMessage) deserialize([]byte) ([]byte, bool) {
-	// TODO: implement
-	panic("implement me")
-	return nil, false
+func (m *noPrekeyEnsemblesMessage) serialize() []byte {
+	out := appendShort(nil, version)
+	out = append(out, messageTypeNoPrekeyEnsembles)
+	out = appendWord(out, m.instanceTag)
+	out = appendData(out, []byte(m.message))
+	return out
+}
+
+func (m *noPrekeyEnsemblesMessage) deserialize(buf []byte) ([]byte, bool) {
+	buf, _, _ = extractShort(buf) // version
+	buf = buf[1:]                 // message type
+
+	buf, m.instanceTag, _ = extractWord(buf)
+	var tmp []byte
+	buf, tmp, _ = extractData(buf)
+	m.message = string(tmp)
+
+	return buf, true
 }
 
 type serializable interface {
@@ -104,7 +118,6 @@ type serializable interface {
 
 type message interface {
 	serializable
-	//	validate() error
 }
 
 var (

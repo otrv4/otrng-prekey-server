@@ -27,6 +27,7 @@ func generateSignature(a1 *privateKey, A1, A2, A3 *publicKey, m []byte) (*ringSi
 	return nil, nil
 }
 
+// verify will actually do the cryptographic validation of the ring signature
 func (r *ringSignature) verify() bool {
 	// TODO: implement
 	return false
@@ -51,11 +52,6 @@ func (r *ringSignature) serialize() []byte {
 	out = append(out, serializeScalar(r.c3)...)
 	out = append(out, serializeScalar(r.r3)...)
 	return out
-}
-
-func (r *ringSignature) validate() error {
-	// TODO: implement
-	return nil
 }
 
 func serializeScalar(s ed448.Scalar) []byte {
