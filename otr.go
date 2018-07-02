@@ -132,15 +132,26 @@ func (pp *prekeyProfile) deserialize(buf []byte) ([]byte, bool) {
 }
 
 func (pm *prekeyMessage) serialize() []byte {
-	// TODO: implement
-	panic("implement me")
-	return nil
+	out := appendShort(nil, version)
+	out = append(out, messageTypePrekeyMessage)
+	out = appendWord(out, pm.identifier)
+	out = appendWord(out, pm.instanceTag)
+	out = append(out, pm.y.serialize()...)
+	out = appendData(out, pm.b)
+	return out
 }
 
 func (pm *prekeyMessage) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: implement
-	panic("implement me")
-	return nil, false
+	buf, _, _ = extractShort(buf) // version
+	buf = buf[1:]                 // message type
+
+	buf, pm.identifier, _ = extractWord(buf)
+	buf, pm.instanceTag, _ = extractWord(buf)
+	pm.y = &publicKey{}
+	buf, _ = pm.y.deserialize(buf)
+	buf, pm.b, _ = extractData(buf)
+
+	return buf, true
 }
 
 func (pe *prekeyEnsemble) serialize() []byte {

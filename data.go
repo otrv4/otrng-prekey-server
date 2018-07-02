@@ -1,6 +1,8 @@
 package prekeyserver
 
-import "time"
+import (
+	"time"
+)
 
 func appendWord(l []byte, r uint32) []byte {
 	return append(l, byte(r>>24), byte(r>>16), byte(r>>8), byte(r))

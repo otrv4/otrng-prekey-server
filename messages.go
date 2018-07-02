@@ -219,6 +219,7 @@ var (
 	messageTypeEnsembleRetrievalQuery    = uint8(0x09)
 	messageTypeEnsembleRetrieval         = uint8(0x10)
 	messageTypeNoPrekeyEnsembles         = uint8(0x11)
+	messageTypePrekeyMessage             = uint8(0x0F)
 )
 
 const indexOfMessageType = 2
