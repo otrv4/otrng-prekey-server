@@ -171,13 +171,22 @@ func (pm *prekeyMessage) deserialize(buf []byte) ([]byte, bool) {
 }
 
 func (pe *prekeyEnsemble) serialize() []byte {
-	// TODO: implement
-	panic("implement me")
-	return nil
+	var out []byte
+	out = append(out, pe.cp.serialize()...)
+	out = append(out, pe.pp.serialize()...)
+	out = append(out, pe.pm.serialize()...)
+	return out
 }
 
 func (pe *prekeyEnsemble) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: implement
-	panic("implement me")
-	return nil, false
+	pe.cp = &clientProfile{}
+	buf, _ = pe.cp.deserialize(buf)
+
+	pe.pp = &prekeyProfile{}
+	buf, _ = pe.pp.deserialize(buf)
+
+	pe.pm = &prekeyMessage{}
+	buf, _ = pe.pm.deserialize(buf)
+
+	return buf, true
 }
