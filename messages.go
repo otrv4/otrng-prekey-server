@@ -91,15 +91,23 @@ type failureMessage struct {
 }
 
 func (m *failureMessage) serialize() []byte {
-	// TODO: implement
-	panic("implement me")
-	return nil
+	out := appendShort(nil, version)
+	out = append(out, messageTypeFailure)
+	out = appendWord(out, m.instanceTag)
+	out = append(out, m.mac[:]...)
+	return out
 }
 
-func (m *failureMessage) deserialize([]byte) ([]byte, bool) {
-	// TODO: implement
-	panic("implement me")
-	return nil, false
+func (m *failureMessage) deserialize(buf []byte) ([]byte, bool) {
+	buf, _, _ = extractShort(buf) // version
+	buf = buf[1:]                 // message type
+
+	buf, m.instanceTag, _ = extractWord(buf)
+	var tmp []byte
+	buf, tmp, _ = extractFixedData(buf, 64)
+	copy(m.mac[:], tmp)
+
+	return buf, true
 }
 
 type ensembleRetrievalQueryMessage struct {
