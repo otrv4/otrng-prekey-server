@@ -206,9 +206,15 @@ type ensembleRetrievalMessage struct {
 }
 
 func (m *ensembleRetrievalMessage) serialize() []byte {
-	// TODO: implement
-	panic("implement me")
-	return nil
+	out := appendShort(nil, version)
+	out = append(out, messageTypeEnsembleRetrieval)
+	out = appendWord(out, m.instanceTag)
+	out = append(out, uint8(len(m.ensembles)))
+	for _, pe := range m.ensembles {
+		out = append(out, pe.serialize()...)
+	}
+
+	return out
 }
 
 func (m *ensembleRetrievalMessage) deserialize([]byte) ([]byte, bool) {
