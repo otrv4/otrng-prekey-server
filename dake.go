@@ -6,6 +6,7 @@ const (
 	version          = uint16(4)
 	dake1MessageType = uint8(0x01)
 	dake2MessageType = uint8(0x02)
+	dake3MessageType = uint8(0x03)
 )
 
 type dake1Message struct {
@@ -80,8 +81,21 @@ type dake3Message struct {
 	message     []byte // can be either publication or storage information request
 }
 
+func (m *dake3Message) serialize() []byte {
+	out := appendShort(nil, version)
+	out = append(out, dake3MessageType)
+	out = appendWord(out, m.instanceTag)
+	out = append(out, m.sigma.serialize()...)
+	out = appendData(out, m.message)
+	return out
+}
+
 func (m *dake3Message) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: implement
-	panic("implement me")
-	return nil, false
+	buf, _, _ = extractShort(buf) // version
+	buf = buf[1:]                 // message type
+	buf, m.instanceTag, _ = extractWord(buf)
+	m.sigma = &ringSignature{}
+	buf, _ = m.sigma.deserialize(buf)
+	buf, m.message, _ = extractData(buf)
+	return buf, true
 }
