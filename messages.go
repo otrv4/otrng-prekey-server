@@ -217,10 +217,21 @@ func (m *ensembleRetrievalMessage) serialize() []byte {
 	return out
 }
 
-func (m *ensembleRetrievalMessage) deserialize([]byte) ([]byte, bool) {
-	// TODO: implement
-	panic("implement me")
-	return nil, false
+func (m *ensembleRetrievalMessage) deserialize(buf []byte) ([]byte, bool) {
+	buf, _, _ = extractShort(buf) // version
+	buf = buf[1:]                 // message type
+
+	buf, m.instanceTag, _ = extractWord(buf)
+
+	var tmp uint8
+	buf, tmp, _ = extractByte(buf)
+	m.ensembles = make([]*prekeyEnsemble, tmp)
+	for ix := range m.ensembles {
+		m.ensembles[ix] = &prekeyEnsemble{}
+		buf, _ = m.ensembles[ix].deserialize(buf)
+	}
+
+	return buf, true
 }
 
 type noPrekeyEnsemblesMessage struct {
