@@ -1,6 +1,7 @@
 package prekeyserver
 
 import (
+	"crypto/dsa"
 	"time"
 )
 
@@ -10,7 +11,7 @@ type clientProfile struct {
 	publicKey             *publicKey
 	versions              []byte
 	expiration            time.Time
-	dsaKey                []byte
+	dsaKey                *dsa.PublicKey
 	transitionalSignature []byte
 	sig                   *eddsaSignature
 }
@@ -45,25 +46,47 @@ func serializeExpiry(t time.Time) []byte {
 	return appendLong(nil, uint64(val))
 }
 
+var dsaKeyType = []byte{0x00, 0x00}
+
+func serializeDSAKey(k *dsa.PublicKey) []byte {
+	result := dsaKeyType
+	result = appendMPI(result, k.P)
+	result = appendMPI(result, k.Q)
+	result = appendMPI(result, k.G)
+	result = appendMPI(result, k.Y)
+	return result
+}
+func deserializeDSAKey(buf []byte) ([]byte, *dsa.PublicKey, bool) {
+	res := &dsa.PublicKey{}
+	buf, _, _ = extractShort(buf) // key type
+	buf, res.P, _ = extractMPI(buf)
+	buf, res.Q, _ = extractMPI(buf)
+	buf, res.G, _ = extractMPI(buf)
+	buf, res.Y, _ = extractMPI(buf)
+	return buf, res, true
+}
+
 const (
-	clientProfileTagIdentifier  = uint16(0x0001)
-	clientProfileTagInstanceTag = uint16(0x0002)
-	clientProfileTagPublicKey   = uint16(0x0003)
-	clientProfileTagVersions    = uint16(0x0005)
-	clientProfileTagExpiry      = uint16(0x0006)
+	clientProfileTagIdentifier            = uint16(0x0001)
+	clientProfileTagInstanceTag           = uint16(0x0002)
+	clientProfileTagPublicKey             = uint16(0x0003)
+	clientProfileTagVersions              = uint16(0x0005)
+	clientProfileTagExpiry                = uint16(0x0006)
+	clientProfileTagDSAKey                = uint16(0x0007)
+	clientProfileTagTransitionalSignature = uint16(0x0008)
 )
 
 func (cp *clientProfile) serialize() []byte {
 	out := []byte{}
 	fields := uint32(5)
 
-	// TODO: serialize DSA stuff as well
-	// if cp.dsaKey != nil {
-	// 	fields++
-	// }
-	// if cp.transitionalSignature != nil {
-	// 	fields++
-	// }
+	if cp.dsaKey != nil {
+		fields++
+	}
+
+	if cp.transitionalSignature != nil {
+		fields++
+	}
 
 	out = appendWord(out, fields)
 
@@ -81,6 +104,16 @@ func (cp *clientProfile) serialize() []byte {
 
 	out = appendShort(out, clientProfileTagExpiry)
 	out = append(out, serializeExpiry(cp.expiration)...)
+
+	if cp.dsaKey != nil {
+		out = appendShort(out, clientProfileTagDSAKey)
+		out = append(out, serializeDSAKey(cp.dsaKey)...)
+	}
+
+	if cp.transitionalSignature != nil {
+		out = appendShort(out, clientProfileTagTransitionalSignature)
+		out = append(out, cp.transitionalSignature...)
+	}
 
 	out = append(out, cp.sig.serialize()...)
 
@@ -102,6 +135,10 @@ func (cp *clientProfile) deserializeField(buf []byte) ([]byte, bool) {
 		buf, cp.versions, _ = extractData(buf)
 	case uint16(6):
 		buf, cp.expiration, _ = extractTime(buf)
+	case uint16(7):
+		buf, cp.dsaKey, _ = deserializeDSAKey(buf)
+	case uint16(8):
+		buf, cp.transitionalSignature, _ = extractFixedData(buf, 40)
 	}
 	return buf, true
 }

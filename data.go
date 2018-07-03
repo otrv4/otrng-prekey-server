@@ -1,6 +1,7 @@
 package prekeyserver
 
 import (
+	"math/big"
 	"time"
 )
 
@@ -19,6 +20,10 @@ func appendLong(l []byte, r uint64) []byte {
 
 func appendData(l, r []byte) []byte {
 	return append(appendWord(l, uint32(len(r))), r...)
+}
+
+func appendMPI(l []byte, r *big.Int) []byte {
+	return appendData(l, r.Bytes())
 }
 
 func extractByte(d []byte) ([]byte, uint8, bool) {
@@ -91,4 +96,16 @@ func extractFixedData(d []byte, l int) (newPoint []byte, data []byte, ok bool) {
 		return d, nil, false
 	}
 	return d[l:], d[0:l], true
+}
+
+func extractMPI(d []byte) (newPoint []byte, mpi *big.Int, ok bool) {
+	d, mpiLen, ok := extractWord(d)
+	if !ok || len(d) < int(mpiLen) {
+		return nil, nil, false
+	}
+
+	mpi = new(big.Int).SetBytes(d[:int(mpiLen)])
+	newPoint = d[int(mpiLen):]
+	ok = true
+	return
 }
