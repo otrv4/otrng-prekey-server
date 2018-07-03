@@ -44,7 +44,7 @@ func (g *GenericServer) Handle(from, message string) (returns []string, err erro
 	}
 
 	if isFragment(message) {
-		m, c, e := g.fragmentations.newFragmentReceived(message)
+		m, c, e := g.fragmentations.newFragmentReceived(from, message)
 		if e != nil {
 			return nil, e
 		}

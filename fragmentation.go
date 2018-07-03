@@ -16,14 +16,14 @@ type fragmentationContext struct {
 }
 
 type fragmentations struct {
-	contexts map[uint32]*fragmentationContext
+	contexts map[string]*fragmentationContext
 }
 
 var fragmentationPrefix = "?OTRP|"
 
 func newFragmentations() *fragmentations {
 	return &fragmentations{
-		contexts: make(map[uint32]*fragmentationContext),
+		contexts: make(map[string]*fragmentationContext),
 	}
 }
 
@@ -55,7 +55,7 @@ func parseUint16(s string) (uint16, bool) {
 // newFragmentReceived receives a fragment, including the fragment prefix
 // it will add the received information to the fragmentation context
 // if the received fragment completes a message, it will be returned and the previous pieces will be removed
-func (f *fragmentations) newFragmentReceived(frag string) (string, bool, error) {
+func (f *fragmentations) newFragmentReceived(from, frag string) (string, bool, error) {
 	frag = frag[len(fragmentationPrefix) : len(frag)-1]
 	fragOne := strings.SplitN(frag, "|", 3)
 	if len(fragOne) < 3 {
@@ -76,10 +76,11 @@ func (f *fragmentations) newFragmentReceived(frag string) (string, bool, error) 
 		return "", false, errors.New("invalid fragmentation parse")
 	}
 
-	fc, ok := f.contexts[id]
+	ctxId := fmt.Sprintf("%s/%d", from, id)
+	fc, ok := f.contexts[ctxId]
 	if !ok {
 		fc = newFragmentationContext(tot)
-		f.contexts[id] = fc
+		f.contexts[ctxId] = fc
 	}
 
 	if fc.total != tot {
@@ -89,7 +90,7 @@ func (f *fragmentations) newFragmentReceived(frag string) (string, bool, error) 
 	fc.add(ix, fragTwo[3])
 	if fc.done() {
 		complete := fc.complete()
-		delete(f.contexts, id)
+		delete(f.contexts, ctxId)
 		return complete, true, nil
 	} else {
 		return "", false, nil
@@ -163,5 +164,3 @@ func potentiallyFragment(msg string, fragLen int, r WithRandom) []string {
 	}
 	return ret
 }
-
-// TODO: we should make sure we don't mix up fragments from different users but with same ID
