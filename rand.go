@@ -25,3 +25,13 @@ func randomInto(r WithRandom, b []byte) error {
 	}
 	return nil
 }
+
+type realRandom struct{}
+
+func defaultRandom() *realRandom {
+	return &realRandom{}
+}
+
+func (*realRandom) randReader() io.Reader {
+	return rand.Reader
+}

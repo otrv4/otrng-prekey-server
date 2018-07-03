@@ -4,6 +4,9 @@ import (
 	"github.com/twstrike/ed448"
 )
 
+// This ring signature implementation is a duplicate of the libotr-ng one for now. It should be changed to be compliant
+// with the Prekey server spec - but it's easier to get everything working by having something to compare with
+
 var base_point_bytes_dup = []byte{
 	0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
 	0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
@@ -116,10 +119,30 @@ func generateSignature(wr WithRandom, secret *privateKey, pub *publicKey, A1, A2
 	return r, nil
 }
 
-// verify will actually do the cryptographic validation of the ring signature
-func (r *ringSignature) verify() bool {
-	// TODO: implement
-	return false
+func (r *ringSignature) calculateCFromSigma(A1, A2, A3 ed448.Point, msg []byte) ed448.Scalar {
+	gr1 := ed448.PrecomputedScalarMul(r.r1)
+	gr2 := ed448.PrecomputedScalarMul(r.r2)
+	gr3 := ed448.PrecomputedScalarMul(r.r3)
+
+	a1c1 := ed448.PointScalarMul(A1, r.c1)
+	a2c2 := ed448.PointScalarMul(A2, r.c2)
+	a3c3 := ed448.PointScalarMul(A3, r.c3)
+
+	a1c1.Add(a1c1, gr1)
+	a2c2.Add(a2c2, gr2)
+	a3c3.Add(a3c3, gr3)
+
+	return calculateC(A1, A2, A3, a1c1, a2c2, a3c3, msg)
+}
+
+// verify will do the actual cryptographic validation of the ring signature
+func (r *ringSignature) verify(A1, A2, A3 *publicKey, m []byte) bool {
+	c := r.calculateCFromSigma(A1.k, A2.k, A3.k, m)
+	c1c2c3 := ed448.NewScalar()
+	c1c2c3.Add(r.c1, r.c2)
+	c1c2c3.Add(c1c2c3, r.c3)
+
+	return c.Equals(c1c2c3)
 }
 
 func (r *ringSignature) deserialize(buf []byte) ([]byte, bool) {

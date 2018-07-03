@@ -112,7 +112,6 @@ func (s *GenericServerSuite) Test_generateSignature_generatesACorrectSignature(c
 	)
 
 	rsig, _ := generateSignature(wr, p1.priv, p1.pub, p1.pub, p2.pub, p3.pub, msg)
-	rsig = rsig
 
 	c.Assert(rsig.c1.Encode(), DeepEquals, []byte{
 		0x6b, 0x30, 0x64, 0xa7, 0x4d, 0x37, 0xb8, 0xf7,
@@ -168,4 +167,73 @@ func (s *GenericServerSuite) Test_generateSignature_generatesACorrectSignature(c
 		0x29, 0x9e, 0xbb, 0xaa, 0x8e, 0x2d, 0xca, 0x5a,
 		0xe7, 0x46, 0xf1, 0x73, 0x62, 0xcf, 0x8b, 0x38,
 	})
+}
+
+func (s *GenericServerSuite) Test_verify_canVerifyASignature(c *C) {
+	msg := []byte("hi")
+	p1 := deriveEDDSAKeypair([symKeyLength]byte{0x0A})
+	p2 := deriveEDDSAKeypair([symKeyLength]byte{0x19})
+	p3 := deriveEDDSAKeypair([symKeyLength]byte{0x2A})
+	rsig, _ := generateSignature(defaultRandom(), p1.priv, p1.pub, p1.pub, p2.pub, p3.pub, msg)
+	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, true)
+}
+
+func (s *GenericServerSuite) Test_verify_failsIfGivenAnotherKey(c *C) {
+	msg := []byte("hi")
+	p1 := deriveEDDSAKeypair([symKeyLength]byte{0x0A})
+	p2 := deriveEDDSAKeypair([symKeyLength]byte{0x19})
+	p3 := deriveEDDSAKeypair([symKeyLength]byte{0x2A})
+	p4 := deriveEDDSAKeypair([symKeyLength]byte{0x2B})
+	rsig, _ := generateSignature(defaultRandom(), p1.priv, p1.pub, p1.pub, p2.pub, p3.pub, msg)
+	c.Assert(rsig.verify(p1.pub, p2.pub, p4.pub, msg), Equals, false)
+	c.Assert(rsig.verify(p1.pub, p4.pub, p3.pub, msg), Equals, false)
+	c.Assert(rsig.verify(p4.pub, p2.pub, p3.pub, msg), Equals, false)
+}
+
+func (s *GenericServerSuite) Test_verify_failsIfGivenTheWrongMessage(c *C) {
+	msg := []byte("hi")
+	msg2 := []byte("hi2")
+	p1 := deriveEDDSAKeypair([symKeyLength]byte{0x0A})
+	p2 := deriveEDDSAKeypair([symKeyLength]byte{0x19})
+	p3 := deriveEDDSAKeypair([symKeyLength]byte{0x2A})
+	rsig, _ := generateSignature(defaultRandom(), p1.priv, p1.pub, p1.pub, p2.pub, p3.pub, msg)
+	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg2), Equals, false)
+}
+
+func (s *GenericServerSuite) Test_verify_failsIfTheRsigIsModified(c *C) {
+	msg := []byte("hi")
+	p1 := deriveEDDSAKeypair([symKeyLength]byte{0x0A})
+	p2 := deriveEDDSAKeypair([symKeyLength]byte{0x19})
+	p3 := deriveEDDSAKeypair([symKeyLength]byte{0x2A})
+	rsig, _ := generateSignature(defaultRandom(), p1.priv, p1.pub, p1.pub, p2.pub, p3.pub, msg)
+
+	org := rsig.c1.Copy()
+	rsig.c1.Halve(rsig.c1)
+	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, false)
+	rsig.c1 = org
+
+	org = rsig.c2.Copy()
+	rsig.c2.Halve(rsig.c2)
+	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, false)
+	rsig.c2 = org
+
+	org = rsig.c3.Copy()
+	rsig.c3.Halve(rsig.c3)
+	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, false)
+	rsig.c3 = org
+
+	org = rsig.r1.Copy()
+	rsig.r1.Halve(rsig.r1)
+	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, false)
+	rsig.r1 = org
+
+	org = rsig.r2.Copy()
+	rsig.r2.Halve(rsig.r2)
+	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, false)
+	rsig.r2 = org
+
+	org = rsig.r3.Copy()
+	rsig.r3.Halve(rsig.r3)
+	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, false)
+	rsig.r3 = org
 }
