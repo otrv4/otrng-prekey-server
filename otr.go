@@ -217,15 +217,35 @@ func (pm *prekeyMessage) serialize() []byte {
 }
 
 func (pm *prekeyMessage) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: check deserialization
-	buf, _, _ = extractShort(buf) // version
-	buf = buf[1:]                 // message type
+	var ok1 bool
+	var v uint16
 
-	buf, pm.identifier, _ = extractWord(buf)
-	buf, pm.instanceTag, _ = extractWord(buf)
-	pm.y = &publicKey{}
-	buf, _ = pm.y.deserialize(buf)
-	buf, pm.b, _ = extractData(buf)
+	if buf, v, ok1 = extractShort(buf); !ok1 || v != version { // version
+		return nil, false
+	}
+
+	if len(buf) < 1 || buf[0] != messageTypePrekeyMessage {
+		return nil, false
+	}
+	buf = buf[1:] // message type
+
+	if buf, pm.identifier, ok1 = extractWord(buf); !ok1 {
+		return nil, false
+	}
+
+	if buf, pm.instanceTag, ok1 = extractWord(buf); !ok1 {
+		return nil, false
+	}
+
+	y := &publicKey{}
+	if buf, ok1 = y.deserialize(buf); !ok1 {
+		return nil, false
+	}
+	pm.y = y
+
+	if buf, pm.b, ok1 = extractData(buf); !ok1 {
+		return nil, false
+	}
 
 	return buf, true
 }
