@@ -58,7 +58,6 @@ func serializeDSAKey(k *dsa.PublicKey) []byte {
 }
 
 func deserializeDSAKey(buf []byte) ([]byte, *dsa.PublicKey, bool) {
-	// TODO: check deserialization
 	res := &dsa.PublicKey{}
 	var ok bool
 	var keyType uint16
@@ -191,17 +190,28 @@ func (pp *prekeyProfile) serialize() []byte {
 }
 
 func (pp *prekeyProfile) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: check deserialization
-	//	buf, _, _ = extractShort(buf) // version
-	//	buf = buf[1:]                 // message type
+	var ok bool
+	if buf, pp.identifier, ok = extractWord(buf); !ok {
+		return nil, false
+	}
 
-	buf, pp.identifier, _ = extractWord(buf)
-	buf, pp.instanceTag, _ = extractWord(buf)
-	buf, pp.expiration, _ = extractTime(buf)
+	if buf, pp.instanceTag, ok = extractWord(buf); !ok {
+		return nil, false
+	}
+
+	if buf, pp.expiration, ok = extractTime(buf); !ok {
+		return nil, false
+	}
+
 	pp.sharedPrekey = &publicKey{}
-	buf, _ = pp.sharedPrekey.deserialize(buf)
+	if buf, ok = pp.sharedPrekey.deserialize(buf); !ok {
+		return nil, false
+	}
+
 	pp.sig = &eddsaSignature{}
-	buf, _ = pp.sig.deserialize(buf)
+	if buf, ok = pp.sig.deserialize(buf); !ok {
+		return nil, false
+	}
 
 	return buf, true
 }

@@ -135,12 +135,17 @@ func deserializePoint(buf []byte) ([]byte, ed448.Point, bool) {
 }
 
 func (p *publicKey) deserialize(buf []byte) ([]byte, bool) {
-	buf, p.k, _ = deserializePoint(buf)
-	return buf, true
+	var ok bool
+	buf, p.k, ok = deserializePoint(buf)
+	return buf, ok
 }
 
 func (s *eddsaSignature) deserialize(buf []byte) ([]byte, bool) {
-	buf, res, _ := extractFixedData(buf, 114)
+	var ok bool
+	var res []byte
+	if buf, res, ok = extractFixedData(buf, 114); !ok {
+		return nil, false
+	}
 	copy(s.s[:], res)
 	return buf, true
 }
