@@ -149,3 +149,17 @@ func (s *eddsaSignature) deserialize(buf []byte) ([]byte, bool) {
 	copy(s.s[:], res)
 	return buf, true
 }
+
+func serializeScalar(s ed448.Scalar) []byte {
+	return s.Encode()
+}
+
+func deserializeScalar(buf []byte) ([]byte, ed448.Scalar, bool) {
+	if len(buf) < 56 {
+		return nil, nil, false
+	}
+	ts := ed448.NewScalar()
+	ts.Decode(buf[0:56])
+	return buf[56:], ts, true
+
+}

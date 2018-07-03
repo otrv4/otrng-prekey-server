@@ -146,12 +146,31 @@ func (r *ringSignature) verify(A1, A2, A3 *publicKey, m []byte) bool {
 }
 
 func (r *ringSignature) deserialize(buf []byte) ([]byte, bool) {
-	buf, r.c1, _ = deserializeScalar(buf)
-	buf, r.r1, _ = deserializeScalar(buf)
-	buf, r.c2, _ = deserializeScalar(buf)
-	buf, r.r2, _ = deserializeScalar(buf)
-	buf, r.c3, _ = deserializeScalar(buf)
-	buf, r.r3, _ = deserializeScalar(buf)
+	var ok bool
+	if buf, r.c1, ok = deserializeScalar(buf); !ok {
+		return nil, false
+	}
+
+	if buf, r.r1, ok = deserializeScalar(buf); !ok {
+		return nil, false
+	}
+
+	if buf, r.c2, ok = deserializeScalar(buf); !ok {
+		return nil, false
+	}
+
+	if buf, r.r2, ok = deserializeScalar(buf); !ok {
+		return nil, false
+	}
+
+	if buf, r.c3, ok = deserializeScalar(buf); !ok {
+		return nil, false
+	}
+
+	if buf, r.r3, ok = deserializeScalar(buf); !ok {
+		return nil, false
+	}
+
 	return buf, true
 }
 
@@ -164,15 +183,4 @@ func (r *ringSignature) serialize() []byte {
 	out = append(out, serializeScalar(r.c3)...)
 	out = append(out, serializeScalar(r.r3)...)
 	return out
-}
-
-func serializeScalar(s ed448.Scalar) []byte {
-	return s.Encode()
-}
-
-func deserializeScalar(buf []byte) ([]byte, ed448.Scalar, bool) {
-	ts := ed448.NewScalar()
-	ts.Decode(buf[0:56])
-	return buf[56:], ts, true
-
 }
