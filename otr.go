@@ -294,15 +294,22 @@ func (pe *prekeyEnsemble) serialize() []byte {
 }
 
 func (pe *prekeyEnsemble) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: check deserialization
+	var ok bool
+
 	pe.cp = &clientProfile{}
-	buf, _ = pe.cp.deserialize(buf)
+	if buf, ok = pe.cp.deserialize(buf); !ok {
+		return nil, false
+	}
 
 	pe.pp = &prekeyProfile{}
-	buf, _ = pe.pp.deserialize(buf)
+	if buf, ok = pe.pp.deserialize(buf); !ok {
+		return nil, false
+	}
 
 	pe.pm = &prekeyMessage{}
-	buf, _ = pe.pm.deserialize(buf)
+	if buf, ok = pe.pm.deserialize(buf); !ok {
+		return nil, false
+	}
 
 	return buf, true
 }
