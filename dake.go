@@ -16,9 +16,9 @@ type dake1Message struct {
 }
 
 func (m *dake1Message) deserialize(buf []byte) ([]byte, bool) {
-	var ok1 bool
-	buf, v, ok1 := extractShort(buf) // version
-	if !ok1 || v != version {
+	var ok bool
+	buf, v, ok := extractShort(buf)
+	if !ok || v != version {
 		return buf, false
 	}
 
@@ -27,19 +27,19 @@ func (m *dake1Message) deserialize(buf []byte) ([]byte, bool) {
 	}
 	buf = buf[1:]
 
-	buf, m.instanceTag, ok1 = extractWord(buf)
-	if !ok1 {
+	buf, m.instanceTag, ok = extractWord(buf)
+	if !ok {
 		return buf, false
 	}
 
 	m.clientProfile = &clientProfile{}
-	buf, ok1 = m.clientProfile.deserialize(buf)
-	if !ok1 {
+	buf, ok = m.clientProfile.deserialize(buf)
+	if !ok {
 		return buf, false
 	}
 
-	buf, m.i, ok1 = deserializePoint(buf)
-	if !ok1 {
+	buf, m.i, ok = deserializePoint(buf)
+	if !ok {
 		return buf, false
 	}
 
@@ -75,20 +75,39 @@ func (m *dake2Message) serialize() []byte {
 }
 
 func (m *dake2Message) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: check deserialization
-	buf, _, _ = extractShort(buf) // version
-	buf = buf[1:]                 // message type
+	var ok bool
+	buf, v, ok := extractShort(buf)
+	if !ok || v != version {
+		return buf, false
+	}
 
-	buf, m.instanceTag, _ = extractWord(buf)
-	buf, m.serverIdentity, _ = extractData(buf)
+	if len(buf) < 1 || buf[0] != dake2MessageType {
+		return buf, false
+	}
+	buf = buf[1:]
+
+	if buf, m.instanceTag, ok = extractWord(buf); !ok {
+		return nil, false
+	}
+
+	if buf, m.serverIdentity, ok = extractData(buf); !ok {
+		return nil, false
+	}
+
 	var tmp []byte
-	buf, tmp, _ = extractData(buf)
+	if buf, tmp, ok = extractData(buf); !ok {
+		return nil, false
+	}
 	copy(m.serverFingerprint[:], tmp)
 
-	buf, m.s, _ = deserializePoint(buf)
+	if buf, m.s, ok = deserializePoint(buf); !ok {
+		return nil, false
+	}
 
 	m.sigma = &ringSignature{}
-	buf, _ = m.sigma.deserialize(buf)
+	if buf, ok = m.sigma.deserialize(buf); !ok {
+		return nil, false
+	}
 
 	return buf, true
 }
@@ -109,12 +128,29 @@ func (m *dake3Message) serialize() []byte {
 }
 
 func (m *dake3Message) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: check deserialization
-	buf, _, _ = extractShort(buf) // version
-	buf = buf[1:]                 // message type
-	buf, m.instanceTag, _ = extractWord(buf)
+	var ok bool
+	buf, v, ok := extractShort(buf)
+	if !ok || v != version {
+		return buf, false
+	}
+
+	if len(buf) < 1 || buf[0] != dake3MessageType {
+		return buf, false
+	}
+	buf = buf[1:]
+
+	if buf, m.instanceTag, ok = extractWord(buf); !ok {
+		return nil, false
+	}
+
 	m.sigma = &ringSignature{}
-	buf, _ = m.sigma.deserialize(buf)
-	buf, m.message, _ = extractData(buf)
+	if buf, ok = m.sigma.deserialize(buf); !ok {
+		return nil, false
+	}
+
+	if buf, m.message, ok = extractData(buf); !ok {
+		return nil, false
+	}
+
 	return buf, true
 }
