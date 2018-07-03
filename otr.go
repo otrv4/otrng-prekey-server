@@ -139,47 +139,72 @@ func (cp *clientProfile) serialize() []byte {
 }
 
 func (cp *clientProfile) deserializeField(buf []byte) ([]byte, bool) {
-	// TODO: check deserialization
 	var tp uint16
-	buf, tp, _ = extractShort(buf)
+	var ok bool
+
+	if buf, tp, ok = extractShort(buf); !ok {
+		return nil, false
+	}
+
 	switch tp {
 	case uint16(1):
-		buf, cp.identifier, _ = extractWord(buf)
+		if buf, cp.identifier, ok = extractWord(buf); !ok {
+			return nil, false
+		}
 	case uint16(2):
-		buf, cp.instanceTag, _ = extractWord(buf)
+		if buf, cp.instanceTag, ok = extractWord(buf); !ok {
+			return nil, false
+		}
 	case uint16(3):
 		cp.publicKey = &publicKey{}
-		buf, _ = cp.publicKey.deserialize(buf)
+		if buf, ok = cp.publicKey.deserialize(buf); !ok {
+			return nil, false
+		}
 	case uint16(5):
-		buf, cp.versions, _ = extractData(buf)
+		if buf, cp.versions, ok = extractData(buf); !ok {
+			return nil, false
+		}
 	case uint16(6):
-		buf, cp.expiration, _ = extractTime(buf)
+		if buf, cp.expiration, ok = extractTime(buf); !ok {
+			return nil, false
+		}
 	case uint16(7):
-		buf, cp.dsaKey, _ = deserializeDSAKey(buf)
+		if buf, cp.dsaKey, ok = deserializeDSAKey(buf); !ok {
+			return nil, false
+		}
 	case uint16(8):
-		buf, cp.transitionalSignature, _ = extractFixedData(buf, 40)
+		if buf, cp.transitionalSignature, ok = extractFixedData(buf, 40); !ok {
+			return nil, false
+		}
+	default:
+		return nil, false
 	}
 	return buf, true
 }
 
 func (cp *clientProfile) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: check deserialization
 	var fields uint32
-	buf, fields, _ = extractWord(buf)
+	var ok bool
+	if buf, fields, ok = extractWord(buf); !ok {
+		return nil, false
+	}
+
 	for i := uint32(0); i < fields; i++ {
-		buf, _ = cp.deserializeField(buf)
+		if buf, ok = cp.deserializeField(buf); !ok {
+			return nil, false
+		}
 	}
 
 	cp.sig = &eddsaSignature{}
-	buf, _ = cp.sig.deserialize(buf)
+	if buf, ok = cp.sig.deserialize(buf); !ok {
+		return nil, false
+	}
 
 	return buf, true
 }
 
 func (pp *prekeyProfile) serialize() []byte {
 	var out []byte
-	// out := appendShort(nil, version)
-	// out = append(out, messageTypePrekeyProfile)
 	out = appendWord(out, pp.identifier)
 	out = appendWord(out, pp.instanceTag)
 	out = append(out, serializeExpiry(pp.expiration)...)

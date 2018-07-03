@@ -1625,3 +1625,143 @@ func (s *GenericServerSuite) Test_prekeyProfile_deserialize_shouldFailOnSignatur
 
 	c.Assert(ok, Equals, false)
 }
+
+func (s *GenericServerSuite) Test_clientProfile_deserialize_shouldFailOnFieldLength(c *C) {
+	m := &clientProfile{}
+	_, ok := m.deserialize([]byte{
+		0x0, 0x0, 0x0,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_clientProfile_deserialize_shouldFailOnSignature(c *C) {
+	m := &clientProfile{}
+	_, ok := m.deserialize([]byte{
+		0x0, 0x0, 0x0, 0x0,
+
+		// signature
+		0x15, 0x00, 0x00, 0x00, 0x12, 0x00, 0x00, 0x00,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_clientProfile_deserialize_shouldFailOnFieldIdentifier(c *C) {
+	m := &clientProfile{}
+	_, ok := m.deserialize([]byte{
+		0x0, 0x0, 0x0, 0x1,
+
+		0x0,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_clientProfile_deserialize_shouldFailOnUnknownFieldIdentifier(c *C) {
+	m := &clientProfile{}
+	_, ok := m.deserialize([]byte{
+		0x0, 0x0, 0x0, 0x1,
+
+		0x0, 42,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_clientProfile_deserialize_shouldFailOnIdentifier(c *C) {
+	m := &clientProfile{}
+	_, ok := m.deserialize([]byte{
+		0x0, 0x0, 0x0, 0x1,
+
+		// identifier
+		0x0, 0x1, 0xab, 0xcd,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_clientProfile_deserialize_shouldFailOnInstanceTag(c *C) {
+	m := &clientProfile{}
+	_, ok := m.deserialize([]byte{
+		0x0, 0x0, 0x0, 0x1,
+
+		// instance tag
+		0x0, 0x2, 0x42,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_clientProfile_deserialize_shouldFailOnPublicKey(c *C) {
+	m := &clientProfile{}
+	_, ok := m.deserialize([]byte{
+		0x0, 0x0, 0x0, 0x1,
+
+		// public key
+		0x00, 0x03, 0x85, 0x9f, 0x37, 0x1f, 0xf3, 0x4f,
+		0x36, 0x44, 0x5a, 0x99, 0xca, 0x8a, 0x11, 0x17,
+		0x71, 0xf4, 0xc6, 0x83, 0x77, 0x01, 0x45, 0x27,
+		0x35, 0x3c, 0x75, 0xae, 0xee, 0xaa, 0xf9, 0x79,
+		0x69, 0xa0, 0xd8, 0x9a, 0x3a, 0xb1, 0x48, 0xf6,
+		0x44, 0x41, 0x83, 0x30, 0x9f, 0x41, 0x38, 0x1b,
+		0xf3, 0x29, 0x00,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_clientProfile_deserialize_shouldFailOnVersions(c *C) {
+	m := &clientProfile{}
+	_, ok := m.deserialize([]byte{
+		0x0, 0x0, 0x0, 0x1,
+
+		// versions
+		0x00, 0x05, 0x00, 0x00, 0x00, 0x04,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_clientProfile_deserialize_shouldFailOnExpiry(c *C) {
+	m := &clientProfile{}
+	_, ok := m.deserialize([]byte{
+		0x0, 0x0, 0x0, 0x1,
+
+		// expiry
+		0x00, 0x06, 0x00, 0x00, 0x00, 0x00, 0x79, 0xf8,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_clientProfile_deserialize_shouldFailOnDSAPublicKey(c *C) {
+	m := &clientProfile{}
+	_, ok := m.deserialize([]byte{
+		0x0, 0x0, 0x0, 0x1,
+
+		// dsa public key
+		0x00, 0x07,
+
+		0x00, 0x00,
+
+		0x0, 0x0, 0x0, 0x80,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_clientProfile_deserialize_shouldFailOnTransitionalSignature(c *C) {
+	m := &clientProfile{}
+	_, ok := m.deserialize([]byte{
+		0x0, 0x0, 0x0, 0x1,
+
+		// transitional signature
+		0x00, 0x08,
+		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+		0x11, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+		0x21, 0x02, 0x03, 0x54, 0x05, 0x06, 0x07, 0x08,
+	})
+
+	c.Assert(ok, Equals, false)
+}
