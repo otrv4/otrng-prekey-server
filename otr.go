@@ -57,6 +57,7 @@ func serializeDSAKey(k *dsa.PublicKey) []byte {
 	return result
 }
 func deserializeDSAKey(buf []byte) ([]byte, *dsa.PublicKey, bool) {
+	// TODO: check deserialization
 	res := &dsa.PublicKey{}
 	buf, _, _ = extractShort(buf) // key type
 	buf, res.P, _ = extractMPI(buf)
@@ -121,6 +122,7 @@ func (cp *clientProfile) serialize() []byte {
 }
 
 func (cp *clientProfile) deserializeField(buf []byte) ([]byte, bool) {
+	// TODO: check deserialization
 	var tp uint16
 	buf, tp, _ = extractShort(buf)
 	switch tp {
@@ -144,6 +146,7 @@ func (cp *clientProfile) deserializeField(buf []byte) ([]byte, bool) {
 }
 
 func (cp *clientProfile) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: check deserialization
 	var fields uint32
 	buf, fields, _ = extractWord(buf)
 	for i := uint32(0); i < fields; i++ {
@@ -170,6 +173,7 @@ func (pp *prekeyProfile) serialize() []byte {
 }
 
 func (pp *prekeyProfile) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: check deserialization
 	//	buf, _, _ = extractShort(buf) // version
 	//	buf = buf[1:]                 // message type
 
@@ -195,6 +199,7 @@ func (pm *prekeyMessage) serialize() []byte {
 }
 
 func (pm *prekeyMessage) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: check deserialization
 	buf, _, _ = extractShort(buf) // version
 	buf = buf[1:]                 // message type
 
@@ -216,6 +221,7 @@ func (pe *prekeyEnsemble) serialize() []byte {
 }
 
 func (pe *prekeyEnsemble) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: check deserialization
 	pe.cp = &clientProfile{}
 	buf, _ = pe.cp.deserialize(buf)
 

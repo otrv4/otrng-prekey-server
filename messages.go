@@ -39,6 +39,7 @@ func (m *publicationMessage) serialize() []byte {
 }
 
 func (m *publicationMessage) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: check deserialization
 	buf, _, _ = extractShort(buf) // version
 	buf = buf[1:]                 // message type
 
@@ -82,6 +83,7 @@ func (m *storageInformationRequestMessage) serialize() []byte {
 }
 
 func (m *storageInformationRequestMessage) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: check deserialization
 	buf, _, _ = extractShort(buf) // version
 	buf = buf[1:]                 // message type
 
@@ -108,6 +110,7 @@ func (m *storageStatusMessage) serialize() []byte {
 }
 
 func (m *storageStatusMessage) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: check deserialization
 	buf, _, _ = extractShort(buf) // version
 	buf = buf[1:]                 // message type
 
@@ -134,6 +137,7 @@ func (m *successMessage) serialize() []byte {
 }
 
 func (m *successMessage) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: check deserialization
 	buf, _, _ = extractShort(buf) // version
 	buf = buf[1:]                 // message type
 
@@ -159,6 +163,7 @@ func (m *failureMessage) serialize() []byte {
 }
 
 func (m *failureMessage) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: check deserialization
 	buf, _, _ = extractShort(buf) // version
 	buf = buf[1:]                 // message type
 
@@ -186,6 +191,7 @@ func (m *ensembleRetrievalQueryMessage) serialize() []byte {
 }
 
 func (m *ensembleRetrievalQueryMessage) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: check deserialization
 	buf, _, _ = extractShort(buf) // version
 	buf = buf[1:]                 // message type
 
@@ -218,6 +224,7 @@ func (m *ensembleRetrievalMessage) serialize() []byte {
 }
 
 func (m *ensembleRetrievalMessage) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: check deserialization
 	buf, _, _ = extractShort(buf) // version
 	buf = buf[1:]                 // message type
 
@@ -248,6 +255,7 @@ func (m *noPrekeyEnsemblesMessage) serialize() []byte {
 }
 
 func (m *noPrekeyEnsemblesMessage) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: check deserialization
 	buf, _, _ = extractShort(buf) // version
 	buf = buf[1:]                 // message type
 
@@ -284,7 +292,6 @@ var (
 )
 
 const indexOfMessageType = 2
-const indexContentStarts = 2
 
 func parseVersion(message []byte) uint16 {
 	_, v, _ := extractShort(message)
@@ -330,7 +337,7 @@ func parseMessage(msg []byte) (interface{}, error) {
 		return nil, fmt.Errorf("unknown message type: 0x%x", messageType)
 	}
 
-	r.deserialize(msg[indexContentStarts:])
+	r.deserialize(msg)
 
 	return r, nil
 }

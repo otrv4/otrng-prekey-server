@@ -75,6 +75,7 @@ func (m *dake2Message) serialize() []byte {
 }
 
 func (m *dake2Message) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: check deserialization
 	buf, _, _ = extractShort(buf) // version
 	buf = buf[1:]                 // message type
 
@@ -108,6 +109,7 @@ func (m *dake3Message) serialize() []byte {
 }
 
 func (m *dake3Message) deserialize(buf []byte) ([]byte, bool) {
+	// TODO: check deserialization
 	buf, _, _ = extractShort(buf) // version
 	buf = buf[1:]                 // message type
 	buf, m.instanceTag, _ = extractWord(buf)
