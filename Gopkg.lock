@@ -17,7 +17,7 @@
   branch = "master"
   name = "github.com/twstrike/ed448"
   packages = ["."]
-  revision = "0a7ab5d311d3ffd2296994acddbe2dc1040a5bea"
+  revision = "e2c9ada11f8575e6084de0f762fa3ad7f2059dbd"
 
 [[projects]]
   branch = "master"
