@@ -56,14 +56,32 @@ func serializeDSAKey(k *dsa.PublicKey) []byte {
 	result = appendMPI(result, k.Y)
 	return result
 }
+
 func deserializeDSAKey(buf []byte) ([]byte, *dsa.PublicKey, bool) {
 	// TODO: check deserialization
 	res := &dsa.PublicKey{}
-	buf, _, _ = extractShort(buf) // key type
-	buf, res.P, _ = extractMPI(buf)
-	buf, res.Q, _ = extractMPI(buf)
-	buf, res.G, _ = extractMPI(buf)
-	buf, res.Y, _ = extractMPI(buf)
+	var ok bool
+	var keyType uint16
+	if buf, keyType, ok = extractShort(buf); !ok || keyType != uint16(0x0000) { // key type
+		return nil, nil, false
+	}
+
+	if buf, res.P, ok = extractMPI(buf); !ok {
+		return nil, nil, false
+	}
+
+	if buf, res.Q, ok = extractMPI(buf); !ok {
+		return nil, nil, false
+	}
+
+	if buf, res.G, ok = extractMPI(buf); !ok {
+		return nil, nil, false
+	}
+
+	if buf, res.Y, ok = extractMPI(buf); !ok {
+		return nil, nil, false
+	}
+
 	return buf, res, true
 }
 
