@@ -16,15 +16,32 @@ type dake1Message struct {
 }
 
 func (m *dake1Message) deserialize(buf []byte) ([]byte, bool) {
-	buf, _, _ = extractShort(buf) // version
-	buf = buf[1:]                 // message type
+	var ok1 bool
+	buf, v, ok1 := extractShort(buf) // version
+	if !ok1 || v != version {
+		return buf, false
+	}
 
-	buf, m.instanceTag, _ = extractWord(buf)
+	if len(buf) < 1 || buf[0] != dake1MessageType {
+		return buf, false
+	}
+	buf = buf[1:]
+
+	buf, m.instanceTag, ok1 = extractWord(buf)
+	if !ok1 {
+		return buf, false
+	}
 
 	m.clientProfile = &clientProfile{}
-	buf, _ = m.clientProfile.deserialize(buf)
+	buf, ok1 = m.clientProfile.deserialize(buf)
+	if !ok1 {
+		return buf, false
+	}
 
-	buf, m.i, _ = deserializePoint(buf)
+	buf, m.i, ok1 = deserializePoint(buf)
+	if !ok1 {
+		return buf, false
+	}
 
 	return buf, true
 }
