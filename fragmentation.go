@@ -19,8 +19,6 @@ type fragmentations struct {
 	contexts map[string]*fragmentationContext
 }
 
-var fragmentationPrefix = "?OTRP|"
-
 func newFragmentations() *fragmentations {
 	return &fragmentations{
 		contexts: make(map[string]*fragmentationContext),

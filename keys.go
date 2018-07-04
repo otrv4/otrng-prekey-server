@@ -5,13 +5,6 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-const symKeyLength = 57
-const privKeyLength = 57
-const fingerprintLength = 56
-
-const usageFingerprint = 0x00
-const usageSK = 0x01
-
 // keypair represents and can be used for either an ecdh keypair, or for an eddsa keypiar
 // the key generation is slightly different, but the struct retains all needed information
 type keypair struct {
@@ -91,75 +84,4 @@ func (p *publicKey) fingerprint() fingerprint {
 	rep := p.k.DSAEncode()
 	kdf_otrv4(usageFingerprint, f[:], rep)
 	return f
-}
-
-func (p *publicKey) serialize() []byte {
-	return p.k.DSAEncode()
-}
-
-func (s *eddsaSignature) serialize() []byte {
-	return s.s[:]
-}
-
-func serializePoint(p ed448.Point) []byte {
-	return p.DSAEncode()
-}
-
-var One ed448.Scalar
-var OneFourth ed448.Scalar
-
-func init() {
-	oneBuf := [privKeyLength]byte{0x01}
-	One = ed448.NewScalar(oneBuf[:])
-	OneFourth = ed448.NewScalar(oneBuf[:])
-	OneFourth.Halve(OneFourth)
-	OneFourth.Halve(OneFourth)
-}
-
-func deserializePoint(buf []byte) ([]byte, ed448.Point, bool) {
-	if len(buf) < 57 {
-		return buf, nil, false
-	}
-	tp := ed448.NewPointFromBytes([]byte{
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	})
-	tp.DSADecode(buf[0:57])
-	tp = ed448.PointScalarMul(tp, OneFourth)
-	return buf[57:], tp, true
-}
-
-func (p *publicKey) deserialize(buf []byte) ([]byte, bool) {
-	var ok bool
-	buf, p.k, ok = deserializePoint(buf)
-	return buf, ok
-}
-
-func (s *eddsaSignature) deserialize(buf []byte) ([]byte, bool) {
-	var ok bool
-	var res []byte
-	if buf, res, ok = extractFixedData(buf, 114); !ok {
-		return nil, false
-	}
-	copy(s.s[:], res)
-	return buf, true
-}
-
-func serializeScalar(s ed448.Scalar) []byte {
-	return s.Encode()
-}
-
-func deserializeScalar(buf []byte) ([]byte, ed448.Scalar, bool) {
-	if len(buf) < 56 {
-		return nil, nil, false
-	}
-	ts := ed448.NewScalar()
-	ts.Decode(buf[0:56])
-	return buf[56:], ts, true
-
 }

@@ -2,15 +2,12 @@ package prekeyserver
 
 import (
 	"crypto/rand"
-	"errors"
 	"io"
 )
 
 type WithRandom interface {
 	randReader() io.Reader
 }
-
-var errShortRandomRead = errors.New("short read from random source")
 
 func (g *GenericServer) randReader() io.Reader {
 	if g.rand != nil {
