@@ -163,33 +163,57 @@ func (m *publicationMessage) serialize() []byte {
 }
 
 func (m *publicationMessage) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: check deserialization
-	buf, _, _ = extractShort(buf) // version
-	buf = buf[1:]                 // message type
+	var ok bool
+	buf, v, ok := extractShort(buf)
+	if !ok || v != version {
+		return nil, false
+	}
+
+	if len(buf) < 1 || buf[0] != messageTypePublication {
+		return nil, false
+	}
+	buf = buf[1:]
 
 	var tmp uint8
-	buf, tmp, _ = extractByte(buf)
+	if buf, tmp, ok = extractByte(buf); !ok {
+		return nil, false
+	}
+
 	m.prekeyMessages = make([]*prekeyMessage, tmp)
 	for ix := range m.prekeyMessages {
 		m.prekeyMessages[ix] = &prekeyMessage{}
-		buf, _ = m.prekeyMessages[ix].deserialize(buf)
+		if buf, ok = m.prekeyMessages[ix].deserialize(buf); !ok {
+			return nil, false
+		}
 	}
 
-	buf, tmp, _ = extractByte(buf)
+	if buf, tmp, ok = extractByte(buf); !ok || tmp > 1 {
+		return nil, false
+	}
+
 	if tmp == 1 {
 		m.clientProfile = &clientProfile{}
-		buf, _ = m.clientProfile.deserialize(buf)
+		if buf, ok = m.clientProfile.deserialize(buf); !ok {
+			return nil, false
+		}
 	}
 
-	buf, tmp, _ = extractByte(buf)
+	if buf, tmp, ok = extractByte(buf); !ok {
+		return nil, false
+	}
+
 	m.prekeyProfiles = make([]*prekeyProfile, tmp)
 	for ix := range m.prekeyProfiles {
 		m.prekeyProfiles[ix] = &prekeyProfile{}
-		buf, _ = m.prekeyProfiles[ix].deserialize(buf)
+		if buf, ok = m.prekeyProfiles[ix].deserialize(buf); !ok {
+			return nil, false
+		}
 	}
 
 	var tmpb []byte
-	buf, tmpb, _ = extractFixedData(buf, 64)
+	if buf, tmpb, ok = extractFixedData(buf, 64); !ok {
+		return nil, false
+	}
 	copy(m.mac[:], tmpb)
 
 	return buf, true
