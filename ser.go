@@ -402,18 +402,32 @@ func (m *ensembleRetrievalMessage) serialize() []byte {
 }
 
 func (m *ensembleRetrievalMessage) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: check deserialization
-	buf, _, _ = extractShort(buf) // version
-	buf = buf[1:]                 // message type
+	var ok bool
+	buf, v, ok := extractShort(buf)
+	if !ok || v != version {
+		return nil, false
+	}
 
-	buf, m.instanceTag, _ = extractWord(buf)
+	if len(buf) < 1 || buf[0] != messageTypeEnsembleRetrieval {
+		return nil, false
+	}
+	buf = buf[1:]
+
+	if buf, m.instanceTag, ok = extractWord(buf); !ok {
+		return nil, false
+	}
 
 	var tmp uint8
-	buf, tmp, _ = extractByte(buf)
+	if buf, tmp, ok = extractByte(buf); !ok || tmp == 0 {
+		return nil, false
+	}
+
 	m.ensembles = make([]*prekeyEnsemble, tmp)
 	for ix := range m.ensembles {
 		m.ensembles[ix] = &prekeyEnsemble{}
-		buf, _ = m.ensembles[ix].deserialize(buf)
+		if buf, ok = m.ensembles[ix].deserialize(buf); !ok {
+			return nil, false
+		}
 	}
 
 	return buf, true
