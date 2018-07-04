@@ -233,14 +233,29 @@ func (m *storageStatusMessage) serialize() []byte {
 }
 
 func (m *storageStatusMessage) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: check deserialization
-	buf, _, _ = extractShort(buf) // version
-	buf = buf[1:]                 // message type
+	var ok bool
+	buf, v, ok := extractShort(buf)
+	if !ok || v != version {
+		return buf, false
+	}
 
-	buf, m.instanceTag, _ = extractWord(buf)
-	buf, m.number, _ = extractWord(buf)
+	if len(buf) < 1 || buf[0] != messageTypeStorageStatusMessage {
+		return buf, false
+	}
+	buf = buf[1:]
+
+	if buf, m.instanceTag, ok = extractWord(buf); !ok {
+		return nil, false
+	}
+
+	if buf, m.number, ok = extractWord(buf); !ok {
+		return nil, false
+	}
+
 	var tmp []byte
-	buf, tmp, _ = extractFixedData(buf, 64)
+	if buf, tmp, ok = extractFixedData(buf, 64); !ok {
+		return nil, false
+	}
 	copy(m.mac[:], tmp)
 
 	return buf, true
