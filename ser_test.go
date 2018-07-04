@@ -5465,3 +5465,127 @@ func (s *GenericServerSuite) Test_storageStatusMessage_deserialize_shouldFailOnM
 
 	c.Assert(ok, Equals, false)
 }
+
+func (s *GenericServerSuite) Test_ensembleRetrievalQueryMessage_deserialize_shouldFailIfNotLongEnoughForVersion(c *C) {
+	m := &ensembleRetrievalQueryMessage{}
+	_, ok := m.deserialize([]byte{})
+
+	c.Assert(ok, Equals, false)
+
+	_, ok = m.deserialize([]byte{
+		0x00,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_ensembleRetrievalQueryMessage_deserialize_shouldFailIfIncorrectVersion(c *C) {
+	m := &ensembleRetrievalQueryMessage{}
+	_, ok := m.deserialize([]byte{
+		// version
+		0x00, 0x05,
+
+		// message type
+		0x09,
+
+		// instance tag
+		0x42, 0x53, 0x11, 0x2E,
+
+		// identity
+		0x00, 0x00, 0x00, 0x14, 0x66, 0x6f, 0x6f, 0x62,
+		0x61, 0x72, 0x40, 0x62, 0x6c, 0x61, 0x72, 0x67,
+		0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x66, 0x6f, 0x6f,
+
+		// versions
+		0x00, 0x00, 0x00, 0x02,
+		0x05, 0x42,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_ensembleRetrievalQueryMessage_deserialize_shouldFailIfIncorrectMessageType(c *C) {
+	m := &ensembleRetrievalQueryMessage{}
+	_, ok := m.deserialize([]byte{
+		// version
+		0x00, 0x04,
+
+		// message type
+		0x07,
+
+		// instance tag
+		0x42, 0x53, 0x11, 0x2E,
+
+		// identity
+		0x00, 0x00, 0x00, 0x14, 0x66, 0x6f, 0x6f, 0x62,
+		0x61, 0x72, 0x40, 0x62, 0x6c, 0x61, 0x72, 0x67,
+		0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x66, 0x6f, 0x6f,
+
+		// versions
+		0x00, 0x00, 0x00, 0x02,
+		0x05, 0x42,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_ensembleRetrievalQueryMessage_deserialize_shouldFailOnInstanceTag(c *C) {
+	m := &ensembleRetrievalQueryMessage{}
+	_, ok := m.deserialize([]byte{
+		// version
+		0x00, 0x04,
+
+		// message type
+		0x09,
+
+		// instance tag
+		0x13, 0x34,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_ensembleRetrievalQueryMessage_deserialize_shouldFailOnIdentity(c *C) {
+	m := &ensembleRetrievalQueryMessage{}
+	_, ok := m.deserialize([]byte{
+		// version
+		0x00, 0x04,
+
+		// message type
+		0x09,
+
+		// instance tag
+		0x42, 0x53, 0x11, 0x2E,
+
+		// identity
+		0x00, 0x00, 0x00, 0x14, 0x66, 0x6f, 0x6f, 0x62,
+		0x61, 0x72, 0x40, 0x62, 0x6c, 0x61, 0x72, 0x67,
+		0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x66, 0x6f,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_ensembleRetrievalQueryMessage_deserialize_shouldFailOnVersions(c *C) {
+	m := &ensembleRetrievalQueryMessage{}
+	_, ok := m.deserialize([]byte{
+		// version
+		0x00, 0x04,
+
+		// message type
+		0x09,
+
+		// instance tag
+		0x42, 0x53, 0x11, 0x2E,
+
+		// identity
+		0x00, 0x00, 0x00, 0x14, 0x66, 0x6f, 0x6f, 0x62,
+		0x61, 0x72, 0x40, 0x62, 0x6c, 0x61, 0x72, 0x67,
+		0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x66, 0x6f, 0x6f,
+
+		// versions
+		0x00, 0x00, 0x00, 0x02,
+	})
+
+	c.Assert(ok, Equals, false)
+}

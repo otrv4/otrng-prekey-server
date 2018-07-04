@@ -337,17 +337,30 @@ func (m *ensembleRetrievalQueryMessage) serialize() []byte {
 }
 
 func (m *ensembleRetrievalQueryMessage) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: check deserialization
-	buf, _, _ = extractShort(buf) // version
-	buf = buf[1:]                 // message type
+	var ok bool
+	buf, v, ok := extractShort(buf)
+	if !ok || v != version {
+		return nil, false
+	}
 
-	buf, m.instanceTag, _ = extractWord(buf)
+	if len(buf) < 1 || buf[0] != messageTypeEnsembleRetrievalQuery {
+		return nil, false
+	}
+	buf = buf[1:]
+
+	if buf, m.instanceTag, ok = extractWord(buf); !ok {
+		return nil, false
+	}
 
 	var tmp []byte
-	buf, tmp, _ = extractData(buf)
+	if buf, tmp, ok = extractData(buf); !ok {
+		return nil, false
+	}
 	m.identity = string(tmp)
 
-	buf, m.versions, _ = extractData(buf)
+	if buf, m.versions, ok = extractData(buf); !ok {
+		return nil, false
+	}
 
 	return buf, true
 }
