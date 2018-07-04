@@ -5589,3 +5589,95 @@ func (s *GenericServerSuite) Test_ensembleRetrievalQueryMessage_deserialize_shou
 
 	c.Assert(ok, Equals, false)
 }
+
+func (s *GenericServerSuite) Test_noPrekeyEnsemblesMessage_deserialize_shouldFailIfNotLongEnoughForVersion(c *C) {
+	m := &noPrekeyEnsemblesMessage{}
+	_, ok := m.deserialize([]byte{})
+
+	c.Assert(ok, Equals, false)
+
+	_, ok = m.deserialize([]byte{
+		0x00,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_noPrekeyEnsemblesMessage_deserialize_shouldFailIfIncorrectVersion(c *C) {
+	m := &noPrekeyEnsemblesMessage{}
+	_, ok := m.deserialize([]byte{
+		// version
+		0x00, 0x05,
+		// message type
+		0x11,
+
+		// instance tag
+		0x42, 0x53, 0x11, 0x2D,
+
+		// message
+		0x00, 0x00, 0x00, 0x1C, 0x6E, 0x6F, 0x20, 0x70,
+		0x72, 0x65, 0x6B, 0x65, 0x79, 0x73, 0x2C, 0x20,
+		0x73, 0x6F, 0x72, 0x72, 0x79, 0x20, 0x76, 0x65,
+		0x72, 0x79, 0x20, 0x73, 0x6F, 0x72, 0x72, 0x79,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_noPrekeyEnsemblesMessage_deserialize_shouldFailIfIncorrectMessageType(c *C) {
+	m := &noPrekeyEnsemblesMessage{}
+	_, ok := m.deserialize([]byte{
+		// version
+		0x00, 0x04,
+
+		// message type
+		0x06,
+
+		// instance tag
+		0x42, 0x53, 0x11, 0x2D,
+
+		// message
+		0x00, 0x00, 0x00, 0x1C, 0x6E, 0x6F, 0x20, 0x70,
+		0x72, 0x65, 0x6B, 0x65, 0x79, 0x73, 0x2C, 0x20,
+		0x73, 0x6F, 0x72, 0x72, 0x79, 0x20, 0x76, 0x65,
+		0x72, 0x79, 0x20, 0x73, 0x6F, 0x72, 0x72, 0x79,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_noPrekeyEnsemblesMessage_deserialize_shouldFailOnInstanceTag(c *C) {
+	m := &noPrekeyEnsemblesMessage{}
+	_, ok := m.deserialize([]byte{
+		// version
+		0x00, 0x04,
+
+		// message type
+		0x11,
+
+		// instance tag
+		0x13, 0x34,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_noPrekeyEnsemblesMessage_deserialize_shouldFailOnMessage(c *C) {
+	m := &noPrekeyEnsemblesMessage{}
+	_, ok := m.deserialize([]byte{
+		// version
+		0x00, 0x04,
+
+		// message type
+		0x11,
+
+		// instance tag
+		0x42, 0x53, 0x11, 0x2D,
+
+		// message
+		0x00, 0x00, 0x00, 0x1C, 0x6E, 0x6F, 0x20, 0x70,
+		0x72, 0x65, 0x6B, 0x65, 0x79, 0x73, 0x2C, 0x20,
+	})
+
+	c.Assert(ok, Equals, false)
+}

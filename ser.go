@@ -404,13 +404,25 @@ func (m *noPrekeyEnsemblesMessage) serialize() []byte {
 }
 
 func (m *noPrekeyEnsemblesMessage) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: check deserialization
-	buf, _, _ = extractShort(buf) // version
-	buf = buf[1:]                 // message type
+	var ok bool
+	buf, v, ok := extractShort(buf)
+	if !ok || v != version {
+		return nil, false
+	}
 
-	buf, m.instanceTag, _ = extractWord(buf)
+	if len(buf) < 1 || buf[0] != messageTypeNoPrekeyEnsembles {
+		return nil, false
+	}
+	buf = buf[1:]
+
+	if buf, m.instanceTag, ok = extractWord(buf); !ok {
+		return nil, false
+	}
+
 	var tmp []byte
-	buf, tmp, _ = extractData(buf)
+	if buf, tmp, ok = extractData(buf); !ok {
+		return nil, false
+	}
 	m.message = string(tmp)
 
 	return buf, true
