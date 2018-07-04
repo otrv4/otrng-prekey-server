@@ -40,6 +40,14 @@ func generateDake2(it uint32, si []byte, sf fingerprint, s ed448.Point, sigma *r
 	}
 }
 
+func generateDake3(it uint32, sigma *ringSignature, m []byte) *dake3Message {
+	return &dake3Message{
+		instanceTag: it,
+		sigma:       sigma,
+		message:     m,
+	}
+}
+
 func (m *dake1Message) validate() error {
 	// TODO: implement
 	//  Validate the Client Profile, as defined in Validating a Client Profile section of the OTRv4 specification.

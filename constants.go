@@ -37,6 +37,9 @@ const (
 	usageInitiatorClientProfile           = 0x02
 	usageInitiatorPrekeyCompositeIdentity = 0x03
 	usageInitiatorPrekeyCompositePHI      = 0x04
+	usageReceiverClientProfile            = 0x05
+	usageReceiverPrekeyCompositeIdentity  = 0x06
+	usageReceiverPrekeyCompositePHI       = 0x07
 )
 
 const macLength = 64

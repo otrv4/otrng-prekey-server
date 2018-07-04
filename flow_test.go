@@ -141,6 +141,34 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 		0x93, 0x4a, 0x86, 0x95, 0x4c, 0x7, 0x0, 0xda,
 		0xee, 0xd2, 0x8c, 0x4, 0xc0, 0x57, 0x71, 0x28})
 
+	// generating DAKE-3:
+	phi := []byte("hardcoded phi for now")
+
+	t := append([]byte{}, 0x01)
+	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.serialize())...)
+	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, serializePoint(sita.i.pub.k)...)
+	t = append(t, serializePoint(d2.s)...)
+	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
+
+	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{d2.s}, t)
+
+	// Somewhere here we need to figure out the shared secret and use that to MAC the storage request.
+	d3 := generateDake3(sita.instanceTag, sigma, []byte{})
+
+	r, e = mh.handleMessage("sita@example.org", d3.serialize())
+
+	c.Assert(e, IsNil)
+
+	res := &storageStatusMessage{}
+	_, ok = res.deserialize(r)
+	c.Assert(ok, Equals, true)
+	c.Assert(res, Not(IsNil))
+
+	// TODO: PICK UP HERE - we need a notion of a session for us to be able to pick this up.
+	// - We should also generate the storage request, and the MAC key etc for it
+	// - That's where we need to store things, and then we can answer properly.
+
 	// Generate a DAKE3 + storage request
 	// Send the DAKE3 to the message handler
 	// Check that the returned storage information message is correct
