@@ -31,8 +31,14 @@ const symKeyLength = 57
 const privKeyLength = 57
 const fingerprintLength = 56
 
-const usageFingerprint = 0x00
-const usageSK = 0x01
+const (
+	usageFingerprint                      = 0x00
+	usageSK                               = 0x01
+	usageInitiatorClientProfile           = 0x02
+	usageInitiatorPrekeyCompositeIdentity = 0x03
+	usageInitiatorPrekeyCompositePHI      = 0x04
+)
+
 const macLength = 64
 
 const (

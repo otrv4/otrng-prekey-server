@@ -95,3 +95,7 @@ func decodeMessage(inp string) ([]byte, bool) {
 func encodeMessage(inp []byte) string {
 	return base64.StdEncoding.EncodeToString(inp)
 }
+
+func (g *GenericServer) compositeIdentity() []byte {
+	return appendData(appendData(nil, []byte(g.identity)), g.fingerprint[:])
+}
