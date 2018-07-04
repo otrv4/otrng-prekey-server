@@ -203,12 +203,21 @@ func (m *storageInformationRequestMessage) serialize() []byte {
 }
 
 func (m *storageInformationRequestMessage) deserialize(buf []byte) ([]byte, bool) {
-	// TODO: check deserialization
-	buf, _, _ = extractShort(buf) // version
-	buf = buf[1:]                 // message type
+	var ok bool
+	buf, v, ok := extractShort(buf)
+	if !ok || v != version {
+		return buf, false
+	}
+
+	if len(buf) < 1 || buf[0] != messageTypeStorageInformationRequest {
+		return buf, false
+	}
+	buf = buf[1:]
 
 	var tmp []byte
-	buf, tmp, _ = extractFixedData(buf, 64)
+	if buf, tmp, ok = extractFixedData(buf, 64); !ok {
+		return nil, false
+	}
 	copy(m.mac[:], tmp)
 
 	return buf, true
