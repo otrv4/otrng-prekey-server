@@ -35,5 +35,15 @@ func (mh *otrngMessageHandler) handleMessage(from string, message []byte) ([]byt
 		return r3.serialize(), nil
 	}
 
+	if rq, ok := result.(*ensembleRetrievalQueryMessage); ok {
+		// TODO: rq.validate()
+		r4, e4 := rq.respond(from, mh.s)
+		if e4 != nil {
+			// TODO: test
+			return nil, e4
+		}
+		return r4.serialize(), nil
+	}
+
 	return nil, nil
 }

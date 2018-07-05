@@ -72,26 +72,24 @@ func parseMessage(msg []byte) (interface{}, error) {
 	switch messageType {
 	case messageTypeDAKE1:
 		r = &dake1Message{}
-	case messageTypeDAKE2:
-		r = &dake2Message{}
 	case messageTypeDAKE3:
 		r = &dake3Message{}
-	case messageTypePublication:
-		r = &publicationMessage{}
+	// case messageTypePublication:
+	// 	r = &publicationMessage{}
 	case messageTypeStorageInformationRequest:
 		r = &storageInformationRequestMessage{}
-	case messageTypeStorageStatusMessage:
-		r = &storageStatusMessage{}
-	case messageTypeSuccess:
-		r = &successMessage{}
-	case messageTypeFailure:
-		r = &failureMessage{}
+	// case messageTypeStorageStatusMessage:
+	// 	r = &storageStatusMessage{}
+	// case messageTypeSuccess:
+	// 	r = &successMessage{}
+	// case messageTypeFailure:
+	// 	r = &failureMessage{}
 	case messageTypeEnsembleRetrievalQuery:
 		r = &ensembleRetrievalQueryMessage{}
-	case messageTypeEnsembleRetrieval:
-		r = &ensembleRetrievalMessage{}
-	case messageTypeNoPrekeyEnsembles:
-		r = &noPrekeyEnsemblesMessage{}
+	// case messageTypeEnsembleRetrieval:
+	// 	r = &ensembleRetrievalMessage{}
+	// case messageTypeNoPrekeyEnsembles:
+	// 	r = &noPrekeyEnsemblesMessage{}
 	default:
 		return nil, fmt.Errorf("unknown message type: 0x%x", messageType)
 	}
@@ -123,4 +121,11 @@ func (m *storageInformationRequestMessage) respond(from string, s *GenericServer
 	copy(ret.mac[:], statusMac)
 
 	return ret, nil
+}
+
+func (m *ensembleRetrievalQueryMessage) respond(from string, s *GenericServer) (serializable, error) {
+	return &noPrekeyEnsemblesMessage{
+		instanceTag: m.instanceTag,
+		message:     noPrekeyMessagesAvailableMessage,
+	}, nil
 }

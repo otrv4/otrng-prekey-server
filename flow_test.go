@@ -7,7 +7,8 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-// Two: do retrieval flow with failure, to check simplest non-DAKE flow
+// Two: do retrieval flow with no prekey ensembles available, to check simplest non-DAKE flow
+// Three: do a publication flow, so we can get storage in there
 
 func generateSitaClientProfile(longTerm *keypair) *clientProfile {
 	sita := &clientProfile{}
@@ -18,6 +19,7 @@ func generateSitaClientProfile(longTerm *keypair) *clientProfile {
 	sita.expiration = time.Date(2028, 11, 5, 13, 46, 00, 13, time.UTC)
 	sita.dsaKey = nil
 	sita.transitionalSignature = nil
+	// TODO:
 	// This eddsa signature is NOT correct, since we have no way of generating proper eddsa signatures at the moment.
 	// This will all have to wait
 	sita.sig = &eddsaSignature{s: [114]byte{0x01, 0x02, 0x03}}
@@ -141,7 +143,6 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 		0x93, 0x4a, 0x86, 0x95, 0x4c, 0x7, 0x0, 0xda,
 		0xee, 0xd2, 0x8c, 0x4, 0xc0, 0x57, 0x71, 0x28})
 
-	// generating DAKE-3:
 	phi := []byte("hardcoded phi for now")
 
 	t := append([]byte{}, 0x01)
@@ -179,4 +180,31 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 		0x94, 0x64, 0x1b, 0x4b, 0x3c, 0x74, 0xfc, 0xd2,
 		0x20, 0x88, 0x3c, 0x61, 0x4e, 0xda, 0x76, 0x71,
 	})
+}
+
+func (s *GenericServerSuite) Test_flow_retrieveEnsemblesFromUnknownPerson(c *C) {
+	retM := &ensembleRetrievalQueryMessage{
+		instanceTag: 0x12445511,
+		identity:    "sita@example.org",
+		versions:    []byte{0x04},
+	}
+
+	serverKey := deriveEDDSAKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	gs := &GenericServer{
+		identity:    "masterOfKeys.example.org",
+		rand:        fixtureRand(),
+		key:         serverKey,
+		fingerprint: serverKey.pub.fingerprint(),
+	}
+	mh := &otrngMessageHandler{s: gs}
+
+	r, e := mh.handleMessage("rama@example.org", retM.serialize())
+	c.Assert(e, IsNil)
+
+	rm := &noPrekeyEnsemblesMessage{}
+	_, ok := rm.deserialize(r)
+
+	c.Assert(ok, Equals, true)
+	c.Assert(rm.instanceTag, Equals, uint32(0x12445511))
+	c.Assert(rm.message, Equals, "No Prekey Messages available for this identity")
 }

@@ -68,6 +68,8 @@ const (
 	messageTypePrekeyMessage             = uint8(0x0F)
 )
 
+const noPrekeyMessagesAvailableMessage = "No Prekey Messages available for this identity"
+
 const indexOfMessageType = 2
 
 var One ed448.Scalar
