@@ -3,10 +3,10 @@ package prekeyserver
 import (
 	"time"
 
+	"github.com/twstrike/ed448"
 	. "gopkg.in/check.v1"
 )
 
-// One: test check storage flow to check the simplest thing with DAKE
 // Two: do retrieval flow with failure, to check simplest non-DAKE flow
 
 func generateSitaClientProfile(longTerm *keypair) *clientProfile {
@@ -153,8 +153,11 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 
 	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{d2.s}, t)
 
-	// Somewhere here we need to figure out the shared secret and use that to MAC the storage request.
-	d3 := generateDake3(sita.instanceTag, sigma, []byte{})
+	sk := kdfx(usageSK, privKeyLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
+	sita_prekey_mac_k := kdfx(usagePreMACKey, 64, sk)
+	msg := generateStorageInformationRequestMessage(sita_prekey_mac_k)
+
+	d3 := generateDake3(sita.instanceTag, sigma, msg.serialize())
 
 	r, e = mh.handleMessage("sita@example.org", d3.serialize())
 
@@ -164,12 +167,16 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 	_, ok = res.deserialize(r)
 	c.Assert(ok, Equals, true)
 	c.Assert(res, Not(IsNil))
-
-	// TODO: PICK UP HERE - we need a notion of a session for us to be able to pick this up.
-	// - We should also generate the storage request, and the MAC key etc for it
-	// - That's where we need to store things, and then we can answer properly.
-
-	// Generate a DAKE3 + storage request
-	// Send the DAKE3 to the message handler
-	// Check that the returned storage information message is correct
+	c.Assert(res.instanceTag, Equals, uint32(0x1245ABCD))
+	c.Assert(res.number, Equals, uint32(0x00))
+	c.Assert(res.mac[:], DeepEquals, []byte{
+		0x23, 0x9f, 0x4, 0x42, 0x70, 0x69, 0x95, 0xaa,
+		0x8a, 0xfa, 0x85, 0x5d, 0x5f, 0x4c, 0x92, 0x19,
+		0xf1, 0x75, 0x44, 0x3c, 0xf7, 0x5e, 0x85, 0x12,
+		0x82, 0xb5, 0xbd, 0xc5, 0x1c, 0x8e, 0x51, 0xce,
+		0x20, 0x5d, 0xfe, 0x39, 0x22, 0x91, 0xe3, 0xd,
+		0xb7, 0xd2, 0xae, 0x53, 0xf7, 0x1c, 0xc3, 0x8d,
+		0x94, 0x64, 0x1b, 0x4b, 0x3c, 0x74, 0xfc, 0xd2,
+		0x20, 0x88, 0x3c, 0x61, 0x4e, 0xda, 0x76, 0x71,
+	})
 }

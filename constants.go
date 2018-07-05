@@ -40,6 +40,15 @@ const (
 	usageReceiverClientProfile            = 0x05
 	usageReceiverPrekeyCompositeIdentity  = 0x06
 	usageReceiverPrekeyCompositePHI       = 0x07
+	usagePreMACKey                        = 0x08
+	usagePreMAC                           = 0x09
+	usageStorageInfoMAC                   = 0x0A
+	usageStatusMAC                        = 0x0B
+	usageSuccessMAC                       = 0x0C
+	usageFailureMAC                       = 0x0D
+	usagePrekeyMessage                    = 0x0E
+	usageClientProfile                    = 0x0F
+	usagePrekeyProfile                    = 0x10
 )
 
 const macLength = 64

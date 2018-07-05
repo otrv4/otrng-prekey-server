@@ -100,3 +100,27 @@ func parseMessage(msg []byte) (interface{}, error) {
 
 	return r, nil
 }
+
+func generateStorageInformationRequestMessage(macKey []byte) *storageInformationRequestMessage {
+	mac := kdfx(usageStorageInfoMAC, 64, macKey, []byte{messageTypeStorageInformationRequest})
+	res := &storageInformationRequestMessage{}
+	copy(res.mac[:], mac)
+	return res
+}
+
+func (m *storageInformationRequestMessage) respond(from string, s *GenericServer) (serializable, error) {
+	ses := s.session(from)
+	// TODO: should be contingent of instance tags and public keys used during DAKE
+	num := ses.numberStored()
+	itag := ses.instanceTag()
+	prekeyMacK := ses.macKey()
+	statusMac := kdfx(usageStatusMAC, 64, prekeyMacK, []byte{messageTypeStorageStatusMessage}, serializeWord(itag), serializeWord(num))
+
+	ret := &storageStatusMessage{
+		instanceTag: itag,
+		number:      num,
+	}
+	copy(ret.mac[:], statusMac)
+
+	return ret, nil
+}

@@ -5,8 +5,12 @@ import (
 	"time"
 )
 
+func serializeWord(r uint32) []byte {
+	return []byte{byte(r >> 24), byte(r >> 16), byte(r >> 8), byte(r)}
+}
+
 func appendWord(l []byte, r uint32) []byte {
-	return append(l, byte(r>>24), byte(r>>16), byte(r>>8), byte(r))
+	return append(l, serializeWord(r)...)
 }
 
 func appendShort(l []byte, r uint16) []byte {

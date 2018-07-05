@@ -20,7 +20,8 @@ type GenericServer struct {
 
 	messageHandler messageHandler
 
-	rand io.Reader
+	rand     io.Reader
+	sessions map[string]*realSession
 }
 
 func (g *GenericServer) handleMessage(from string, message []byte) ([]byte, error) {
@@ -98,4 +99,16 @@ func encodeMessage(inp []byte) string {
 
 func (g *GenericServer) compositeIdentity() []byte {
 	return appendData(appendData(nil, []byte(g.identity)), g.fingerprint[:])
+}
+
+func (g *GenericServer) session(from string) session {
+	if g.sessions == nil {
+		g.sessions = make(map[string]*realSession)
+	}
+	s, ok := g.sessions[from]
+	if !ok {
+		s = &realSession{}
+		g.sessions[from] = s
+	}
+	return s
 }

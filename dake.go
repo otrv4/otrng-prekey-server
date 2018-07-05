@@ -55,10 +55,14 @@ func (m *dake1Message) validate() error {
 	return nil
 }
 
-func (m *dake1Message) respond(s *GenericServer) (serializable, error) {
-	// Obviously we need to save this somewhere for this to work.
-	// TODO: for later
+func (m *dake3Message) validate() error {
+	// TODO: implement
+	return nil
+}
+
+func (m *dake1Message) respond(from string, s *GenericServer) (serializable, error) {
 	sk := generateECDHKeypair(s)
+	s.session(from).save(sk, m.i, m.instanceTag)
 
 	// TODO: actually make a real phi
 	phi := []byte("hardcoded phi for now")
@@ -74,4 +78,24 @@ func (m *dake1Message) respond(s *GenericServer) (serializable, error) {
 	sigma, _ := generateSignature(s, s.key.priv, s.key.pub, m.clientProfile.publicKey, s.key.pub, &publicKey{m.i}, t)
 
 	return generateDake2(m.instanceTag, []byte(s.identity), s.fingerprint, sk.pub.k, sigma), nil
+}
+
+func (m *dake3Message) respond(from string, s *GenericServer) (serializable, error) {
+	result, e := parseMessage(m.message)
+	if e != nil {
+		// TODO: test
+		return nil, e
+	}
+
+	if s1, ok := result.(*storageInformationRequestMessage); ok {
+		// TODO: s1.validate()
+		r1, e1 := s1.respond(from, s)
+		if e1 != nil {
+			// TODO: test
+			return nil, e1
+		}
+		return r1, nil
+	}
+
+	return nil, nil
 }
