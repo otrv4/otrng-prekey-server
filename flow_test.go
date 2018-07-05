@@ -8,8 +8,6 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-// Three: do a publication flow, so we can get storage in there
-
 func generateSitaClientProfile(longTerm *keypair) *clientProfile {
 	sita := &clientProfile{}
 	sita.identifier = 0xAABBCCDD
