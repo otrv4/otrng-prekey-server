@@ -16,7 +16,10 @@ func (mh *otrngMessageHandler) handleMessage(from string, message []byte) ([]byt
 	}
 
 	if d1, ok := result.(*dake1Message); ok {
-		// TODO: d1.validate()
+		if ev := d1.validate(); ev != nil {
+			return nil, ev
+		}
+
 		r2, e2 := d1.respond(from, mh.s)
 		if e2 != nil {
 			// TODO: test

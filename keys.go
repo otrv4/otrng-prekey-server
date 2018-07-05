@@ -1,6 +1,8 @@
 package prekeyserver
 
 import (
+	"errors"
+
 	"github.com/twstrike/ed448"
 	"golang.org/x/crypto/sha3"
 )
@@ -84,4 +86,13 @@ func (p *publicKey) fingerprint() fingerprint {
 	rep := p.k.DSAEncode()
 	kdf_otrv4(usageFingerprint, f[:], rep)
 	return f
+}
+
+func validatePoint(p ed448.Point) error {
+	if p.Equals(identityPoint) {
+		return errors.New("given point is the identity point")
+	}
+
+	// TODO: implement fully
+	return nil
 }

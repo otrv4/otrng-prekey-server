@@ -74,6 +74,7 @@ const indexOfMessageType = 2
 
 var One ed448.Scalar
 var OneFourth ed448.Scalar
+var identityPoint = ed448.NewPoint([16]uint32{0x00}, [16]uint32{0x01}, [16]uint32{0x01}, [16]uint32{0x00})
 
 var errShortRandomRead = errors.New("short read from random source")
 

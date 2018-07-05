@@ -1,6 +1,7 @@
 package prekeyserver
 
 import (
+	"errors"
 	"time"
 
 	"github.com/twstrike/ed448"
@@ -207,4 +208,45 @@ func (s *GenericServerSuite) Test_flow_retrieveEnsemblesFromUnknownPerson(c *C) 
 	c.Assert(ok, Equals, true)
 	c.Assert(rm.instanceTag, Equals, uint32(0x12445511))
 	c.Assert(rm.message, Equals, "No Prekey Messages available for this identity")
+}
+
+func (s *GenericServerSuite) Test_flow_invalidUserProfileInDAKE1(c *C) {
+	serverKey := deriveEDDSAKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	gs := &GenericServer{
+		identity:    "masterOfKeys.example.org",
+		rand:        fixtureRand(),
+		key:         serverKey,
+		fingerprint: serverKey.pub.fingerprint(),
+	}
+	mh := &otrngMessageHandler{s: gs}
+
+	badcp := generateSitaClientProfile(sita.longTerm)
+	badcp.instanceTag = 0x42424242
+
+	d1 := generateDake1(sita.instanceTag, badcp, sita.i.pub.k)
+
+	_, e := mh.handleMessage("sita@example.org", d1.serialize())
+
+	c.Assert(e, Not(IsNil))
+	c.Assert(e, DeepEquals, errors.New("invalid client profile"))
+}
+
+func (s *GenericServerSuite) Test_flow_invalidPointI(c *C) {
+	serverKey := deriveEDDSAKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	gs := &GenericServer{
+		identity:    "masterOfKeys.example.org",
+		rand:        fixtureRand(),
+		key:         serverKey,
+		fingerprint: serverKey.pub.fingerprint(),
+	}
+	mh := &otrngMessageHandler{s: gs}
+
+	badcp := generateSitaClientProfile(sita.longTerm)
+	badi := ed448.NewPoint([16]uint32{0x00}, [16]uint32{0x01}, [16]uint32{0x01}, [16]uint32{0x00})
+	d1 := generateDake1(sita.instanceTag, badcp, badi)
+
+	_, e := mh.handleMessage("sita@example.org", d1.serialize())
+
+	c.Assert(e, Not(IsNil))
+	c.Assert(e, DeepEquals, errors.New("invalid point I"))
 }

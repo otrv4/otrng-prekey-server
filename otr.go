@@ -2,6 +2,7 @@ package prekeyserver
 
 import (
 	"crypto/dsa"
+	"errors"
 	"time"
 )
 
@@ -35,4 +36,12 @@ type prekeyEnsemble struct {
 	cp *clientProfile
 	pp *prekeyProfile
 	pm *prekeyMessage
+}
+
+func (m *clientProfile) validate(tag uint32) error {
+	// TODO: finish this
+	if m.instanceTag != tag {
+		return errors.New("invalid instance tag in client profile")
+	}
+	return nil
 }

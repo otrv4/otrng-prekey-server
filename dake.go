@@ -1,6 +1,10 @@
 package prekeyserver
 
-import "github.com/twstrike/ed448"
+import (
+	"errors"
+
+	"github.com/twstrike/ed448"
+)
 
 type dake1Message struct {
 	instanceTag   uint32
@@ -49,9 +53,14 @@ func generateDake3(it uint32, sigma *ringSignature, m []byte) *dake3Message {
 }
 
 func (m *dake1Message) validate() error {
-	// TODO: implement
-	//  Validate the Client Profile, as defined in Validating a Client Profile section of the OTRv4 specification.
-	// 	Verify that the point I received is on curve Ed448. See Verifying that a point is on the curve section of the OTRv4 specification for details.
+	if e := m.clientProfile.validate(m.instanceTag); e != nil {
+		return errors.New("invalid client profile")
+	}
+
+	if e := validatePoint(m.i); e != nil {
+		return errors.New("invalid point I")
+	}
+
 	return nil
 }
 
