@@ -30,5 +30,5 @@ func (s *realSession) instanceTag() uint32 {
 }
 
 func (s *realSession) macKey() []byte {
-	return kdfx(usagePreMACKey, 64, kdfx(usageSK, privKeyLength, serializePoint(ed448.PointScalarMul(s.i, s.s.priv.k))))
+	return kdfx(usagePreMACKey, 64, kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(s.i, s.s.priv.k))))
 }

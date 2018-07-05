@@ -30,6 +30,7 @@ const fragmentationPrefix = "?OTRP|"
 const symKeyLength = 57
 const privKeyLength = 57
 const fingerprintLength = 56
+const skLength = 64
 
 const (
 	usageFingerprint                      = 0x00
