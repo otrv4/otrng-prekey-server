@@ -8,7 +8,6 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-// Two: do retrieval flow with no prekey ensembles available, to check simplest non-DAKE flow
 // Three: do a publication flow, so we can get storage in there
 
 func generateSitaClientProfile(longTerm *keypair) *clientProfile {
@@ -249,4 +248,90 @@ func (s *GenericServerSuite) Test_flow_invalidPointI(c *C) {
 
 	c.Assert(e, Not(IsNil))
 	c.Assert(e, DeepEquals, errors.New("invalid point I"))
+}
+
+func (s *GenericServerSuite) Test_flow_invalidDAKE3(c *C) {
+	serverKey := deriveEDDSAKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	gs := &GenericServer{
+		identity:    "masterOfKeys.example.org",
+		rand:        fixtureRand(),
+		key:         serverKey,
+		fingerprint: serverKey.pub.fingerprint(),
+	}
+	mh := &otrngMessageHandler{s: gs}
+
+	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.pub.k)
+
+	r, e := mh.handleMessage("sita@example.org", d1.serialize())
+
+	c.Assert(e, IsNil)
+
+	d2 := dake2Message{}
+	_, ok := d2.deserialize(r)
+
+	c.Assert(ok, Equals, true)
+
+	phi := []byte("hardcoded phi for now")
+
+	t := append([]byte{}, 0x01)
+	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.serialize())...)
+	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, serializePoint(sita.i.pub.k)...)
+	t = append(t, serializePoint(d2.s)...)
+	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
+
+	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{d2.s}, t)
+
+	sk := kdfx(usageSK, privKeyLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
+	sita_prekey_mac_k := kdfx(usagePreMACKey, 64, sk)
+	msg := generateStorageInformationRequestMessage(sita_prekey_mac_k)
+
+	d3 := generateDake3(0xBADBADBA, sigma, msg.serialize())
+	r, e = mh.handleMessage("sita@example.org", d3.serialize())
+
+	c.Assert(e, Not(IsNil))
+}
+
+func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
+	serverKey := deriveEDDSAKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	gs := &GenericServer{
+		identity:    "masterOfKeys.example.org",
+		rand:        fixtureRand(),
+		key:         serverKey,
+		fingerprint: serverKey.pub.fingerprint(),
+	}
+	mh := &otrngMessageHandler{s: gs}
+
+	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.pub.k)
+
+	r, e := mh.handleMessage("sita@example.org", d1.serialize())
+
+	c.Assert(e, IsNil)
+
+	d2 := dake2Message{}
+	_, ok := d2.deserialize(r)
+
+	c.Assert(ok, Equals, true)
+
+	phi := []byte("hardcoded phi for now")
+
+	t := append([]byte{}, 0x01)
+	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.serialize())...)
+	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, serializePoint(sita.i.pub.k)...)
+	t = append(t, serializePoint(d2.s)...)
+	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
+
+	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{d2.s}, t)
+
+	sk := kdfx(usageSK, privKeyLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
+	sita_bad_prekey_mac_k := kdfx(usagePreMACKey, 64, sk)
+	sita_bad_prekey_mac_k[0] = 0xBA
+	sita_bad_prekey_mac_k[1] = 0xDB
+	msg := generateStorageInformationRequestMessage(sita_bad_prekey_mac_k)
+
+	d3 := generateDake3(sita.instanceTag, sigma, msg.serialize())
+	r, e = mh.handleMessage("sita@example.org", d3.serialize())
+
+	c.Assert(e, Not(IsNil))
 }

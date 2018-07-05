@@ -1,6 +1,7 @@
 package prekeyserver
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 )
@@ -121,6 +122,18 @@ func (m *storageInformationRequestMessage) respond(from string, s *GenericServer
 	copy(ret.mac[:], statusMac)
 
 	return ret, nil
+}
+
+func (m *storageInformationRequestMessage) validate(from string, s *GenericServer) error {
+	prekeyMacK := s.session(from).macKey()
+	tag := kdfx(usageStorageInfoMAC, 64, prekeyMacK, []byte{messageTypeStorageInformationRequest})
+	if !bytes.Equal(tag, m.mac[:]) {
+		return errors.New("incorrect MAC")
+	}
+
+	// TODO: implement rest
+
+	return nil
 }
 
 func (m *ensembleRetrievalQueryMessage) respond(from string, s *GenericServer) (serializable, error) {

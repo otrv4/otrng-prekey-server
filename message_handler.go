@@ -29,7 +29,10 @@ func (mh *otrngMessageHandler) handleMessage(from string, message []byte) ([]byt
 	}
 
 	if d3, ok := result.(*dake3Message); ok {
-		// TODO: d3.validate()
+		if ev := d3.validate(from, mh.s); ev != nil {
+			return nil, ev
+		}
+
 		r3, e3 := d3.respond(from, mh.s)
 		if e3 != nil {
 			// TODO: test

@@ -64,8 +64,13 @@ func (m *dake1Message) validate() error {
 	return nil
 }
 
-func (m *dake3Message) validate() error {
-	// TODO: implement
+func (m *dake3Message) validate(from string, s *GenericServer) error {
+	sess := s.session(from)
+	if sess.instanceTag() != m.instanceTag {
+		return errors.New("incorrect instance tag")
+	}
+
+	// TODO: implement rest
 	return nil
 }
 
@@ -97,7 +102,10 @@ func (m *dake3Message) respond(from string, s *GenericServer) (serializable, err
 	}
 
 	if s1, ok := result.(*storageInformationRequestMessage); ok {
-		// TODO: s1.validate()
+		if ev := s1.validate(from, s); ev != nil {
+			return nil, ev
+		}
+
 		r1, e1 := s1.respond(from, s)
 		if e1 != nil {
 			// TODO: test
