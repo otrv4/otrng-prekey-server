@@ -51,15 +51,5 @@ func (mh *otrngMessageHandler) handleMessage(from string, message []byte) ([]byt
 		return r.serialize(), nil
 	}
 
-	if rq, ok := result.(*publicationMessage); ok {
-		// TODO: rq.validate()
-		r, e := rq.respond(from, mh.s)
-		if e != nil {
-			// TODO: test
-			return nil, e
-		}
-		return r.serialize(), nil
-	}
-
 	return nil, nil
 }
