@@ -138,13 +138,27 @@ func (m *dake3Message) deserialize(buf []byte) ([]byte, bool) {
 	return buf, true
 }
 
+func serializePrekeyMessages(pms []*prekeyMessage) []byte {
+	out := []byte{}
+	for _, pm := range pms {
+		out = append(out, pm.serialize()...)
+	}
+	return out
+}
+
+func serializePrekeyProfiles(pps []*prekeyProfile) []byte {
+	out := []byte{}
+	for _, pp := range pps {
+		out = append(out, pp.serialize()...)
+	}
+	return out
+}
+
 func (m *publicationMessage) serialize() []byte {
 	out := appendShort(nil, version)
 	out = append(out, messageTypePublication)
 	out = append(out, uint8(len(m.prekeyMessages)))
-	for _, pm := range m.prekeyMessages {
-		out = append(out, pm.serialize()...)
-	}
+	out = append(out, serializePrekeyMessages(m.prekeyMessages)...)
 
 	if m.clientProfile != nil {
 		out = append(out, uint8(1))
@@ -154,10 +168,7 @@ func (m *publicationMessage) serialize() []byte {
 	}
 
 	out = append(out, uint8(len(m.prekeyProfiles)))
-	for _, pp := range m.prekeyProfiles {
-		out = append(out, pp.serialize()...)
-	}
-
+	out = append(out, serializePrekeyProfiles(m.prekeyProfiles)...)
 	out = append(out, m.mac[:]...)
 	return out
 }

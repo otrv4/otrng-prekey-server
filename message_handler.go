@@ -9,10 +9,10 @@ type otrngMessageHandler struct {
 }
 
 func (mh *otrngMessageHandler) handleMessage(from string, message []byte) ([]byte, error) {
-	result, e := parseMessage(message)
-	if e != nil {
+	result, pe := parseMessage(message)
+	if pe != nil {
 		// TODO: test
-		return nil, e
+		return nil, pe
 	}
 
 	if d1, ok := result.(*dake1Message); ok {
@@ -20,12 +20,12 @@ func (mh *otrngMessageHandler) handleMessage(from string, message []byte) ([]byt
 			return nil, ev
 		}
 
-		r2, e2 := d1.respond(from, mh.s)
-		if e2 != nil {
+		r, e := d1.respond(from, mh.s)
+		if e != nil {
 			// TODO: test
-			return nil, e2
+			return nil, e
 		}
-		return r2.serialize(), nil
+		return r.serialize(), nil
 	}
 
 	if d3, ok := result.(*dake3Message); ok {
@@ -33,22 +33,32 @@ func (mh *otrngMessageHandler) handleMessage(from string, message []byte) ([]byt
 			return nil, ev
 		}
 
-		r3, e3 := d3.respond(from, mh.s)
-		if e3 != nil {
+		r, e := d3.respond(from, mh.s)
+		if e != nil {
 			// TODO: test
-			return nil, e3
+			return nil, e
 		}
-		return r3.serialize(), nil
+		return r.serialize(), nil
 	}
 
 	if rq, ok := result.(*ensembleRetrievalQueryMessage); ok {
 		// TODO: rq.validate()
-		r4, e4 := rq.respond(from, mh.s)
-		if e4 != nil {
+		r, e := rq.respond(from, mh.s)
+		if e != nil {
 			// TODO: test
-			return nil, e4
+			return nil, e
 		}
-		return r4.serialize(), nil
+		return r.serialize(), nil
+	}
+
+	if rq, ok := result.(*publicationMessage); ok {
+		// TODO: rq.validate()
+		r, e := rq.respond(from, mh.s)
+		if e != nil {
+			// TODO: test
+			return nil, e
+		}
+		return r.serialize(), nil
 	}
 
 	return nil, nil

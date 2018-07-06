@@ -333,3 +333,77 @@ func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
 
 	c.Assert(e, Not(IsNil))
 }
+
+func (s *GenericServerSuite) Test_flow_publication(c *C) {
+	stor := createInMemoryStorage()
+	serverKey := deriveEDDSAKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	gs := &GenericServer{
+		identity:    "masterOfKeys.example.org",
+		rand:        fixtureRand(),
+		key:         serverKey,
+		fingerprint: serverKey.pub.fingerprint(),
+		storageImpl: stor,
+	}
+	mh := &otrngMessageHandler{s: gs}
+
+	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.pub.k)
+
+	r, e := mh.handleMessage("sita@example.org", d1.serialize())
+
+	c.Assert(e, IsNil)
+
+	d2 := dake2Message{}
+	_, ok := d2.deserialize(r)
+
+	c.Assert(ok, Equals, true)
+
+	phi := []byte("hardcoded phi for now")
+
+	t := append([]byte{}, 0x01)
+	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.serialize())...)
+	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, serializePoint(sita.i.pub.k)...)
+	t = append(t, serializePoint(d2.s)...)
+	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
+
+	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{d2.s}, t)
+
+	sk := kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
+	sita_prekey_mac_k := kdfx(usagePreMACKey, 64, sk)
+
+	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
+
+	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	msg := generatePublicationMessage(sita.clientProfile, []*prekeyProfile{pp1}, []*prekeyMessage{pm1, pm2}, sita_prekey_mac_k)
+
+	d3 := generateDake3(sita.instanceTag, sigma, msg.serialize())
+
+	r, e = mh.handleMessage("sita@example.org", d3.serialize())
+
+	c.Assert(e, IsNil)
+
+	res := &successMessage{}
+	_, ok = res.deserialize(r)
+	c.Assert(ok, Equals, true)
+	c.Assert(res.instanceTag, Equals, sita.instanceTag)
+	c.Assert(res.mac[:], DeepEquals, []byte{
+		0x82, 0xfd, 0x73, 0xe9, 0x4e, 0x27, 0xf7, 0x3c,
+		0x63, 0x79, 0x9b, 0x69, 0x9f, 0x64, 0xef, 0x11,
+		0xb9, 0x6c, 0x36, 0x3e, 0xdb, 0x24, 0x70, 0x32,
+		0x7c, 0x91, 0x9, 0x83, 0xe7, 0xd, 0x47, 0x84,
+		0xf3, 0xf4, 0xa6, 0x1d, 0xb6, 0xc3, 0xac, 0xfd,
+		0xb1, 0xd0, 0x73, 0x27, 0xc, 0x93, 0xd, 0x62,
+		0x2b, 0xfa, 0x3f, 0xe5, 0xa1, 0x46, 0x22, 0xc,
+		0xae, 0x70, 0x1b, 0x3, 0x49, 0xf3, 0x61, 0x4f,
+	})
+
+	entry := stor.perUser["sita@example.org"]
+	c.Assert(entry, Not(IsNil))
+	c.Assert(entry.clientProfiles[sita.instanceTag].Equals(sita.clientProfile), Equals, true)
+	c.Assert(entry.prekeyProfiles[sita.instanceTag], HasLen, 1)
+	c.Assert(entry.prekeyProfiles[sita.instanceTag][0].Equals(pp1), Equals, true)
+	c.Assert(entry.prekeyMessages[sita.instanceTag], HasLen, 2)
+	c.Assert(entry.prekeyMessages[sita.instanceTag][0].Equals(pm1), Equals, true)
+	c.Assert(entry.prekeyMessages[sita.instanceTag][1].Equals(pm2), Equals, true)
+}

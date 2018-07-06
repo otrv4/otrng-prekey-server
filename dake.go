@@ -114,5 +114,16 @@ func (m *dake3Message) respond(from string, s *GenericServer) (serializable, err
 		return r1, nil
 	}
 
+	if s1, ok := result.(*publicationMessage); ok {
+		// TODO: s1.validate(from, s)
+
+		r, e := s1.respond(from, s)
+		if e != nil {
+			// TODO: test
+			return nil, e
+		}
+		return r, nil
+	}
+
 	return nil, nil
 }

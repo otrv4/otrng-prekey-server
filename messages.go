@@ -75,8 +75,8 @@ func parseMessage(msg []byte) (interface{}, error) {
 		r = &dake1Message{}
 	case messageTypeDAKE3:
 		r = &dake3Message{}
-	// case messageTypePublication:
-	// 	r = &publicationMessage{}
+	case messageTypePublication:
+		r = &publicationMessage{}
 	case messageTypeStorageInformationRequest:
 		r = &storageInformationRequestMessage{}
 	// case messageTypeStorageStatusMessage:
@@ -141,4 +141,63 @@ func (m *ensembleRetrievalQueryMessage) respond(from string, s *GenericServer) (
 		instanceTag: m.instanceTag,
 		message:     noPrekeyMessagesAvailableMessage,
 	}, nil
+}
+
+func generatePublicationMessage(cp *clientProfile, pps []*prekeyProfile, pms []*prekeyMessage, macKey []byte) *publicationMessage {
+	kpms := kdfx(usagePrekeyMessage, 64, serializePrekeyMessages(pms))
+	kpps := kdfx(usagePrekeyProfile, 64, serializePrekeyProfiles(pps))
+	k := []byte{byte(0)}
+	kcp := []byte{}
+	if cp != nil {
+		k = []byte{1}
+		kcp = kdfx(usageClientProfile, 64, cp.serialize())
+	}
+
+	mac := kdfx(usagePreMAC, 64, concat(macKey, []byte{messageTypePublication, byte(len(pms))}, kpms, k, kcp, []byte{byte(len(pps))}, kpps))
+	pm := &publicationMessage{
+		prekeyMessages: pms,
+		clientProfile:  cp,
+		prekeyProfiles: pps,
+	}
+	copy(pm.mac[:], mac)
+	return pm
+}
+
+func (m *publicationMessage) validate(from string, s *GenericServer) error {
+	// TODO: implement
+	// The Prekey Server verifies the received values:
+	// Validate the Prekey Publication message, as defined in its section Prekey Publication Message.
+	// For every value, check the integrity of it.
+	// If Client and Prekey Profile are present:
+	// Validate the Client Profile as defined in the Validating a Client Profile section of the OTRv4 specification.
+	// Validate the Prekey Profile as defined in the Validating a Prekey Profile section of the OTRv4 specification.
+	// If Prekey Messages are present:
+	// Validate the Prekey Messages as defined in the Prekey Message section of the OTRv4 specification.
+	// Discard any invalid or duplicated values.
+	return nil
+}
+
+func generateSuccessMessage(macKey []byte, tag uint32) *successMessage {
+	m := &successMessage{
+		instanceTag: tag,
+	}
+
+	mac := kdfx(usageSuccessMAC, 64, appendWord(append(macKey, messageTypeSuccess), tag))
+	copy(m.mac[:], mac)
+
+	return m
+}
+
+func (m *publicationMessage) respond(from string, s *GenericServer) (serializable, error) {
+	stor := s.storage()
+	stor.storeClientProfile(from, m.clientProfile)
+	stor.storePrekeyProfiles(from, m.prekeyProfiles)
+	stor.storePrekeyMessages(from, m.prekeyMessages)
+
+	macKey := s.session(from).macKey()
+	instanceTag := s.session(from).instanceTag()
+
+	// TODO: session should be removed here
+
+	return generateSuccessMessage(macKey, instanceTag), nil
 }

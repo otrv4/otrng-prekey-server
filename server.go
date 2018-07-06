@@ -22,6 +22,12 @@ type GenericServer struct {
 
 	rand     io.Reader
 	sessions map[string]*realSession
+
+	storageImpl storage
+}
+
+func (g *GenericServer) storage() storage {
+	return g.storageImpl
 }
 
 func (g *GenericServer) handleMessage(from string, message []byte) ([]byte, error) {

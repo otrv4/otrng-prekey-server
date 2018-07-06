@@ -32,3 +32,16 @@ func defaultRandom() *realRandom {
 func (*realRandom) randReader() io.Reader {
 	return rand.Reader
 }
+
+func randomUint32(w WithRandom) uint32 {
+	b := [4]byte{}
+	randomInto(w, b[:])
+	_, ww, _ := extractWord(b[:])
+	return ww
+}
+
+func randomBytes(w WithRandom, len uint32) []byte {
+	b := make([]byte, len)
+	randomInto(w, b[:])
+	return b
+}
