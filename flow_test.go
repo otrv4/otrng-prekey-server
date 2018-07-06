@@ -47,12 +47,14 @@ func generateSitaTestData() *testData {
 var sita = generateSitaTestData()
 
 func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
+	stor := createInMemoryStorage()
 	serverKey := deriveEDDSAKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        fixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
+		storageImpl: stor,
 	}
 	mh := &otrngMessageHandler{s: gs}
 
@@ -181,6 +183,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 }
 
 func (s *GenericServerSuite) Test_flow_retrieveEnsemblesFromUnknownPerson(c *C) {
+	stor := createInMemoryStorage()
 	retM := &ensembleRetrievalQueryMessage{
 		instanceTag: 0x12445511,
 		identity:    "sita@example.org",
@@ -193,6 +196,7 @@ func (s *GenericServerSuite) Test_flow_retrieveEnsemblesFromUnknownPerson(c *C) 
 		rand:        fixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
+		storageImpl: stor,
 	}
 	mh := &otrngMessageHandler{s: gs}
 
@@ -406,4 +410,43 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 	c.Assert(entry.prekeyMessages[sita.instanceTag], HasLen, 2)
 	c.Assert(entry.prekeyMessages[sita.instanceTag][0].Equals(pm1), Equals, true)
 	c.Assert(entry.prekeyMessages[sita.instanceTag][1].Equals(pm2), Equals, true)
+}
+
+func (s *GenericServerSuite) Test_flow_retrieveEnsemblesFromKnownPerson(c *C) {
+	serverKey := deriveEDDSAKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	stor := createInMemoryStorage()
+
+	gs := &GenericServer{
+		identity:    "masterOfKeys.example.org",
+		rand:        fixtureRand(),
+		key:         serverKey,
+		fingerprint: serverKey.pub.fingerprint(),
+		storageImpl: stor,
+	}
+	mh := &otrngMessageHandler{s: gs}
+
+	stor.storeClientProfile("sita@example.org", sita.clientProfile)
+	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
+	stor.storePrekeyProfiles("sita@example.org", []*prekeyProfile{pp1})
+	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	stor.storePrekeyMessages("sita@example.org", []*prekeyMessage{pm1, pm2})
+
+	retM := &ensembleRetrievalQueryMessage{
+		instanceTag: 0x5555DDDD,
+		identity:    "sita@example.org",
+		versions:    []byte{0x04},
+	}
+
+	r, e := mh.handleMessage("rama@example.org", retM.serialize())
+	c.Assert(e, IsNil)
+
+	rm := &ensembleRetrievalMessage{}
+	_, ok := rm.deserialize(r)
+
+	c.Assert(ok, Equals, true)
+	c.Assert(rm.instanceTag, Equals, uint32(0x5555DDDD))
+
+	c.Assert(stor.perUser["sita@example.org"].prekeyMessages[0x1245ABCD], HasLen, 1)
+	c.Assert(stor.perUser["sita@example.org"].prekeyMessages[0x1245ABCD][0].Equals(pm2), Equals, true)
 }

@@ -89,6 +89,7 @@ func (g *GenericServer) cleanupAfter(from string) {
 	// Clean up
 	//  - If everything is done, kill Session
 	//  - Clean up fragmented message that never got complete
+	//  - Remove from storage all expired things
 }
 
 func decodeMessage(inp string) ([]byte, bool) {

@@ -79,18 +79,8 @@ func parseMessage(msg []byte) (interface{}, error) {
 		r = &publicationMessage{}
 	case messageTypeStorageInformationRequest:
 		r = &storageInformationRequestMessage{}
-	// case messageTypeStorageStatusMessage:
-	// 	r = &storageStatusMessage{}
-	// case messageTypeSuccess:
-	// 	r = &successMessage{}
-	// case messageTypeFailure:
-	// 	r = &failureMessage{}
 	case messageTypeEnsembleRetrievalQuery:
 		r = &ensembleRetrievalQueryMessage{}
-	// case messageTypeEnsembleRetrieval:
-	// 	r = &ensembleRetrievalMessage{}
-	// case messageTypeNoPrekeyEnsembles:
-	// 	r = &noPrekeyEnsemblesMessage{}
 	default:
 		return nil, fmt.Errorf("unknown message type: 0x%x", messageType)
 	}
@@ -109,8 +99,7 @@ func generateStorageInformationRequestMessage(macKey []byte) *storageInformation
 
 func (m *storageInformationRequestMessage) respond(from string, s *GenericServer) (serializable, error) {
 	ses := s.session(from)
-	// TODO: should be contingent of instance tags and public keys used during DAKE
-	num := ses.numberStored()
+	num := s.storage().numberStored(from, ses.instanceTag())
 	itag := ses.instanceTag()
 	prekeyMacK := ses.macKey()
 	statusMac := kdfx(usageStatusMAC, 64, prekeyMacK, []byte{messageTypeStorageStatusMessage}, serializeWord(itag), serializeWord(num))
@@ -137,10 +126,19 @@ func (m *storageInformationRequestMessage) validate(from string, s *GenericServe
 }
 
 func (m *ensembleRetrievalQueryMessage) respond(from string, s *GenericServer) (serializable, error) {
-	return &noPrekeyEnsemblesMessage{
-		instanceTag: m.instanceTag,
-		message:     noPrekeyMessagesAvailableMessage,
-	}, nil
+	stor := s.storage()
+	bundles := stor.retrieveFor(m.identity)
+	if len(bundles) == 0 {
+		return &noPrekeyEnsemblesMessage{
+			instanceTag: m.instanceTag,
+			message:     noPrekeyMessagesAvailableMessage,
+		}, nil
+	} else {
+		return &ensembleRetrievalMessage{
+			instanceTag: m.instanceTag,
+			ensembles:   bundles,
+		}, nil
+	}
 }
 
 func generatePublicationMessage(cp *clientProfile, pps []*prekeyProfile, pms []*prekeyMessage, macKey []byte) *publicationMessage {

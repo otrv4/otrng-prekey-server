@@ -4,7 +4,6 @@ import "github.com/twstrike/ed448"
 
 type session interface {
 	save(*keypair, ed448.Point, uint32)
-	numberStored() uint32
 	instanceTag() uint32
 	macKey() []byte
 }
@@ -19,10 +18,6 @@ func (s *realSession) save(kp *keypair, i ed448.Point, tag uint32) {
 	s.s = kp
 	s.i = i
 	s.tag = tag
-}
-
-func (s *realSession) numberStored() uint32 {
-	return 0
 }
 
 func (s *realSession) instanceTag() uint32 {
