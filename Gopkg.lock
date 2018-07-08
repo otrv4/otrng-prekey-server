@@ -17,7 +17,7 @@
   branch = "master"
   name = "github.com/otrv4/ed448"
   packages = ["."]
-  revision = "3d6358c2fbb1ed651ab16f7d11e1c68c20ba6cac"
+  revision = "75bc328cc212f0f8cb9823364339890df2c3f409"
 
 [[projects]]
   branch = "master"
