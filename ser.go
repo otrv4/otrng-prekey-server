@@ -768,7 +768,6 @@ func deserializePoint(buf []byte) ([]byte, ed448.Point, bool) {
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	})
 	tp.DSADecode(buf[0:57])
-	tp = ed448.PointScalarMul(tp, OneFourth)
 	return buf[57:], tp, true
 }
 
