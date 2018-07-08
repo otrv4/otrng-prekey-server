@@ -31,4 +31,4 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/twstrike/ed448"
+  name = "github.com/otrv4/ed448"

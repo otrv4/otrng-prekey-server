@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/twstrike/ed448"
+	"github.com/otrv4/ed448"
 	. "gopkg.in/check.v1"
 )
 

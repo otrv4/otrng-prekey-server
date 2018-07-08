@@ -4,7 +4,7 @@ import (
 	"crypto/dsa"
 	"time"
 
-	"github.com/twstrike/ed448"
+	"github.com/otrv4/ed448"
 )
 
 type serializable interface {

@@ -3,7 +3,7 @@ package prekeyserver
 import (
 	"errors"
 
-	"github.com/twstrike/ed448"
+	"github.com/otrv4/ed448"
 )
 
 var dsaKeyType = []byte{0x00, 0x00}

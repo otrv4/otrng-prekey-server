@@ -1,6 +1,6 @@
 package prekeyserver
 
-import "github.com/twstrike/ed448"
+import "github.com/otrv4/ed448"
 
 type session interface {
 	save(*keypair, ed448.Point, uint32)

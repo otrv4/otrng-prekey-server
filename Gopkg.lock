@@ -15,9 +15,9 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/twstrike/ed448"
+  name = "github.com/otrv4/ed448"
   packages = ["."]
-  revision = "e2c9ada11f8575e6084de0f762fa3ad7f2059dbd"
+  revision = "3d6358c2fbb1ed651ab16f7d11e1c68c20ba6cac"
 
 [[projects]]
   branch = "master"
@@ -34,6 +34,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "31ccacff13d5be942cdde219485d1e828cad16000801ac25b710a85cabe7a77e"
+  inputs-digest = "80a4553145fbc727cbc1f557064f47f812871cfb70c9e7d4645a675762dc7b11"
   solver-name = "gps-cdcl"
   solver-version = 1

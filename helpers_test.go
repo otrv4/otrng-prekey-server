@@ -3,7 +3,7 @@ package prekeyserver
 import (
 	"math/big"
 
-	"github.com/twstrike/ed448"
+	"github.com/otrv4/ed448"
 )
 
 // bnFromHex is a test utility that doesn't take into account possible errors. Thus, make sure to only call it with valid hexadecimal strings (of even length)

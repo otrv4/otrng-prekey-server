@@ -1,7 +1,7 @@
 package prekeyserver
 
 import (
-	"github.com/twstrike/ed448"
+	"github.com/otrv4/ed448"
 )
 
 // This ring signature implementation is a duplicate of the libotr-ng one for now. It should be changed to be compliant
