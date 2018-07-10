@@ -142,7 +142,6 @@ func (pp *prekeyProfile) validate(tag uint32, pub *publicKey) error {
 }
 
 func (pm *prekeyMessage) validate(tag uint32) error {
-	// TODO: implement fully
 	if pm.instanceTag != tag {
 		return errors.New("invalid instance tag in prekey message")
 	}
