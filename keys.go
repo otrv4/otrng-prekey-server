@@ -97,10 +97,12 @@ func validatePoint(p ed448.Point) error {
 		return errors.New("given point is not on the curve")
 	}
 
-	// TODO: implement this when we can test properly for it
-	// if !ed448.PointScalarMul(p, ed448.ScalarQ).Equals(identityPoint) {
-	// 	return errors.New("--some kind of appropriate error--")
-	// }
+	// Here the spec says we should check for a small subgroup
+	// attack by verifying q P == I. However, since the ed448
+	// implementation is using decaf for internal representation,
+	// and this internal representation has cofactor 1, the
+	// small subgroup check is implied by the above two conditions,
+	// and thus not necessary.
 
 	return nil
 }
