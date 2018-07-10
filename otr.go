@@ -116,7 +116,33 @@ func (pp *prekeyProfile) generateSignature(kp *keypair) [114]byte {
 	return ed448.DSASign(kp.sym, kp.pub.k, msg)
 }
 
-func (cp *clientProfile) generateSignature(kp *keypair) [114]byte {
-	msg := cp.serializeForSignature()
+func (m *clientProfile) generateSignature(kp *keypair) [114]byte {
+	msg := m.serializeForSignature()
 	return ed448.DSASign(kp.sym, kp.pub.k, msg)
+}
+
+func (pp *prekeyProfile) validate(tag uint32) error {
+	// TODO: implement fully
+
+	if pp.instanceTag != tag {
+		return errors.New("invalid instance tag in prekey profile")
+	}
+	// Verify that the Prekey Profile signature is valid.
+	// Verify that the Prekey Profile has not expired.
+	// Verify that the Prekey Profile owner's instance tag is equal to the Sender Instance tag of the person that sent the DAKE message in which the Client Profile is received.
+	// Validate that the Public Shared Prekey is on the curve Ed448-Goldilocks. See Verifying that a point is on the curve section for details.
+
+	return nil
+}
+
+func (pm *prekeyMessage) validate() error {
+	// TODO: implement fully
+
+	if validatePoint(pm.y.k) != nil {
+		return errors.New("prekey profile Y point is not a valid point")
+	}
+	// Check that the ECDH public key Y is on curve Ed448. See Verifying that a point is on the curve section for details.
+	// Verify that the DH public key B is from the correct group. See Verifying that an integer is in the DH group section for details.
+
+	return nil
 }

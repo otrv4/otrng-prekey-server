@@ -9,9 +9,10 @@ type session interface {
 }
 
 type realSession struct {
-	tag uint32
-	s   *keypair
-	i   ed448.Point
+	tag       uint32
+	s         *keypair
+	i         ed448.Point
+	storedMac []byte
 }
 
 func (s *realSession) save(kp *keypair, i ed448.Point, tag uint32) {
@@ -25,5 +26,8 @@ func (s *realSession) instanceTag() uint32 {
 }
 
 func (s *realSession) macKey() []byte {
+	if s.storedMac != nil {
+		return s.storedMac
+	}
 	return kdfx(usagePreMACKey, 64, kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(s.i, s.s.priv.k))))
 }

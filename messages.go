@@ -138,7 +138,7 @@ func (m *ensembleRetrievalQueryMessage) respond(from string, s *GenericServer) (
 	}, nil
 }
 
-func generatePublicationMessage(cp *clientProfile, pps []*prekeyProfile, pms []*prekeyMessage, macKey []byte) *publicationMessage {
+func generateMACForPublicationMessage(cp *clientProfile, pps []*prekeyProfile, pms []*prekeyMessage, macKey []byte) []byte {
 	kpms := kdfx(usagePrekeyMessage, 64, serializePrekeyMessages(pms))
 	kpps := kdfx(usagePrekeyProfile, 64, serializePrekeyProfiles(pps))
 	k := []byte{byte(0)}
@@ -148,7 +148,11 @@ func generatePublicationMessage(cp *clientProfile, pps []*prekeyProfile, pms []*
 		kcp = kdfx(usageClientProfile, 64, cp.serialize())
 	}
 
-	mac := kdfx(usagePreMAC, 64, concat(macKey, []byte{messageTypePublication, byte(len(pms))}, kpms, k, kcp, []byte{byte(len(pps))}, kpps))
+	return kdfx(usagePreMAC, 64, concat(macKey, []byte{messageTypePublication, byte(len(pms))}, kpms, k, kcp, []byte{byte(len(pps))}, kpps))
+}
+
+func generatePublicationMessage(cp *clientProfile, pps []*prekeyProfile, pms []*prekeyMessage, macKey []byte) *publicationMessage {
+	mac := generateMACForPublicationMessage(cp, pps, pms, macKey)
 	pm := &publicationMessage{
 		prekeyMessages: pms,
 		clientProfile:  cp,
@@ -159,16 +163,29 @@ func generatePublicationMessage(cp *clientProfile, pps []*prekeyProfile, pms []*
 }
 
 func (m *publicationMessage) validate(from string, s *GenericServer) error {
-	// TODO: implement
-	// The Prekey Server verifies the received values:
-	// Validate the Prekey Publication message, as defined in its section Prekey Publication Message.
-	// For every value, check the integrity of it.
-	// If Client and Prekey Profile are present:
-	// Validate the Client Profile as defined in the Validating a Client Profile section of the OTRv4 specification.
-	// Validate the Prekey Profile as defined in the Validating a Prekey Profile section of the OTRv4 specification.
-	// If Prekey Messages are present:
-	// Validate the Prekey Messages as defined in the Prekey Message section of the OTRv4 specification.
-	// Discard any invalid or duplicated values.
+	macKey := s.session(from).macKey()
+	mac := generateMACForPublicationMessage(m.clientProfile, m.prekeyProfiles, m.prekeyMessages, macKey)
+	if !bytes.Equal(mac[:], m.mac[:]) {
+		return errors.New("invalid mac for publication message")
+	}
+
+	tag := s.session(from).instanceTag()
+	if m.clientProfile != nil && m.clientProfile.validate(tag) != nil {
+		return errors.New("invalid client profile in publication message")
+	}
+
+	for _, pp := range m.prekeyProfiles {
+		if pp.validate(tag) != nil {
+			return errors.New("invalid prekey profile in publication message")
+		}
+	}
+
+	for _, pm := range m.prekeyMessages {
+		if pm.validate() != nil {
+			return errors.New("invalid prekey message in publication message")
+		}
+	}
+
 	return nil
 }
 
