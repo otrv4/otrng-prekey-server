@@ -48,7 +48,7 @@ func deriveEDDSAKeypair(sym [symKeyLength]byte) *keypair {
 func deriveECDHKeypair(sym [symKeyLength]byte) *keypair {
 	// This implementation is based on the current libotr-ng implementation. IT IS NOT CORRECT.
 	digest := [privKeyLength]byte{}
-	kdf_otrv4(usageSK, digest[:], sym[:])
+	kdfOtrv4(usageSK, digest[:], sym[:])
 	return deriveEDDSAKeypair(digest)
 }
 
@@ -84,7 +84,7 @@ func (kp *keypair) fingerprint() fingerprint {
 func (p *publicKey) fingerprint() fingerprint {
 	var f fingerprint
 	rep := p.k.DSAEncode()
-	kdf_otrv4(usageFingerprint, f[:], rep)
+	kdfOtrv4(usageFingerprint, f[:], rep)
 	return f
 }
 

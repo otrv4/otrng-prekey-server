@@ -133,12 +133,11 @@ func (m *ensembleRetrievalQueryMessage) respond(from string, s *GenericServer) (
 			instanceTag: m.instanceTag,
 			message:     noPrekeyMessagesAvailableMessage,
 		}, nil
-	} else {
-		return &ensembleRetrievalMessage{
-			instanceTag: m.instanceTag,
-			ensembles:   bundles,
-		}, nil
 	}
+	return &ensembleRetrievalMessage{
+		instanceTag: m.instanceTag,
+		ensembles:   bundles,
+	}, nil
 }
 
 func generatePublicationMessage(cp *clientProfile, pps []*prekeyProfile, pms []*prekeyMessage, macKey []byte) *publicationMessage {

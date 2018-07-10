@@ -168,8 +168,8 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{d2.s}, t)
 
 	sk := kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
-	sita_prekey_mac_k := kdfx(usagePreMACKey, 64, sk)
-	msg := generateStorageInformationRequestMessage(sita_prekey_mac_k)
+	sitaPrekeyMac := kdfx(usagePreMACKey, 64, sk)
+	msg := generateStorageInformationRequestMessage(sitaPrekeyMac)
 
 	d3 := generateDake3(sita.instanceTag, sigma, msg.serialize())
 
@@ -298,8 +298,8 @@ func (s *GenericServerSuite) Test_flow_invalidDAKE3(c *C) {
 	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{d2.s}, t)
 
 	sk := kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
-	sita_prekey_mac_k := kdfx(usagePreMACKey, 64, sk)
-	msg := generateStorageInformationRequestMessage(sita_prekey_mac_k)
+	sitaPrekeyMac := kdfx(usagePreMACKey, 64, sk)
+	msg := generateStorageInformationRequestMessage(sitaPrekeyMac)
 
 	d3 := generateDake3(0xBADBADBA, sigma, msg.serialize())
 	r, e = mh.handleMessage("sita@example.org", d3.serialize())
@@ -340,10 +340,10 @@ func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
 	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{d2.s}, t)
 
 	sk := kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
-	sita_bad_prekey_mac_k := kdfx(usagePreMACKey, 64, sk)
-	sita_bad_prekey_mac_k[0] = 0xBA
-	sita_bad_prekey_mac_k[1] = 0xDB
-	msg := generateStorageInformationRequestMessage(sita_bad_prekey_mac_k)
+	sitaBadPrekeyMacK := kdfx(usagePreMACKey, 64, sk)
+	sitaBadPrekeyMacK[0] = 0xBA
+	sitaBadPrekeyMacK[1] = 0xDB
+	msg := generateStorageInformationRequestMessage(sitaBadPrekeyMacK)
 
 	d3 := generateDake3(sita.instanceTag, sigma, msg.serialize())
 	r, e = mh.handleMessage("sita@example.org", d3.serialize())
@@ -386,13 +386,13 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{d2.s}, t)
 
 	sk := kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
-	sita_prekey_mac_k := kdfx(usagePreMACKey, 64, sk)
+	sitaPrekeyMacK := kdfx(usagePreMACKey, 64, sk)
 
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	msg := generatePublicationMessage(sita.clientProfile, []*prekeyProfile{pp1}, []*prekeyMessage{pm1, pm2}, sita_prekey_mac_k)
+	msg := generatePublicationMessage(sita.clientProfile, []*prekeyProfile{pp1}, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
 
 	d3 := generateDake3(sita.instanceTag, sigma, msg.serialize())
 

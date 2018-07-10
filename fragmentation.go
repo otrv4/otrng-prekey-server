@@ -74,11 +74,11 @@ func (f *fragmentations) newFragmentReceived(from, frag string) (string, bool, e
 		return "", false, errors.New("invalid fragmentation parse")
 	}
 
-	ctxId := fmt.Sprintf("%s/%d", from, id)
-	fc, ok := f.contexts[ctxId]
+	ctxID := fmt.Sprintf("%s/%d", from, id)
+	fc, ok := f.contexts[ctxID]
 	if !ok {
 		fc = newFragmentationContext(tot)
-		f.contexts[ctxId] = fc
+		f.contexts[ctxID] = fc
 	}
 
 	if fc.total != tot {
@@ -88,12 +88,10 @@ func (f *fragmentations) newFragmentReceived(from, frag string) (string, bool, e
 	fc.add(ix, fragTwo[3])
 	if fc.done() {
 		complete := fc.complete()
-		delete(f.contexts, ctxId)
+		delete(f.contexts, ctxID)
 		return complete, true, nil
-	} else {
-		return "", false, nil
 	}
-
+	return "", false, nil
 }
 
 func (f *fragmentations) cleanFragments() {
@@ -123,7 +121,7 @@ func (fc *fragmentationContext) complete() string {
 	return strings.Join(fc.pieces, "")
 }
 
-func generateRandomId(r WithRandom) uint32 {
+func generateRandomID(r WithRandom) uint32 {
 	var dst [4]byte
 	randomInto(r, dst[:])
 	return binary.BigEndian.Uint32(dst[:])
@@ -153,7 +151,7 @@ func potentiallyFragment(msg string, fragLen int, r WithRandom) []string {
 	if fragLen == 0 || l <= fragLen {
 		return []string{msg}
 	}
-	prefix := fmt.Sprintf("?OTRP|%d|BEEF|CADE,", generateRandomId(r))
+	prefix := fmt.Sprintf("?OTRP|%d|BEEF|CADE,", generateRandomID(r))
 
 	numFragments := (l / fragLen) + 1
 	ret := make([]string, numFragments)

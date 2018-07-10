@@ -77,8 +77,8 @@ func generatePrekeyMessage(wr WithRandom, tag uint32) (*prekeyMessage, *keypair)
 	}, y
 }
 
-func (cp *clientProfile) Equals(other *clientProfile) bool {
-	return bytes.Equal(cp.serialize(), other.serialize())
+func (m *clientProfile) Equals(other *clientProfile) bool {
+	return bytes.Equal(m.serialize(), other.serialize())
 }
 
 func (pp *prekeyProfile) Equals(other *prekeyProfile) bool {
@@ -89,7 +89,7 @@ func (pm *prekeyMessage) Equals(other *prekeyMessage) bool {
 	return bytes.Equal(pm.serialize(), other.serialize())
 }
 
-func (pm *prekeyProfile) generateSignature(kp *keypair) [114]byte {
-	msg := pm.serializeForSignature()
+func (pp *prekeyProfile) generateSignature(kp *keypair) [114]byte {
+	msg := pp.serializeForSignature()
 	return ed448.DSASign(kp.sym, kp.pub.k, msg)
 }

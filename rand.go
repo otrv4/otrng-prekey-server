@@ -5,6 +5,7 @@ import (
 	"io"
 )
 
+// WithRandom exposes randomness of a type
 type WithRandom interface {
 	randReader() io.Reader
 }

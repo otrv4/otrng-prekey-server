@@ -36,9 +36,9 @@ func chooseT(Ai ed448.Point, isSecret uint32, Ri ed448.Point, Ti ed448.Point, ci
 }
 
 func calculateC(A1, A2, A3, T1, T2, T3 ed448.Point, msg []byte) ed448.Scalar {
-	h := kdfx_otrv4(0x1D, 64,
-		base_point_bytes_dup,
-		prime_order_bytes_dup,
+	h := kdfxOtrv4(0x1D, 64,
+		basePointBytesDup,
+		primeOrderBytesDup,
 		A1.DSAEncode(),
 		A2.DSAEncode(),
 		A3.DSAEncode(),
@@ -70,9 +70,9 @@ func calculateRI(secret, ri ed448.Scalar, isSecret uint32, ci, ti ed448.Scalar) 
 func generateSignature(wr WithRandom, secret *privateKey, pub *publicKey, A1, A2, A3 *publicKey, m []byte) (*ringSignature, error) {
 	r := &ringSignature{}
 
-	is_A1 := pub.k.EqualsMask(A1.k)
-	is_A2 := pub.k.EqualsMask(A2.k)
-	is_A3 := pub.k.EqualsMask(A3.k)
+	isA1 := pub.k.EqualsMask(A1.k)
+	isA2 := pub.k.EqualsMask(A2.k)
+	isA3 := pub.k.EqualsMask(A3.k)
 
 	t1, T1 := generateZqKeypair(wr)
 	t2, T2 := generateZqKeypair(wr)
@@ -86,19 +86,19 @@ func generateSignature(wr WithRandom, secret *privateKey, pub *publicKey, A1, A2
 	c2, _ := generateZqKeypair(wr)
 	c3, _ := generateZqKeypair(wr)
 
-	chosen_T1 := chooseT(A1.k, is_A1, R1, T1, c1)
-	chosen_T2 := chooseT(A2.k, is_A2, R2, T2, c2)
-	chosen_T3 := chooseT(A3.k, is_A3, R3, T3, c3)
+	chosenT1 := chooseT(A1.k, isA1, R1, T1, c1)
+	chosenT2 := chooseT(A2.k, isA2, R2, T2, c2)
+	chosenT3 := chooseT(A3.k, isA3, R3, T3, c3)
 
-	c := calculateC(A1.k, A2.k, A3.k, chosen_T1, chosen_T2, chosen_T3, m)
+	c := calculateC(A1.k, A2.k, A3.k, chosenT1, chosenT2, chosenT3, m)
 
-	r.c1 = calculateCI(c, c1, is_A1, c2, c3)
-	r.c2 = calculateCI(c, c2, is_A2, c1, c3)
-	r.c3 = calculateCI(c, c3, is_A3, c1, c2)
+	r.c1 = calculateCI(c, c1, isA1, c2, c3)
+	r.c2 = calculateCI(c, c2, isA2, c1, c3)
+	r.c3 = calculateCI(c, c3, isA3, c1, c2)
 
-	r.r1 = calculateRI(secret.k, r1, is_A1, r.c1, t1)
-	r.r2 = calculateRI(secret.k, r2, is_A2, r.c2, t2)
-	r.r3 = calculateRI(secret.k, r3, is_A3, r.c3, t3)
+	r.r1 = calculateRI(secret.k, r1, isA1, r.c1, t1)
+	r.r2 = calculateRI(secret.k, r2, isA2, r.c2, t2)
+	r.r3 = calculateRI(secret.k, r3, isA3, r.c3, t3)
 
 	return r, nil
 }
