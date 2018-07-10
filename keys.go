@@ -93,6 +93,14 @@ func validatePoint(p ed448.Point) error {
 		return errors.New("given point is the identity point")
 	}
 
-	// TODO: implement fully
+	if !p.IsOnCurve() {
+		return errors.New("given point is not on the curve")
+	}
+
+	// TODO: implement this when we can test properly for it
+	// if !ed448.PointScalarMul(p, ed448.ScalarQ).Equals(identityPoint) {
+	// 	return errors.New("--some kind of appropriate error--")
+	// }
+
 	return nil
 }
