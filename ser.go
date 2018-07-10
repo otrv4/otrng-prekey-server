@@ -522,7 +522,7 @@ func deserializeDSAKey(buf []byte) ([]byte, *dsa.PublicKey, bool) {
 	return buf, res, true
 }
 
-func (cp *clientProfile) serialize() []byte {
+func (cp *clientProfile) serializeForSignature() []byte {
 	out := []byte{}
 	fields := uint32(5)
 
@@ -561,9 +561,11 @@ func (cp *clientProfile) serialize() []byte {
 		out = append(out, cp.transitionalSignature...)
 	}
 
-	out = append(out, cp.sig.serialize()...)
-
 	return out
+}
+
+func (cp *clientProfile) serialize() []byte {
+	return append(cp.serializeForSignature(), cp.sig.serialize()...)
 }
 
 func (cp *clientProfile) deserializeField(buf []byte) ([]byte, bool) {
@@ -631,15 +633,17 @@ func (cp *clientProfile) deserialize(buf []byte) ([]byte, bool) {
 	return buf, true
 }
 
-func (pp *prekeyProfile) serialize() []byte {
+func (pp *prekeyProfile) serializeForSignature() []byte {
 	var out []byte
 	out = appendWord(out, pp.identifier)
 	out = appendWord(out, pp.instanceTag)
 	out = append(out, serializeExpiry(pp.expiration)...)
 	out = append(out, pp.sharedPrekey.serialize()...)
-	out = append(out, pp.sig.serialize()...)
-
 	return out
+}
+
+func (pp *prekeyProfile) serialize() []byte {
+	return append(pp.serializeForSignature(), pp.sig.serialize()...)
 }
 
 func (pp *prekeyProfile) deserialize(buf []byte) ([]byte, bool) {

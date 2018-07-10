@@ -5,6 +5,8 @@ import (
 	"crypto/dsa"
 	"errors"
 	"time"
+
+	"github.com/otrv4/ed448"
 )
 
 type clientProfile struct {
@@ -50,18 +52,16 @@ func (m *clientProfile) validate(tag uint32) error {
 func generatePrekeyProfile(wr WithRandom, tag uint32, expiration time.Time, longTerm *keypair) (*prekeyProfile, *keypair) {
 	ident := randomUint32(wr)
 	sharedKey := generateEDDSAKeypair(wr)
-	// TODO:
-	// This eddsa signature is NOT correct, since we have no way of generating proper eddsa signatures at the moment.
-	// This will all have to wait
-	sig := &eddsaSignature{s: [114]byte{0x03, 0x02, 0x01}}
-
-	return &prekeyProfile{
+	pp := &prekeyProfile{
 		identifier:   ident,
 		instanceTag:  tag,
 		expiration:   expiration,
 		sharedPrekey: sharedKey.pub,
-		sig:          sig,
-	}, sharedKey
+	}
+
+	pp.sig = &eddsaSignature{s: pp.generateSignature(longTerm)}
+
+	return pp, sharedKey
 }
 
 func generatePrekeyMessage(wr WithRandom, tag uint32) (*prekeyMessage, *keypair) {
@@ -87,4 +87,9 @@ func (pp *prekeyProfile) Equals(other *prekeyProfile) bool {
 
 func (pm *prekeyMessage) Equals(other *prekeyMessage) bool {
 	return bytes.Equal(pm.serialize(), other.serialize())
+}
+
+func (pm *prekeyProfile) generateSignature(kp *keypair) [114]byte {
+	msg := pm.serializeForSignature()
+	return ed448.DSASign(kp.sym, kp.pub.k, msg)
 }
