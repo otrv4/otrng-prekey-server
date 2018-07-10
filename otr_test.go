@@ -89,3 +89,37 @@ func (s *GenericServerSuite) Test_prekeyProfile_validate_checksValidSharedPrekey
 	pp.sig = &eddsaSignature{s: pp.generateSignature(sita.longTerm)}
 	c.Assert(pp.validate(sita.instanceTag, sita.longTerm.pub), ErrorMatches, "prekey profile shared prekey is not a valid point")
 }
+
+func (s *GenericServerSuite) Test_prekeyMessage_validate_validatesACorrectPrekeyMessage(c *C) {
+	gs := &GenericServer{
+		rand: fixtureRand(),
+	}
+	pm, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	c.Assert(pm.validate(sita.instanceTag), IsNil)
+}
+
+func (s *GenericServerSuite) Test_prekeyMessage_validate_checksInvalidInstanceTag(c *C) {
+	gs := &GenericServer{
+		rand: fixtureRand(),
+	}
+	pm, _ := generatePrekeyMessage(gs, 0xBADBADBA)
+	c.Assert(pm.validate(sita.instanceTag), ErrorMatches, "invalid instance tag in prekey message")
+}
+
+func (s *GenericServerSuite) Test_prekeyMessage_validate_checksInvalidYPoint(c *C) {
+	gs := &GenericServer{
+		rand: fixtureRand(),
+	}
+	pm, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm.y.k = identityPoint
+	c.Assert(pm.validate(sita.instanceTag), ErrorMatches, "prekey profile Y point is not a valid point")
+}
+
+func (s *GenericServerSuite) Test_prekeyMessage_validate_checksInvalidBValue(c *C) {
+	gs := &GenericServer{
+		rand: fixtureRand(),
+	}
+	pm, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm.b = []byte{0x00}
+	c.Assert(pm.validate(sita.instanceTag), ErrorMatches, "prekey profile B value is not a valid DH group member")
+}

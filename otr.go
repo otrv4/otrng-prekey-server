@@ -89,7 +89,7 @@ func generatePrekeyProfile(wr WithRandom, tag uint32, expiration time.Time, long
 func generatePrekeyMessage(wr WithRandom, tag uint32) (*prekeyMessage, *keypair) {
 	ident := randomUint32(wr)
 	y := generateECDHKeypair(wr)
-	b := randomBytes(wr, 80)
+	b := []byte{0x04}
 
 	return &prekeyMessage{
 		identifier:  ident,
@@ -141,14 +141,19 @@ func (pp *prekeyProfile) validate(tag uint32, pub *publicKey) error {
 	return nil
 }
 
-func (pm *prekeyMessage) validate() error {
+func (pm *prekeyMessage) validate(tag uint32) error {
 	// TODO: implement fully
+	if pm.instanceTag != tag {
+		return errors.New("invalid instance tag in prekey message")
+	}
 
 	if validatePoint(pm.y.k) != nil {
 		return errors.New("prekey profile Y point is not a valid point")
 	}
-	// Check that the ECDH public key Y is on curve Ed448. See Verifying that a point is on the curve section for details.
-	// Verify that the DH public key B is from the correct group. See Verifying that an integer is in the DH group section for details.
+
+	if validateDHValue(pm.b) != nil {
+		return errors.New("prekey profile B value is not a valid DH group member")
+	}
 
 	return nil
 }

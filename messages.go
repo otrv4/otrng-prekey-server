@@ -182,7 +182,7 @@ func (m *publicationMessage) validate(from string, s *GenericServer) error {
 	}
 
 	for _, pm := range m.prekeyMessages {
-		if pm.validate() != nil {
+		if pm.validate(tag) != nil {
 			return errors.New("invalid prekey message in publication message")
 		}
 	}
