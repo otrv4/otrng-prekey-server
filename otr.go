@@ -42,10 +42,32 @@ type prekeyEnsemble struct {
 }
 
 func (m *clientProfile) validate(tag uint32) error {
-	// TODO: finish this
 	if m.instanceTag != tag {
 		return errors.New("invalid instance tag in client profile")
 	}
+
+	if !ed448.DSAVerify(m.sig.s, m.publicKey.k, m.serializeForSignature()) {
+		return errors.New("invalid signature in client profile")
+	}
+
+	if m.expiration.Before(time.Now()) {
+		return errors.New("client profile has expired")
+	}
+
+	if !bytes.Contains(m.versions, []byte{0x04}) {
+		return errors.New("client profile doesn't support version 4")
+	}
+
+	// This branch will be untested for now, since I have NO idea how to generate
+	// a valid private key AND eddsa signature that matches an invalid point...
+	if validatePoint(m.publicKey.k) != nil {
+		return errors.New("client profile public key is not a valid point")
+	}
+
+	// The spec says to verify the DSA transitional signature here
+	// For now, I'll avoid doing that, since the purpose of the transitional
+	// signature has nothing to do with the prekey server
+
 	return nil
 }
 
@@ -91,5 +113,10 @@ func (pm *prekeyMessage) Equals(other *prekeyMessage) bool {
 
 func (pp *prekeyProfile) generateSignature(kp *keypair) [114]byte {
 	msg := pp.serializeForSignature()
+	return ed448.DSASign(kp.sym, kp.pub.k, msg)
+}
+
+func (cp *clientProfile) generateSignature(kp *keypair) [114]byte {
+	msg := cp.serializeForSignature()
 	return ed448.DSASign(kp.sym, kp.pub.k, msg)
 }

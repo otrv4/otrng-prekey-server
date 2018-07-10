@@ -120,8 +120,6 @@ func (m *storageInformationRequestMessage) validate(from string, s *GenericServe
 		return errors.New("incorrect MAC")
 	}
 
-	// TODO: implement rest
-
 	return nil
 }
 
