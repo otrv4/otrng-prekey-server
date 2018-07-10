@@ -65,6 +65,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_willValidateAValid
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
 	gs.session("somewhere@example.org").(*realSession).storedMac = sitaPrekeyMacK
+	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
 
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
@@ -98,6 +99,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidMac(
 		0x42, 0x5c, 0x2d, 0xbb, 0xe5, 0x4b, 0x90, 0xce,
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
+	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
@@ -121,6 +123,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidClie
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = 0xDDDDAAAA
 	gs.session("somewhere@example.org").(*realSession).storedMac = sitaPrekeyMacK
+	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
 
 	cp := generateSitaTestData().clientProfile
 	cp.expiration = time.Date(2017, 11, 5, 13, 46, 00, 13, time.UTC)
@@ -148,6 +151,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidPrek
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
 	gs.session("somewhere@example.org").(*realSession).storedMac = sitaPrekeyMacK
+	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
 
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pp1.instanceTag = 0xAADDAADD
@@ -174,6 +178,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidPrek
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
 	gs.session("somewhere@example.org").(*realSession).storedMac = sitaPrekeyMacK
+	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
 
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)

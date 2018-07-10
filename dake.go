@@ -76,7 +76,7 @@ func (m *dake3Message) validate(from string, s *GenericServer) error {
 
 func (m *dake1Message) respond(from string, s *GenericServer) (serializable, error) {
 	sk := generateECDHKeypair(s)
-	s.session(from).save(sk, m.i, m.instanceTag)
+	s.session(from).save(sk, m.i, m.instanceTag, m.clientProfile)
 
 	// TODO: actually make a real phi
 	phi := []byte("hardcoded phi for now")

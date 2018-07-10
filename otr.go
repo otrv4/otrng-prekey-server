@@ -121,16 +121,22 @@ func (m *clientProfile) generateSignature(kp *keypair) [114]byte {
 	return ed448.DSASign(kp.sym, kp.pub.k, msg)
 }
 
-func (pp *prekeyProfile) validate(tag uint32) error {
-	// TODO: implement fully
-
+func (pp *prekeyProfile) validate(tag uint32, pub *publicKey) error {
 	if pp.instanceTag != tag {
 		return errors.New("invalid instance tag in prekey profile")
 	}
-	// Verify that the Prekey Profile signature is valid.
-	// Verify that the Prekey Profile has not expired.
-	// Verify that the Prekey Profile owner's instance tag is equal to the Sender Instance tag of the person that sent the DAKE message in which the Client Profile is received.
-	// Validate that the Public Shared Prekey is on the curve Ed448-Goldilocks. See Verifying that a point is on the curve section for details.
+
+	if !ed448.DSAVerify(pp.sig.s, pub.k, pp.serializeForSignature()) {
+		return errors.New("invalid signature in prekey profile")
+	}
+
+	if pp.expiration.Before(time.Now()) {
+		return errors.New("prekey profile has expired")
+	}
+
+	if validatePoint(pp.sharedPrekey.k) != nil {
+		return errors.New("prekey profile shared prekey is not a valid point")
+	}
 
 	return nil
 }

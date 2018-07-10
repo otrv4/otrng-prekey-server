@@ -164,6 +164,7 @@ func generatePublicationMessage(cp *clientProfile, pps []*prekeyProfile, pms []*
 
 func (m *publicationMessage) validate(from string, s *GenericServer) error {
 	macKey := s.session(from).macKey()
+	clientProfile := s.session(from).clientProfile()
 	mac := generateMACForPublicationMessage(m.clientProfile, m.prekeyProfiles, m.prekeyMessages, macKey)
 	if !bytes.Equal(mac[:], m.mac[:]) {
 		return errors.New("invalid mac for publication message")
@@ -175,7 +176,7 @@ func (m *publicationMessage) validate(from string, s *GenericServer) error {
 	}
 
 	for _, pp := range m.prekeyProfiles {
-		if pp.validate(tag) != nil {
+		if pp.validate(tag, clientProfile.publicKey) != nil {
 			return errors.New("invalid prekey profile in publication message")
 		}
 	}
