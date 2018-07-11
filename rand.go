@@ -40,9 +40,3 @@ func randomUint32(w WithRandom) uint32 {
 	_, ww, _ := extractWord(b[:])
 	return ww
 }
-
-func randomBytes(w WithRandom, len uint32) []byte {
-	b := make([]byte, len)
-	randomInto(w, b[:])
-	return b
-}

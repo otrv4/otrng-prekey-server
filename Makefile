@@ -26,3 +26,7 @@ lint:
 	for pkg in $$($(GOLIST) ./...) ; do \
 		golint $$pkg ; \
 	done
+
+cover:
+	go test ./... -coverprofile=coverage.out
+	go tool cover -html=coverage.out
