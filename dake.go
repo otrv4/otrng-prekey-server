@@ -52,7 +52,10 @@ func generateDake3(it uint32, sigma *ringSignature, m []byte) *dake3Message {
 	}
 }
 
-func (m *dake1Message) validate() error {
+func (m *dake1Message) toplevelMessageMarkerDontImplement() {}
+func (m *dake3Message) toplevelMessageMarkerDontImplement() {}
+
+func (m *dake1Message) validate(string, *GenericServer) error {
 	if e := m.clientProfile.validate(m.instanceTag); e != nil {
 		return errors.New("invalid client profile")
 	}
@@ -105,8 +108,10 @@ func (m *dake1Message) respond(from string, s *GenericServer) (serializable, err
 	t = append(t, serializePoint(sk.pub.k)...)
 	t = append(t, kdfx(usageInitiatorPrekeyCompositePHI, 64, phi)...)
 
-	// TODO: not ignore error here
-	sigma, _ := generateSignature(s, s.key.priv, s.key.pub, m.clientProfile.publicKey, s.key.pub, &publicKey{m.i}, t)
+	sigma, e := generateSignature(s, s.key.priv, s.key.pub, m.clientProfile.publicKey, s.key.pub, &publicKey{m.i}, t)
+	if e != nil {
+		return nil, errors.New("invalid ring signature generation")
+	}
 
 	return generateDake2(m.instanceTag, []byte(s.identity), s.fingerprint, sk.pub.k, sigma), nil
 }

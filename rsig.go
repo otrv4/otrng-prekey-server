@@ -1,6 +1,8 @@
 package prekeyserver
 
 import (
+	"errors"
+
 	"github.com/otrv4/ed448"
 )
 
@@ -73,6 +75,10 @@ func generateSignature(wr WithRandom, secret *privateKey, pub *publicKey, A1, A2
 	isA1 := pub.k.EqualsMask(A1.k)
 	isA2 := pub.k.EqualsMask(A2.k)
 	isA3 := pub.k.EqualsMask(A3.k)
+
+	if (isA1 ^ isA2 ^ isA3) == uint32(0) {
+		return nil, errors.New("more than one public key match the secret key")
+	}
 
 	t1, T1 := generateZqKeypair(wr)
 	t2, T2 := generateZqKeypair(wr)

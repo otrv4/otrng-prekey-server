@@ -125,3 +125,19 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksMessage(c *C) {
 	d3 := generateDake3(sita.instanceTag, sigma, []byte{})
 	c.Assert(d3.validate("someone@example.org", gs), ErrorMatches, "incorrect message")
 }
+
+func (s *GenericServerSuite) Test_dake3Message_respond_shouldFailOnInvalidRingSignatureGeneration(c *C) {
+	stor := createInMemoryStorage()
+	serverKey := deriveEDDSAKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	gs := &GenericServer{
+		identity:    "masterOfKeys.example.org",
+		rand:        fixtureRand(),
+		key:         serverKey,
+		fingerprint: serverKey.pub.fingerprint(),
+		storageImpl: stor,
+	}
+	d1 := generateDake1(sita.instanceTag, sita.clientProfile, gs.key.pub.k)
+
+	_, e := d1.respond("someone@example.org", gs)
+	c.Assert(e, ErrorMatches, "invalid ring signature generation")
+}

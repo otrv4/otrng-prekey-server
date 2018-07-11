@@ -123,6 +123,13 @@ func (m *storageInformationRequestMessage) validate(from string, s *GenericServe
 	return nil
 }
 
+func (m *ensembleRetrievalQueryMessage) toplevelMessageMarkerDontImplement() {}
+
+func (m *ensembleRetrievalQueryMessage) validate(from string, s *GenericServer) error {
+	// TODO: implement
+	return nil
+}
+
 func (m *ensembleRetrievalQueryMessage) respond(from string, s *GenericServer) (serializable, error) {
 	stor := s.storage()
 	bundles := stor.retrieveFor(m.identity)
