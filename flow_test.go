@@ -70,6 +70,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 		storageImpl: stor,
 	}
 	mh := &otrngMessageHandler{s: gs}
+	gs.messageHandler = mh
 
 	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.pub.k)
 
@@ -316,6 +317,7 @@ func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
 		fingerprint: serverKey.pub.fingerprint(),
 	}
 	mh := &otrngMessageHandler{s: gs}
+	gs.messageHandler = mh
 
 	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.pub.k)
 
@@ -362,6 +364,7 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 		storageImpl: stor,
 	}
 	mh := &otrngMessageHandler{s: gs}
+	gs.messageHandler = mh
 
 	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.pub.k)
 

@@ -33,6 +33,10 @@ func (m *mockMessageHandler) handleMessage(from string, message []byte) ([]byte,
 	return m.toReturnMessage, m.toReturnError
 }
 
+func (m *mockMessageHandler) handleInnerMessage(from string, message []byte) (serializable, error) {
+	return nil, nil
+}
+
 func (s *GenericServerSuite) Test_Handle_WillPassOnTheIdentityToTheMessageHandler(c *C) {
 	gs := &GenericServer{}
 	m := &mockMessageHandler{}

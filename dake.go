@@ -117,37 +117,5 @@ func (m *dake1Message) respond(from string, s *GenericServer) (serializable, err
 }
 
 func (m *dake3Message) respond(from string, s *GenericServer) (serializable, error) {
-	// TODO: refactor this to be part of the message handler instead
-
-	result, e := parseMessage(m.message)
-	if e != nil {
-		// TODO: test
-		return nil, e
-	}
-
-	if s1, ok := result.(*storageInformationRequestMessage); ok {
-		if ev := s1.validate(from, s); ev != nil {
-			return nil, ev
-		}
-
-		r1, e1 := s1.respond(from, s)
-		if e1 != nil {
-			// TODO: test
-			return nil, e1
-		}
-		return r1, nil
-	}
-
-	if s1, ok := result.(*publicationMessage); ok {
-		// TODO: s1.validate(from, s)
-
-		r, e := s1.respond(from, s)
-		if e != nil {
-			// TODO: test
-			return nil, e
-		}
-		return r, nil
-	}
-
-	return nil, nil
+	return s.messageHandler.handleInnerMessage(from, m.message)
 }
