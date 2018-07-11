@@ -70,7 +70,24 @@ func (m *dake3Message) validate(from string, s *GenericServer) error {
 		return errors.New("incorrect instance tag")
 	}
 
-	// TODO: implement rest
+	if len(m.message) == 0 {
+		return errors.New("incorrect message")
+	}
+
+	// TODO: actually make a real phi
+	phi := []byte("hardcoded phi for now")
+
+	t := append([]byte{}, 0x01)
+	t = append(t, kdfx(usageReceiverClientProfile, 64, sess.clientProfile().serialize())...)
+	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, s.compositeIdentity())...)
+	t = append(t, serializePoint(sess.pointI())...)
+	t = append(t, serializePoint(sess.keypairS().pub.k)...)
+	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
+
+	if !m.sigma.verify(sess.clientProfile().publicKey, s.key.pub, sess.keypairS().pub, t) {
+		return errors.New("incorrect ring signature")
+	}
+
 	return nil
 }
 
@@ -95,6 +112,8 @@ func (m *dake1Message) respond(from string, s *GenericServer) (serializable, err
 }
 
 func (m *dake3Message) respond(from string, s *GenericServer) (serializable, error) {
+	// TODO: refactor this to be part of the message handler instead
+
 	result, e := parseMessage(m.message)
 	if e != nil {
 		// TODO: test

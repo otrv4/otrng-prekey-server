@@ -7,6 +7,8 @@ type session interface {
 	instanceTag() uint32
 	macKey() []byte
 	clientProfile() *clientProfile
+	pointI() ed448.Point
+	keypairS() *keypair
 }
 
 type realSession struct {
@@ -30,6 +32,14 @@ func (s *realSession) instanceTag() uint32 {
 
 func (s *realSession) clientProfile() *clientProfile {
 	return s.cp
+}
+
+func (s *realSession) pointI() ed448.Point {
+	return s.i
+}
+
+func (s *realSession) keypairS() *keypair {
+	return s.s
 }
 
 func (s *realSession) macKey() []byte {
