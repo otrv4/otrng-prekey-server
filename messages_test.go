@@ -187,3 +187,13 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidPrek
 	msg := generatePublicationMessage(sita.clientProfile, []*prekeyProfile{pp1}, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
 	c.Assert(msg.validate("somewhere@example.org", gs), ErrorMatches, "invalid prekey message in publication message")
 }
+
+func (s *GenericServerSuite) Test_ensembleRetrievalQueryMessage_validate_willValidateAValidMessage(c *C) {
+	retM := &ensembleRetrievalQueryMessage{
+		instanceTag: 0x12445511,
+		identity:    "sita@example.org",
+		versions:    []byte{0x04},
+	}
+
+	c.Assert(retM.validate("bla@example.org", nil), IsNil)
+}

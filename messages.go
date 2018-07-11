@@ -126,7 +126,6 @@ func (m *storageInformationRequestMessage) validate(from string, s *GenericServe
 }
 
 func (m *ensembleRetrievalQueryMessage) validate(from string, s *GenericServer) error {
-	// TODO: implement
 	return nil
 }
 
