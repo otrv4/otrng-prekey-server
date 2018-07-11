@@ -52,9 +52,6 @@ func generateDake3(it uint32, sigma *ringSignature, m []byte) *dake3Message {
 	}
 }
 
-func (m *dake1Message) toplevelMessageMarkerDontImplement() {}
-func (m *dake3Message) toplevelMessageMarkerDontImplement() {}
-
 func (m *dake1Message) validate(string, *GenericServer) error {
 	if e := m.clientProfile.validate(m.instanceTag); e != nil {
 		return errors.New("invalid client profile")

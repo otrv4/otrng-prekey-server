@@ -51,6 +51,8 @@ type noPrekeyEnsemblesMessage struct {
 
 type message interface {
 	serializable
+	validate(string, *GenericServer) error
+	respond(string, *GenericServer) (serializable, error)
 }
 
 func parseVersion(message []byte) uint16 {
@@ -58,7 +60,7 @@ func parseVersion(message []byte) uint16 {
 	return v
 }
 
-func parseMessage(msg []byte) (interface{}, error) {
+func parseMessage(msg []byte) (message, error) {
 	if len(msg) <= indexOfMessageType {
 		return nil, errors.New("message too short to be a valid message")
 	}
@@ -122,8 +124,6 @@ func (m *storageInformationRequestMessage) validate(from string, s *GenericServe
 
 	return nil
 }
-
-func (m *ensembleRetrievalQueryMessage) toplevelMessageMarkerDontImplement() {}
 
 func (m *ensembleRetrievalQueryMessage) validate(from string, s *GenericServer) error {
 	// TODO: implement

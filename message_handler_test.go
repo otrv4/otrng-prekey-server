@@ -9,12 +9,6 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnMess
 	c.Assert(e, ErrorMatches, "invalid protocol version")
 }
 
-func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnIncorrectMessageReturn(c *C) {
-	msg := generateStorageInformationRequestMessage([]byte{0x1, 0x02})
-	_, e := (&otrngMessageHandler{}).handleMessage("", msg.serialize())
-	c.Assert(e, ErrorMatches, "invalid toplevel message")
-}
-
 func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnErrorsFromResponse(c *C) {
 	stor := createInMemoryStorage()
 	serverKey := deriveEDDSAKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
