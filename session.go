@@ -25,7 +25,12 @@ type realSession struct {
 	lastTouched time.Time
 }
 
+func (s *realSession) touch() {
+	s.lastTouched = time.Now()
+}
+
 func (s *realSession) save(kp *keypair, i ed448.Point, tag uint32, cp *clientProfile) {
+	s.touch()
 	s.s = kp
 	s.i = i
 	s.tag = tag
@@ -33,22 +38,27 @@ func (s *realSession) save(kp *keypair, i ed448.Point, tag uint32, cp *clientPro
 }
 
 func (s *realSession) instanceTag() uint32 {
+	s.touch()
 	return s.tag
 }
 
 func (s *realSession) clientProfile() *clientProfile {
+	s.touch()
 	return s.cp
 }
 
 func (s *realSession) pointI() ed448.Point {
+	s.touch()
 	return s.i
 }
 
 func (s *realSession) keypairS() *keypair {
+	s.touch()
 	return s.s
 }
 
 func (s *realSession) macKey() []byte {
+	s.touch()
 	if s.storedMac != nil {
 		return s.storedMac
 	}
