@@ -2,6 +2,7 @@ package prekeyserver
 
 import (
 	"errors"
+	"time"
 
 	. "gopkg.in/check.v1"
 )
@@ -197,4 +198,20 @@ func (s *GenericServerSuite) Test_potentiallyFragment_fragmentsCorrectly(c *C) {
 	c.Assert(res, HasLen, 2)
 	c.Assert(res[0], DeepEquals, "?OTRP|2880154539|BEEF|CADE,1,2,hello w,")
 	c.Assert(res[1], DeepEquals, "?OTRP|2880154539|BEEF|CADE,2,2,orld,")
+}
+
+func (s *GenericServerSuite) Test_fragmentations_cleanup_removesOldContexts(c *C) {
+	f := newFragmentations()
+	f.newFragmentReceived("me@example.org", "?OTRP|45243|AF1FDEAD|BEEF,1,2,hello,")
+	f.newFragmentReceived("another@example.org", "?OTRP|12345|AF1FDEAD|BEEF,1,2,hello,")
+	f.newFragmentReceived("me@example.org", "?OTRP|45244|AF1FDEAD|BEEF,1,2,hello,")
+
+	f.contexts["me@example.org/45243"].lastTouched = time.Now().Add(time.Duration(-11) * time.Minute)
+	f.contexts["another@example.org/12345"].lastTouched = time.Now().Add(time.Duration(-7) * time.Minute)
+	f.contexts["me@example.org/45244"].lastTouched = time.Now().Add(time.Duration(-4) * time.Minute)
+
+	f.cleanup(time.Duration(6) * time.Minute)
+
+	c.Assert(f.contexts, HasLen, 1)
+	c.Assert(f.contexts["me@example.org/45244"], Not(IsNil))
 }

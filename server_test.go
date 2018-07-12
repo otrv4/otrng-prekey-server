@@ -39,7 +39,9 @@ func (m *mockMessageHandler) handleInnerMessage(from string, message []byte) (se
 }
 
 func (s *GenericServerSuite) Test_Handle_WillPassOnTheIdentityToTheMessageHandler(c *C) {
-	gs := &GenericServer{}
+	gs := &GenericServer{
+		fragmentations: newFragmentations(),
+	}
 	m := &mockMessageHandler{}
 	gs.messageHandler = m
 	gs.Handle("myname", "aGksIHRoaXMgaXMgbm90IGEgdmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4=.")
@@ -47,7 +49,9 @@ func (s *GenericServerSuite) Test_Handle_WillPassOnTheIdentityToTheMessageHandle
 }
 
 func (s *GenericServerSuite) Test_Handle_WillDecodeBase64EncodedMessage(c *C) {
-	gs := &GenericServer{}
+	gs := &GenericServer{
+		fragmentations: newFragmentations(),
+	}
 	m := &mockMessageHandler{}
 	gs.messageHandler = m
 	gs.Handle("myname", "aGksIHRoaXMgaXMgbm90IGEgdmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4=.")
@@ -71,7 +75,9 @@ func (s *GenericServerSuite) Test_Handle_ACorruptedBase64MessageGeneratesAnError
 }
 
 func (s *GenericServerSuite) Test_Handle_WillBase64EncodeAndFormatReturnValues(c *C) {
-	gs := &GenericServer{}
+	gs := &GenericServer{
+		fragmentations: newFragmentations(),
+	}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
 	}
@@ -121,7 +127,11 @@ func (s *GenericServerSuite) Test_Handle_PassesOnAFragmentationError(c *C) {
 }
 
 func (s *GenericServerSuite) Test_Handle_WillPotentiallyFragmentReturnValues(c *C) {
-	gs := &GenericServer{fragLen: 54, rand: fixtureRand()}
+	gs := &GenericServer{
+		fragLen:        54,
+		rand:           fixtureRand(),
+		fragmentations: newFragmentations(),
+	}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
 	}
@@ -153,6 +163,7 @@ func (s *GenericServerSuite) Test_hasSession_returnsFalseWhenNoSessionsExist(c *
 func (s *GenericServerSuite) Test_cleanupAfter_removesOldSessions(c *C) {
 	gs := &GenericServer{
 		sessionTimeout: time.Duration(30) * time.Minute,
+		fragmentations: newFragmentations(),
 	}
 
 	gs.session("someone@example.org").(*realSession).lastTouched = time.Now().Add(time.Duration(-56) * time.Minute)
@@ -167,7 +178,27 @@ func (s *GenericServerSuite) Test_cleanupAfter_removesOldSessions(c *C) {
 func (s *GenericServerSuite) Test_cleanupAfter_doesntDoAnythingWithEmptySessions(c *C) {
 	gs := &GenericServer{
 		sessionTimeout: time.Duration(30) * time.Minute,
+		fragmentations: newFragmentations(),
 	}
 
 	gs.cleanupAfter()
+}
+
+func (s *GenericServerSuite) Test_cleanupAfter_cleansUpOldFragments(c *C) {
+	gs := &GenericServer{
+		fragmentationTimeout: time.Duration(6) * time.Minute,
+		fragmentations:       newFragmentations(),
+	}
+
+	gs.fragmentations.newFragmentReceived("me@example.org", "?OTRP|45243|AF1FDEAD|BEEF,1,2,hello,")
+	gs.fragmentations.newFragmentReceived("another@example.org", "?OTRP|12345|AF1FDEAD|BEEF,1,2,hello,")
+	gs.fragmentations.newFragmentReceived("me@example.org", "?OTRP|45244|AF1FDEAD|BEEF,1,2,hello,")
+
+	gs.fragmentations.contexts["me@example.org/45243"].lastTouched = time.Now().Add(time.Duration(-11) * time.Minute)
+	gs.fragmentations.contexts["another@example.org/12345"].lastTouched = time.Now().Add(time.Duration(-7) * time.Minute)
+	gs.fragmentations.contexts["me@example.org/45244"].lastTouched = time.Now().Add(time.Duration(-4) * time.Minute)
+
+	gs.cleanupAfter()
+
+	c.Assert(gs.fragmentations.contexts, HasLen, 1)
 }

@@ -27,7 +27,8 @@ type GenericServer struct {
 
 	storageImpl storage
 
-	sessionTimeout time.Duration
+	sessionTimeout       time.Duration
+	fragmentationTimeout time.Duration
 }
 
 func (g *GenericServer) storage() storage {
@@ -98,9 +99,10 @@ func (g *GenericServer) cleanupAfter() {
 		delete(g.sessions, nm)
 	}
 
+	g.fragmentations.cleanup(g.fragmentationTimeout)
 	// TODO: implement
 	// Clean up
-	//  - Clean up fragmented message that never got complete
+	//  - Clean up fragmented message that never got completed
 	//  - Remove from storage all expired things
 }
 

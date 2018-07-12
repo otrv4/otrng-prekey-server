@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // This code will sometimes fragment messages in smaller
@@ -14,10 +15,11 @@ import (
 // I don't think it's worth the trouble and complexity to implement it
 
 type fragmentationContext struct {
-	pieces []string
-	have   []bool
-	total  uint16
-	count  uint16
+	pieces      []string
+	have        []bool
+	total       uint16
+	count       uint16
+	lastTouched time.Time
 }
 
 type fragmentations struct {
@@ -27,6 +29,22 @@ type fragmentations struct {
 func newFragmentations() *fragmentations {
 	return &fragmentations{
 		contexts: make(map[string]*fragmentationContext),
+	}
+}
+
+func (fc *fragmentationContext) hasExpired(timeout time.Duration) bool {
+	return fc.lastTouched.Add(timeout).Before(time.Now())
+}
+
+func (f *fragmentations) cleanup(timeout time.Duration) {
+	toRemove := []string{}
+	for nm, fc := range f.contexts {
+		if fc.hasExpired(timeout) {
+			toRemove = append(toRemove, nm)
+		}
+	}
+	for _, nm := range toRemove {
+		delete(f.contexts, nm)
 	}
 }
 
