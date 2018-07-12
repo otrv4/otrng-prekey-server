@@ -383,7 +383,7 @@ func (s *GenericServerSuite) Test_dake1Message_deserialize_shouldFailIfPointFail
 		0x00, 0x04,
 
 		// message type
-		0x02,
+		0x01,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2A,
@@ -4271,7 +4271,7 @@ func (s *GenericServerSuite) Test_deserializeDSAKey_shouldFailOnTooShortInput(c 
 
 func (s *GenericServerSuite) Test_deserializeDSAKey_shouldFailOnMalformedP(c *C) {
 	_, _, ok := deserializeDSAKey([]byte{
-		0x00, 0x01,
+		0x00, 0x00,
 
 		0x0, 0x0, 0x0, 0x80,
 		0xfc, 0x7, 0xab, 0xcf, 0xd, 0xc9, 0x16, 0xaf,
@@ -4282,7 +4282,7 @@ func (s *GenericServerSuite) Test_deserializeDSAKey_shouldFailOnMalformedP(c *C)
 
 func (s *GenericServerSuite) Test_deserializeDSAKey_shouldFailOnMalformedQ(c *C) {
 	_, _, ok := deserializeDSAKey([]byte{
-		0x00, 0x01,
+		0x00, 0x00,
 
 		0x0, 0x0, 0x0, 0x80,
 		0xfc, 0x7, 0xab, 0xcf, 0xd, 0xc9, 0x16, 0xaf,
@@ -4302,7 +4302,7 @@ func (s *GenericServerSuite) Test_deserializeDSAKey_shouldFailOnMalformedQ(c *C)
 		0xd3, 0x56, 0x1f, 0xec, 0xee, 0x72, 0xeb, 0xb4,
 		0xa0, 0x90, 0xd4, 0x50, 0xa9, 0xb7, 0xa8, 0x57,
 
-		0x0, 0x0,
+		0x0, 0x0, 0x0, 0x80,
 	})
 
 	c.Assert(ok, Equals, false)
@@ -5381,6 +5381,9 @@ func (s *GenericServerSuite) Test_storageStatusMessage_deserialize_shouldFailIfI
 		// message type
 		0x06,
 
+		// instance tag
+		0x42, 0x42, 0x42, 0x42,
+
 		// number
 		0x13, 0x34, 0xAB, 0xC0,
 
@@ -5407,6 +5410,9 @@ func (s *GenericServerSuite) Test_storageStatusMessage_deserialize_shouldFailIfI
 		// message type
 		0x07,
 
+		// instance tag
+		0x42, 0x42, 0x42, 0x42,
+
 		// number
 		0x13, 0x34, 0xAB, 0xC0,
 
@@ -5424,6 +5430,22 @@ func (s *GenericServerSuite) Test_storageStatusMessage_deserialize_shouldFailIfI
 	c.Assert(ok, Equals, false)
 }
 
+func (s *GenericServerSuite) Test_storageStatusMessage_deserialize_shouldFailOnInstanceTag(c *C) {
+	m := &storageStatusMessage{}
+	_, ok := m.deserialize([]byte{
+		// version
+		0x00, 0x04,
+
+		// message type
+		0x06,
+
+		// instance tag
+		0x42, 0x42,
+	})
+
+	c.Assert(ok, Equals, false)
+}
+
 func (s *GenericServerSuite) Test_storageStatusMessage_deserialize_shouldFailOnNumber(c *C) {
 	m := &storageStatusMessage{}
 	_, ok := m.deserialize([]byte{
@@ -5432,6 +5454,9 @@ func (s *GenericServerSuite) Test_storageStatusMessage_deserialize_shouldFailOnN
 
 		// message type
 		0x06,
+
+		// instance tag
+		0x42, 0x42, 0x42, 0x42,
 
 		// number
 		0x13, 0x34,
@@ -5448,6 +5473,9 @@ func (s *GenericServerSuite) Test_storageStatusMessage_deserialize_shouldFailOnM
 
 		// message type
 		0x06,
+
+		// instance tag
+		0x42, 0x42, 0x42, 0x42,
 
 		// number
 		0x13, 0x34, 0xAB, 0xC0,

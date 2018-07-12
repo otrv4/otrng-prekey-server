@@ -133,3 +133,8 @@ func (s *GenericServerSuite) Test_Handle_WillPotentiallyFragmentReturnValues(c *
 	c.Assert(msgs[3], Equals, "?OTRP|2882382797|BEEF|CADE,4,5,3kgcmV0,")
 	c.Assert(msgs[4], Equals, "?OTRP|2882382797|BEEF|CADE,5,5,dXJu.,")
 }
+
+func (s *GenericServerSuite) Test_handleMessage_panicsWhenNoMessageHandlerIsConfigured(c *C) {
+	gs := &GenericServer{fragLen: 7, rand: fixtureRand()}
+	c.Assert(func() { gs.handleMessage("foo@example.org", nil) }, PanicMatches, "programmer error, missing message handler")
+}

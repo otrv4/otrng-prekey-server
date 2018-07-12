@@ -35,8 +35,7 @@ func (g *GenericServer) handleMessage(from string, message []byte) ([]byte, erro
 		return g.messageHandler.handleMessage(from, message)
 	}
 
-	//	panic("programmer error, missing message handler")
-	return []byte(""), nil
+	panic("programmer error, missing message handler")
 }
 
 // Handle should receive the message in its original form
