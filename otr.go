@@ -156,3 +156,11 @@ func (pm *prekeyMessage) validate(tag uint32) error {
 
 	return nil
 }
+
+func (m *clientProfile) hasExpired() bool {
+	return m.expiration.Before(time.Now())
+}
+
+func (pp *prekeyProfile) hasExpired() bool {
+	return m.expiration.Before(time.Now())
+}

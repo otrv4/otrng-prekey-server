@@ -6,12 +6,17 @@ type storage interface {
 	storePrekeyMessages(string, []*prekeyMessage) error
 	numberStored(string, uint32) uint32
 	retrieveFor(string) []*prekeyEnsemble
+	cleanup()
 }
 
 type inMemoryStorageEntry struct {
 	clientProfiles map[uint32]*clientProfile
 	prekeyProfiles map[uint32][]*prekeyProfile
 	prekeyMessages map[uint32][]*prekeyMessage
+}
+
+type inMemoryStorage struct {
+	perUser map[string]*inMemoryStorageEntry
 }
 
 func (s *inMemoryStorageEntry) retrieve() []*prekeyEnsemble {
@@ -29,10 +34,6 @@ func (s *inMemoryStorageEntry) retrieve() []*prekeyEnsemble {
 		}
 	}
 	return entries
-}
-
-type inMemoryStorage struct {
-	perUser map[string]*inMemoryStorageEntry
 }
 
 func createInMemoryStorage() *inMemoryStorage {
@@ -100,4 +101,61 @@ func (s *inMemoryStorage) retrieveFor(from string) []*prekeyEnsemble {
 		return nil
 	}
 	return pu.retrieve()
+}
+
+func (s *inMemoryStorageEntry) cleanupClientProfiles() {
+	toRemove := []uint32{}
+	for itag, cp := range s.clientProfiles {
+		if cp.hasExpired() {
+			toRemove = append(toRemove, itag)
+		}
+	}
+	for _, itag := range toRemove {
+		delete(s.clientProfiles, itag)
+	}
+}
+
+func (s *inMemoryStorageEntry) cleanupPrekeyProfiles() {
+	toRemove := []uint32{}
+	for itag, pps := range s.prekeyProfiles {
+		newPps := []*prekeyProfile{}
+		for _, pp := range pps {
+			if !pp.hasExpired() {
+				newPps = append(newPps, pp)
+			}
+		}
+		s.prekeyProfiles[itag] = newPps
+
+		if len(newPps) == 0 {
+			toRemove = append(toRemove, itag)
+		}
+	}
+	for _, itag := range toRemove {
+		delete(s.prekeyProfiles, itag)
+	}
+}
+
+func (s *inMemoryStorageEntry) hasAnyEntries() bool {
+	return len(s.clientProfiles) != 0 ||
+		len(s.prekeyProfiles) != 0 ||
+		len(s.prekeyMessages) != 0
+}
+
+func (s *inMemoryStorageEntry) cleanup() bool {
+	s.cleanupClientProfiles()
+	s.cleanupPrekeyProfiles()
+
+	return s.hasAnyEntries()
+}
+
+func (s *inMemoryStorage) cleanup() {
+	toRemove := []string{}
+	for pu, pus := range s.perUser {
+		if !pus.cleanup() {
+			toRemove = append(toRemove, pu)
+		}
+	}
+	for _, pu := range toRemove {
+		delete(s.perUser, pu)
+	}
 }

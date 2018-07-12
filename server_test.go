@@ -41,6 +41,7 @@ func (m *mockMessageHandler) handleInnerMessage(from string, message []byte) (se
 func (s *GenericServerSuite) Test_Handle_WillPassOnTheIdentityToTheMessageHandler(c *C) {
 	gs := &GenericServer{
 		fragmentations: newFragmentations(),
+		storageImpl:    createInMemoryStorage(),
 	}
 	m := &mockMessageHandler{}
 	gs.messageHandler = m
@@ -51,6 +52,7 @@ func (s *GenericServerSuite) Test_Handle_WillPassOnTheIdentityToTheMessageHandle
 func (s *GenericServerSuite) Test_Handle_WillDecodeBase64EncodedMessage(c *C) {
 	gs := &GenericServer{
 		fragmentations: newFragmentations(),
+		storageImpl:    createInMemoryStorage(),
 	}
 	m := &mockMessageHandler{}
 	gs.messageHandler = m
@@ -77,6 +79,7 @@ func (s *GenericServerSuite) Test_Handle_ACorruptedBase64MessageGeneratesAnError
 func (s *GenericServerSuite) Test_Handle_WillBase64EncodeAndFormatReturnValues(c *C) {
 	gs := &GenericServer{
 		fragmentations: newFragmentations(),
+		storageImpl:    createInMemoryStorage(),
 	}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
@@ -99,7 +102,7 @@ func (s *GenericServerSuite) Test_Handle_ReturnsAnErrorFromMessageHandler(c *C) 
 }
 
 func (s *GenericServerSuite) Test_Handle_HandlesAFragmentedMessage(c *C) {
-	gs := &GenericServer{fragmentations: newFragmentations()}
+	gs := &GenericServer{fragmentations: newFragmentations(), storageImpl: createInMemoryStorage()}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
 	}
@@ -131,6 +134,7 @@ func (s *GenericServerSuite) Test_Handle_WillPotentiallyFragmentReturnValues(c *
 		fragLen:        54,
 		rand:           fixtureRand(),
 		fragmentations: newFragmentations(),
+		storageImpl:    createInMemoryStorage(),
 	}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
@@ -164,6 +168,7 @@ func (s *GenericServerSuite) Test_cleanupAfter_removesOldSessions(c *C) {
 	gs := &GenericServer{
 		sessionTimeout: time.Duration(30) * time.Minute,
 		fragmentations: newFragmentations(),
+		storageImpl:    createInMemoryStorage(),
 	}
 
 	gs.session("someone@example.org").(*realSession).lastTouched = time.Now().Add(time.Duration(-56) * time.Minute)
@@ -179,6 +184,7 @@ func (s *GenericServerSuite) Test_cleanupAfter_doesntDoAnythingWithEmptySessions
 	gs := &GenericServer{
 		sessionTimeout: time.Duration(30) * time.Minute,
 		fragmentations: newFragmentations(),
+		storageImpl:    createInMemoryStorage(),
 	}
 
 	gs.cleanupAfter()
@@ -188,6 +194,7 @@ func (s *GenericServerSuite) Test_cleanupAfter_cleansUpOldFragments(c *C) {
 	gs := &GenericServer{
 		fragmentationTimeout: time.Duration(6) * time.Minute,
 		fragmentations:       newFragmentations(),
+		storageImpl:          createInMemoryStorage(),
 	}
 
 	gs.fragmentations.newFragmentReceived("me@example.org", "?OTRP|45243|AF1FDEAD|BEEF,1,2,hello,")

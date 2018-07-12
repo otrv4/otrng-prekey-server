@@ -100,10 +100,7 @@ func (g *GenericServer) cleanupAfter() {
 	}
 
 	g.fragmentations.cleanup(g.fragmentationTimeout)
-	// TODO: implement
-	// Clean up
-	//  - Clean up fragmented message that never got completed
-	//  - Remove from storage all expired things
+	g.storageImpl.cleanup()
 }
 
 func decodeMessage(inp string) ([]byte, bool) {

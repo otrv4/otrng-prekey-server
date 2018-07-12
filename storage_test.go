@@ -1,6 +1,8 @@
 package prekeyserver
 
 import (
+	"time"
+
 	. "gopkg.in/check.v1"
 )
 
@@ -14,4 +16,76 @@ func (s *GenericServerSuite) Test_inMemoryStorage_numberStored_returnsNumberOfPr
 	se := is.storageEntryFor("foo@example.org")
 	se.prekeyMessages[0x11223344] = []*prekeyMessage{nil, nil}
 	c.Assert(is.numberStored("foo@example.org", 0x11223344), Equals, uint32(2))
+}
+
+func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_willRemoveExpiredClientProfiles(c *C) {
+	is := createInMemoryStorage()
+
+	cp := generateSitaTestData().clientProfile
+	cp.expiration = time.Date(2017, 11, 5, 13, 46, 00, 13, time.UTC)
+	cp.sig = &eddsaSignature{s: cp.generateSignature(sita.longTerm)}
+
+	cp2 := generateSitaTestData().clientProfile
+	cp2.instanceTag = 0x42424242
+	cp2.sig = &eddsaSignature{s: cp2.generateSignature(sita.longTerm)}
+
+	is.storeClientProfile("someone@example.org", cp)
+	is.storeClientProfile("someone@example.org", cp2)
+	is.storeClientProfile("someoneElse@example.org", sita.clientProfile)
+	is.storeClientProfile("someoneThird@example.org", cp)
+
+	is.cleanup()
+
+	c.Assert(is.perUser, HasLen, 2)
+	c.Assert(is.perUser["someone@example.org"].clientProfiles, HasLen, 1)
+	c.Assert(is.perUser["someoneElse@example.org"].clientProfiles, HasLen, 1)
+	c.Assert(is.perUser["someoneThird@example.org"], IsNil)
+}
+
+func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_willRemoveExpiredPrekeyProfiles(c *C) {
+	gs := &GenericServer{
+		rand: fixtureRand(),
+	}
+	is := createInMemoryStorage()
+
+	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2017, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
+	pp2, _ := generatePrekeyProfile(gs, 0x42424242, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
+
+	is.storePrekeyProfiles("someone@example.org", []*prekeyProfile{pp1})
+	is.storePrekeyProfiles("someone@example.org", []*prekeyProfile{pp2})
+	is.storePrekeyProfiles("someoneElse@example.org", []*prekeyProfile{pp2})
+	is.storePrekeyProfiles("someoneThird@example.org", []*prekeyProfile{pp1})
+
+	is.cleanup()
+
+	c.Assert(is.perUser, HasLen, 2)
+	c.Assert(is.perUser["someone@example.org"].prekeyProfiles, HasLen, 1)
+	c.Assert(is.perUser["someoneElse@example.org"].prekeyProfiles, HasLen, 1)
+	c.Assert(is.perUser["someoneThird@example.org"], IsNil)
+}
+func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_shouldNotRemoveUserIfThereArePrekeyMessages(c *C) {
+	gs := &GenericServer{
+		rand: fixtureRand(),
+	}
+	is := createInMemoryStorage()
+
+	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2017, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
+	pp2, _ := generatePrekeyProfile(gs, 0x42424242, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
+
+	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
+
+	is.storePrekeyProfiles("someone@example.org", []*prekeyProfile{pp1})
+	is.storePrekeyProfiles("someone@example.org", []*prekeyProfile{pp2})
+	is.storePrekeyProfiles("someoneElse@example.org", []*prekeyProfile{pp2})
+	is.storePrekeyProfiles("someoneThird@example.org", []*prekeyProfile{pp1})
+
+	is.storePrekeyMessages("someoneThird@example.org", []*prekeyMessage{pm1})
+
+	is.cleanup()
+
+	c.Assert(is.perUser, HasLen, 3)
+	c.Assert(is.perUser["someone@example.org"].prekeyProfiles, HasLen, 1)
+	c.Assert(is.perUser["someoneElse@example.org"].prekeyProfiles, HasLen, 1)
+	c.Assert(is.perUser["someoneThird@example.org"].prekeyProfiles, HasLen, 0)
+	c.Assert(is.perUser["someoneThird@example.org"].prekeyMessages, HasLen, 1)
 }
