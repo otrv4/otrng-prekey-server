@@ -15,7 +15,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_acceptsAValidDake3Messag
 	}
 	gs.session("someone@example.org").(*realSession).tag = sita.instanceTag
 
-	phi := []byte("hardcoded phi for now")
+	phi := appendData(appendData(nil, []byte("someone@example.org")), []byte(gs.identity))
 
 	spoint := generateECDHKeypair(gs)
 	gs.session("someone@example.org").(*realSession).s = spoint
@@ -45,7 +45,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksInstanceTag(c *C) 
 	}
 	gs.session("someone@example.org").(*realSession).tag = sita.instanceTag
 
-	phi := []byte("hardcoded phi for now")
+	phi := appendData(appendData(nil, []byte("someone@example.org")), []byte(gs.identity))
 
 	spoint := generateECDHKeypair(gs)
 	gs.session("someone@example.org").(*realSession).s = spoint
@@ -75,7 +75,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksRingSignature(c *C
 	}
 	gs.session("someone@example.org").(*realSession).tag = sita.instanceTag
 
-	phi := []byte("hardcoded phi for now")
+	phi := appendData(appendData(nil, []byte("someone@example.org")), []byte(gs.identity))
 
 	spoint := generateECDHKeypair(gs)
 	gs.session("someone@example.org").(*realSession).s = spoint
@@ -106,7 +106,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksMessage(c *C) {
 	}
 	gs.session("someone@example.org").(*realSession).tag = sita.instanceTag
 
-	phi := []byte("hardcoded phi for now")
+	phi := appendData(appendData(nil, []byte("someone@example.org")), []byte(gs.identity))
 
 	spoint := generateECDHKeypair(gs)
 	gs.session("someone@example.org").(*realSession).s = spoint

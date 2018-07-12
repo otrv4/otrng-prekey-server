@@ -74,8 +74,7 @@ func (m *dake3Message) validate(from string, s *GenericServer) error {
 		return errors.New("incorrect message")
 	}
 
-	// TODO: actually make a real phi
-	phi := []byte("hardcoded phi for now")
+	phi := appendData(appendData(nil, []byte(from)), []byte(s.identity))
 
 	t := append([]byte{}, 0x01)
 	t = append(t, kdfx(usageReceiverClientProfile, 64, sess.clientProfile().serialize())...)
@@ -95,8 +94,7 @@ func (m *dake1Message) respond(from string, s *GenericServer) (serializable, err
 	sk := generateECDHKeypair(s)
 	s.session(from).save(sk, m.i, m.instanceTag, m.clientProfile)
 
-	// TODO: actually make a real phi
-	phi := []byte("hardcoded phi for now")
+	phi := appendData(appendData(nil, []byte(from)), []byte(s.identity))
 
 	t := append([]byte{}, 0x00)
 	t = append(t, kdfx(usageInitiatorClientProfile, 64, m.clientProfile.serialize())...)
