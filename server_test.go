@@ -138,3 +138,13 @@ func (s *GenericServerSuite) Test_handleMessage_panicsWhenNoMessageHandlerIsConf
 	gs := &GenericServer{fragLen: 7, rand: fixtureRand()}
 	c.Assert(func() { gs.handleMessage("foo@example.org", nil) }, PanicMatches, "programmer error, missing message handler")
 }
+
+func (s *GenericServerSuite) Test_sessionComplete_returnsWhenNoSession(c *C) {
+	gs := &GenericServer{}
+	gs.sessionComplete("someone@example.org")
+}
+
+func (s *GenericServerSuite) Test_hasSession_returnsFalseWhenNoSessionsExist(c *C) {
+	gs := &GenericServer{}
+	c.Assert(gs.hasSession("someone@example.org"), Equals, false)
+}

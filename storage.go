@@ -61,6 +61,9 @@ func (s *inMemoryStorage) storeClientProfile(from string, cp *clientProfile) err
 }
 
 func (s *inMemoryStorage) storePrekeyProfiles(from string, pps []*prekeyProfile) error {
+	if len(pps) == 0 {
+		return nil
+	}
 	se := s.storageEntryFor(from)
 	spps := se.prekeyProfiles[pps[0].instanceTag]
 	for _, pp := range pps {
@@ -71,6 +74,9 @@ func (s *inMemoryStorage) storePrekeyProfiles(from string, pps []*prekeyProfile)
 }
 
 func (s *inMemoryStorage) storePrekeyMessages(from string, pms []*prekeyMessage) error {
+	if len(pms) == 0 {
+		return nil
+	}
 	se := s.storageEntryFor(from)
 	spms := se.prekeyMessages[pms[0].instanceTag]
 	for _, pm := range pms {

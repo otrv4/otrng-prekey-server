@@ -87,7 +87,7 @@ func (g *GenericServer) Handle(from, message string) (returns []string, err erro
 func (g *GenericServer) cleanupAfter(from string) {
 	// TODO: implement
 	// Clean up
-	//  - If everything is done, kill Session
+	//  - Clean up old sessions
 	//  - Clean up fragmented message that never got complete
 	//  - Remove from storage all expired things
 }
@@ -118,4 +118,19 @@ func (g *GenericServer) session(from string) session {
 		g.sessions[from] = s
 	}
 	return s
+}
+
+func (g *GenericServer) sessionComplete(from string) {
+	if g.sessions == nil {
+		return
+	}
+	delete(g.sessions, from)
+}
+
+func (g *GenericServer) hasSession(from string) bool {
+	if g.sessions == nil {
+		return false
+	}
+	_, ok := g.sessions[from]
+	return ok
 }

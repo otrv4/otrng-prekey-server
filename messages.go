@@ -216,7 +216,7 @@ func (m *publicationMessage) respond(from string, s *GenericServer) (serializabl
 	macKey := s.session(from).macKey()
 	instanceTag := s.session(from).instanceTag()
 
-	// TODO: session should be removed here
+	s.sessionComplete(from)
 
 	return generateSuccessMessage(macKey, instanceTag), nil
 }
