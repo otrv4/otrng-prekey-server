@@ -120,13 +120,13 @@ func (s *GenericServerSuite) Test_Handle_PassesOnAFragmentationError(c *C) {
 }
 
 func (s *GenericServerSuite) Test_Handle_WillPotentiallyFragmentReturnValues(c *C) {
-	gs := &GenericServer{fragLen: 7, rand: fixtureRand()}
+	gs := &GenericServer{fragLen: 54, rand: fixtureRand()}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
 	}
 	gs.messageHandler = m
 	msgs, _ := gs.Handle("myname", "aGksIHRoaXMgaXMgbm90IGEgdmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4=.")
-	c.Assert(len(msgs), Equals, 5)
+	c.Assert(msgs, HasLen, 5)
 	c.Assert(msgs[0], Equals, "?OTRP|2882382797|BEEF|CADE,1,5,dGhpcyB,")
 	c.Assert(msgs[1], Equals, "?OTRP|2882382797|BEEF|CADE,2,5,pcyBvdX,")
 	c.Assert(msgs[2], Equals, "?OTRP|2882382797|BEEF|CADE,3,5,IgZmFuY,")

@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+// This code will sometimes fragment messages in smaller
+// pieces than necessary - this is to ensure that the header part
+// fits. There exists an optimal algorithm for doing this, but honestly
+// I don't think it's worth the trouble and complexity to implement it
+
 type fragmentationContext struct {
 	pieces []string
 	have   []bool
@@ -128,7 +133,7 @@ func generateRandomID(r WithRandom) uint32 {
 }
 
 func fragmentStart(i, fraglen int) int {
-	return i * fraglen
+	return i * (fraglen - totalEnvelopeLen)
 }
 
 func min(l, r int) int {
@@ -139,21 +144,24 @@ func min(l, r int) int {
 }
 
 func fragmentEnd(i, fraglen, l int) int {
-	return min((i+1)*fraglen, l)
+	return min((i+1)*(fraglen-totalEnvelopeLen), l)
 }
 
 func fragmentData(data string, i, fraglen, l int) string {
 	return data[fragmentStart(i, fraglen):fragmentEnd(i, fraglen, l)]
 }
 
+//    ?OTRP + | + randomID + | + instanceTag + | + instanceTag + , + index + , + numFragments + ,
+const maxPrefixLen = 4 + 1 + 10 + 1 + 8 + 1 + 8 + 1 + 5 + 1 + 5 + 1
+const totalEnvelopeLen = maxPrefixLen + 1
+
 func potentiallyFragment(msg string, fragLen int, r WithRandom) []string {
 	l := len(msg)
-	if fragLen == 0 || l <= fragLen {
+	if fragLen == 0 || l+totalEnvelopeLen <= fragLen {
 		return []string{msg}
 	}
 	prefix := fmt.Sprintf("?OTRP|%d|BEEF|CADE,", generateRandomID(r))
-
-	numFragments := (l / fragLen) + 1
+	numFragments := (l / (fragLen - totalEnvelopeLen)) + 1
 	ret := make([]string, numFragments)
 	for i := 0; i < numFragments; i++ {
 		ret[i] = fmt.Sprintf("%s%d,%d,%s,", prefix, uint16(i+1), uint16(numFragments), fragmentData(msg, i, fragLen, l))

@@ -15,6 +15,7 @@ type GenericServer struct {
 
 	key *keypair
 
+	// Should be minimum 48, since the max envelope size is 47
 	fragLen        int
 	fragmentations *fragmentations
 
