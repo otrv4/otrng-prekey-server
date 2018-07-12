@@ -3,6 +3,7 @@ package prekeyserver
 import (
 	"errors"
 	"testing"
+	"time"
 
 	. "gopkg.in/check.v1"
 )
@@ -147,4 +148,26 @@ func (s *GenericServerSuite) Test_sessionComplete_returnsWhenNoSession(c *C) {
 func (s *GenericServerSuite) Test_hasSession_returnsFalseWhenNoSessionsExist(c *C) {
 	gs := &GenericServer{}
 	c.Assert(gs.hasSession("someone@example.org"), Equals, false)
+}
+
+func (s *GenericServerSuite) Test_cleanupAfter_removesOldSessions(c *C) {
+	gs := &GenericServer{
+		sessionTimeout: time.Duration(30) * time.Minute,
+	}
+
+	gs.session("someone@example.org").(*realSession).lastTouched = time.Now().Add(time.Duration(-56) * time.Minute)
+	gs.session("another@example.org").(*realSession).lastTouched = time.Now().Add(time.Duration(-26) * time.Minute)
+
+	gs.cleanupAfter()
+
+	c.Assert(gs.hasSession("someone@example.org"), Equals, false)
+	c.Assert(gs.hasSession("another@example.org"), Equals, true)
+}
+
+func (s *GenericServerSuite) Test_cleanupAfter_doesntDoAnythingWithEmptySessions(c *C) {
+	gs := &GenericServer{
+		sessionTimeout: time.Duration(30) * time.Minute,
+	}
+
+	gs.cleanupAfter()
 }

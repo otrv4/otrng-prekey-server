@@ -1,6 +1,10 @@
 package prekeyserver
 
-import "github.com/otrv4/ed448"
+import (
+	"time"
+
+	"github.com/otrv4/ed448"
+)
 
 type session interface {
 	save(*keypair, ed448.Point, uint32, *clientProfile)
@@ -9,14 +13,16 @@ type session interface {
 	clientProfile() *clientProfile
 	pointI() ed448.Point
 	keypairS() *keypair
+	hasExpired(time.Duration) bool
 }
 
 type realSession struct {
-	tag       uint32
-	s         *keypair
-	i         ed448.Point
-	cp        *clientProfile
-	storedMac []byte
+	tag         uint32
+	s           *keypair
+	i           ed448.Point
+	cp          *clientProfile
+	storedMac   []byte
+	lastTouched time.Time
 }
 
 func (s *realSession) save(kp *keypair, i ed448.Point, tag uint32, cp *clientProfile) {
@@ -47,4 +53,8 @@ func (s *realSession) macKey() []byte {
 		return s.storedMac
 	}
 	return kdfx(usagePreMACKey, 64, kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(s.i, s.s.priv.k))))
+}
+
+func (s *realSession) hasExpired(timeout time.Duration) bool {
+	return s.lastTouched.Add(timeout).Before(time.Now())
 }

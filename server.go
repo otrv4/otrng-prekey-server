@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
+	"time"
 )
 
 // GenericServer represents the main entry point for the prekey server functionality.
@@ -25,6 +26,8 @@ type GenericServer struct {
 	sessions map[string]*realSession
 
 	storageImpl storage
+
+	sessionTimeout time.Duration
 }
 
 func (g *GenericServer) storage() storage {
@@ -79,15 +82,24 @@ func (g *GenericServer) Handle(from, message string) (returns []string, err erro
 
 	msgs := potentiallyFragment(encoded, g.fragLen, g)
 
-	g.cleanupAfter(from)
+	g.cleanupAfter()
 
 	return msgs, nil
 }
 
-func (g *GenericServer) cleanupAfter(from string) {
+func (g *GenericServer) cleanupAfter() {
+	toRemove := []string{}
+	for nm, s := range g.sessions {
+		if s.hasExpired(g.sessionTimeout) {
+			toRemove = append(toRemove, nm)
+		}
+	}
+	for _, nm := range toRemove {
+		delete(g.sessions, nm)
+	}
+
 	// TODO: implement
 	// Clean up
-	//  - Clean up old sessions
 	//  - Clean up fragmented message that never got complete
 	//  - Remove from storage all expired things
 }
