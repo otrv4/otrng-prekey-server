@@ -9,8 +9,6 @@ import (
 	"time"
 )
 
-// TODO: we need to update lastTouched as well
-
 // This code will sometimes fragment messages in smaller
 // pieces than necessary - this is to ensure that the header part
 // fits. There exists an optimal algorithm for doing this, but honestly
@@ -105,6 +103,7 @@ func (f *fragmentations) newFragmentReceived(from, frag string) (string, bool, e
 		fc = newFragmentationContext(tot)
 		f.contexts[ctxID] = fc
 	}
+	fc.lastTouched = time.Now()
 
 	if fc.total != tot {
 		return "", false, errors.New("inconsistent total")
@@ -117,9 +116,6 @@ func (f *fragmentations) newFragmentReceived(from, frag string) (string, bool, e
 		return complete, true, nil
 	}
 	return "", false, nil
-}
-
-func (f *fragmentations) cleanFragments() {
 }
 
 func newFragmentationContext(total uint16) *fragmentationContext {

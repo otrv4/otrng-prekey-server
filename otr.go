@@ -162,5 +162,5 @@ func (m *clientProfile) hasExpired() bool {
 }
 
 func (pp *prekeyProfile) hasExpired() bool {
-	return m.expiration.Before(time.Now())
+	return pp.expiration.Before(time.Now())
 }
