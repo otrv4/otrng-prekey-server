@@ -1,7 +1,6 @@
 package prekeyserver
 
 import (
-	"encoding/base64"
 	"errors"
 	"io"
 	"time"
@@ -94,39 +93,18 @@ func (g *GenericServer) cleanupAfter() {
 	g.storageImpl.cleanup()
 }
 
-func decodeMessage(inp string) ([]byte, bool) {
-	decoded, err := base64.StdEncoding.DecodeString(inp)
-	if err != nil {
-		return nil, false
-	}
-	return decoded, true
-}
-
-func encodeMessage(inp []byte) string {
-	return base64.StdEncoding.EncodeToString(inp)
-}
-
 func (g *GenericServer) compositeIdentity() []byte {
 	return appendData(appendData(nil, []byte(g.identity)), g.fingerprint[:])
 }
 
 func (g *GenericServer) session(from string) session {
-	if g.sessions == nil {
-		g.sessions = newSessionManager()
-	}
 	return g.sessions.get(from)
 }
 
 func (g *GenericServer) sessionComplete(from string) {
-	if g.sessions == nil {
-		return
-	}
 	g.sessions.complete(from)
 }
 
 func (g *GenericServer) hasSession(from string) bool {
-	if g.sessions == nil {
-		return false
-	}
 	return g.sessions.has(from)
 }

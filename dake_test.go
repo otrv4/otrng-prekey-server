@@ -12,6 +12,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_acceptsAValidDake3Messag
 		rand:        fixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
+		sessions:    newSessionManager(),
 	}
 	gs.session("someone@example.org").(*realSession).tag = sita.instanceTag
 
@@ -42,6 +43,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksInstanceTag(c *C) 
 		rand:        fixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
+		sessions:    newSessionManager(),
 	}
 	gs.session("someone@example.org").(*realSession).tag = sita.instanceTag
 
@@ -72,6 +74,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksRingSignature(c *C
 		rand:        fixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
+		sessions:    newSessionManager(),
 	}
 	gs.session("someone@example.org").(*realSession).tag = sita.instanceTag
 
@@ -103,6 +106,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksMessage(c *C) {
 		rand:        fixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
+		sessions:    newSessionManager(),
 	}
 	gs.session("someone@example.org").(*realSession).tag = sita.instanceTag
 
@@ -135,6 +139,7 @@ func (s *GenericServerSuite) Test_dake3Message_respond_shouldFailOnInvalidRingSi
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		storageImpl: stor,
+		sessions:    newSessionManager(),
 	}
 	d1 := generateDake1(sita.instanceTag, sita.clientProfile, gs.key.pub.k)
 

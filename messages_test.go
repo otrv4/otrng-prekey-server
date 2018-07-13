@@ -61,7 +61,8 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_willValidateAValid
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand:     fixtureRand(),
+		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
 	gs.session("somewhere@example.org").(*realSession).storedMac = sitaPrekeyMacK
@@ -86,7 +87,8 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidMac(
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand:     fixtureRand(),
+		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
 	gs.session("somewhere@example.org").(*realSession).storedMac = []byte{
@@ -119,7 +121,8 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidClie
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand:     fixtureRand(),
+		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = 0xDDDDAAAA
 	gs.session("somewhere@example.org").(*realSession).storedMac = sitaPrekeyMacK
@@ -147,7 +150,8 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidPrek
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand:     fixtureRand(),
+		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
 	gs.session("somewhere@example.org").(*realSession).storedMac = sitaPrekeyMacK
@@ -174,7 +178,8 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidPrek
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand:     fixtureRand(),
+		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
 	gs.session("somewhere@example.org").(*realSession).storedMac = sitaPrekeyMacK
@@ -213,6 +218,7 @@ func (s *GenericServerSuite) Test_publicationMessage_respond_willRemoveTheSessio
 	gs := &GenericServer{
 		rand:        fixtureRand(),
 		storageImpl: stor,
+		sessions:    newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
 	gs.session("somewhere@example.org").(*realSession).storedMac = sitaPrekeyMacK

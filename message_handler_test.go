@@ -18,6 +18,7 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnErro
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		storageImpl: stor,
+		sessions:    newSessionManager(),
 	}
 	d1 := generateDake1(sita.instanceTag, sita.clientProfile, gs.key.pub.k)
 	_, e := (&otrngMessageHandler{s: gs}).handleMessage("someone@somewhere.org", d1.serialize())

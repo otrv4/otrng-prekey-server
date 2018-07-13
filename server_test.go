@@ -159,12 +159,16 @@ func (s *GenericServerSuite) Test_handleMessage_panicsWhenNoMessageHandlerIsConf
 }
 
 func (s *GenericServerSuite) Test_sessionComplete_returnsWhenNoSession(c *C) {
-	gs := &GenericServer{}
+	gs := &GenericServer{
+		sessions: newSessionManager(),
+	}
 	gs.sessionComplete("someone@example.org")
 }
 
 func (s *GenericServerSuite) Test_hasSession_returnsFalseWhenNoSessionsExist(c *C) {
-	gs := &GenericServer{}
+	gs := &GenericServer{
+		sessions: newSessionManager(),
+	}
 	c.Assert(gs.hasSession("someone@example.org"), Equals, false)
 }
 
@@ -173,6 +177,7 @@ func (s *GenericServerSuite) Test_cleanupAfter_removesOldSessions(c *C) {
 		sessionTimeout: time.Duration(30) * time.Minute,
 		fragmentations: newFragmentations(),
 		storageImpl:    createInMemoryStorage(),
+		sessions:       newSessionManager(),
 	}
 
 	gs.session("someone@example.org").(*realSession).lastTouched = time.Now().Add(time.Duration(-56) * time.Minute)

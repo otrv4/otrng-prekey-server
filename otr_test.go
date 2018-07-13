@@ -40,7 +40,8 @@ func (s *GenericServerSuite) Test_clientProfile_validate_versionsInclude4(c *C) 
 
 func (s *GenericServerSuite) Test_prekeyProfile_validate_validatesACorrectPrekeyProfile(c *C) {
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand:     fixtureRand(),
+		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
 	pp, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
@@ -49,7 +50,8 @@ func (s *GenericServerSuite) Test_prekeyProfile_validate_validatesACorrectPrekey
 
 func (s *GenericServerSuite) Test_prekeyProfile_validate_checksForCorrectInstanceTag(c *C) {
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand:     fixtureRand(),
+		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
 	pp, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
@@ -60,7 +62,8 @@ func (s *GenericServerSuite) Test_prekeyProfile_validate_checksForCorrectInstanc
 
 func (s *GenericServerSuite) Test_prekeyProfile_validate_checksValidSignature(c *C) {
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand:     fixtureRand(),
+		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
 	pp, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
@@ -70,7 +73,8 @@ func (s *GenericServerSuite) Test_prekeyProfile_validate_checksValidSignature(c 
 
 func (s *GenericServerSuite) Test_prekeyProfile_validate_checksForExpiry(c *C) {
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand:     fixtureRand(),
+		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
 	pp, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
@@ -81,7 +85,8 @@ func (s *GenericServerSuite) Test_prekeyProfile_validate_checksForExpiry(c *C) {
 
 func (s *GenericServerSuite) Test_prekeyProfile_validate_checksValidSharedPrekeyPoint(c *C) {
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand:     fixtureRand(),
+		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
 	pp, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
