@@ -6,9 +6,9 @@ import (
 
 func (s *GenericServerSuite) Test_generateSignature_generatesACorrectSignature(c *C) {
 	msg := []byte("hi")
-	p1 := deriveEDDSAKeypair([symKeyLength]byte{0x0A})
-	p2 := deriveEDDSAKeypair([symKeyLength]byte{0x19})
-	p3 := deriveEDDSAKeypair([symKeyLength]byte{0x2A})
+	p1 := deriveKeypair([symKeyLength]byte{0x0A})
+	p2 := deriveKeypair([symKeyLength]byte{0x19})
+	p3 := deriveKeypair([symKeyLength]byte{0x2A})
 	wr := fixedRandBytes(
 		// for t1
 		[]byte{
@@ -171,19 +171,19 @@ func (s *GenericServerSuite) Test_generateSignature_generatesACorrectSignature(c
 
 func (s *GenericServerSuite) Test_verify_canVerifyASignature(c *C) {
 	msg := []byte("hi")
-	p1 := deriveEDDSAKeypair([symKeyLength]byte{0x0A})
-	p2 := deriveEDDSAKeypair([symKeyLength]byte{0x19})
-	p3 := deriveEDDSAKeypair([symKeyLength]byte{0x2A})
+	p1 := deriveKeypair([symKeyLength]byte{0x0A})
+	p2 := deriveKeypair([symKeyLength]byte{0x19})
+	p3 := deriveKeypair([symKeyLength]byte{0x2A})
 	rsig, _ := generateSignature(defaultRandom(), p1.priv, p1.pub, p1.pub, p2.pub, p3.pub, msg)
 	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, true)
 }
 
 func (s *GenericServerSuite) Test_verify_failsIfGivenAnotherKey(c *C) {
 	msg := []byte("hi")
-	p1 := deriveEDDSAKeypair([symKeyLength]byte{0x0A})
-	p2 := deriveEDDSAKeypair([symKeyLength]byte{0x19})
-	p3 := deriveEDDSAKeypair([symKeyLength]byte{0x2A})
-	p4 := deriveEDDSAKeypair([symKeyLength]byte{0x2B})
+	p1 := deriveKeypair([symKeyLength]byte{0x0A})
+	p2 := deriveKeypair([symKeyLength]byte{0x19})
+	p3 := deriveKeypair([symKeyLength]byte{0x2A})
+	p4 := deriveKeypair([symKeyLength]byte{0x2B})
 	rsig, _ := generateSignature(defaultRandom(), p1.priv, p1.pub, p1.pub, p2.pub, p3.pub, msg)
 	c.Assert(rsig.verify(p1.pub, p2.pub, p4.pub, msg), Equals, false)
 	c.Assert(rsig.verify(p1.pub, p4.pub, p3.pub, msg), Equals, false)
@@ -193,18 +193,18 @@ func (s *GenericServerSuite) Test_verify_failsIfGivenAnotherKey(c *C) {
 func (s *GenericServerSuite) Test_verify_failsIfGivenTheWrongMessage(c *C) {
 	msg := []byte("hi")
 	msg2 := []byte("hi2")
-	p1 := deriveEDDSAKeypair([symKeyLength]byte{0x0A})
-	p2 := deriveEDDSAKeypair([symKeyLength]byte{0x19})
-	p3 := deriveEDDSAKeypair([symKeyLength]byte{0x2A})
+	p1 := deriveKeypair([symKeyLength]byte{0x0A})
+	p2 := deriveKeypair([symKeyLength]byte{0x19})
+	p3 := deriveKeypair([symKeyLength]byte{0x2A})
 	rsig, _ := generateSignature(defaultRandom(), p1.priv, p1.pub, p1.pub, p2.pub, p3.pub, msg)
 	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg2), Equals, false)
 }
 
 func (s *GenericServerSuite) Test_verify_failsIfTheRsigIsModified(c *C) {
 	msg := []byte("hi")
-	p1 := deriveEDDSAKeypair([symKeyLength]byte{0x0A})
-	p2 := deriveEDDSAKeypair([symKeyLength]byte{0x19})
-	p3 := deriveEDDSAKeypair([symKeyLength]byte{0x2A})
+	p1 := deriveKeypair([symKeyLength]byte{0x0A})
+	p2 := deriveKeypair([symKeyLength]byte{0x19})
+	p3 := deriveKeypair([symKeyLength]byte{0x2A})
 	rsig, _ := generateSignature(defaultRandom(), p1.priv, p1.pub, p1.pub, p2.pub, p3.pub, msg)
 
 	org := rsig.c1.Copy()

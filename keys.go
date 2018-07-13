@@ -27,32 +27,19 @@ type eddsaSignature struct {
 	s [114]byte
 }
 
-func generateEDDSAKeypair(r WithRandom) *keypair {
+func generateKeypair(r WithRandom) *keypair {
 	sym := [symKeyLength]byte{}
 	randomInto(r, sym[:])
-	return deriveEDDSAKeypair(sym)
+	return deriveKeypair(sym)
 }
 
-func generateECDHKeypair(r WithRandom) *keypair {
-	sym := [symKeyLength]byte{}
-	randomInto(r, sym[:])
-	return deriveECDHKeypair(sym)
-}
-
-func deriveEDDSAKeypair(sym [symKeyLength]byte) *keypair {
+func deriveKeypair(sym [symKeyLength]byte) *keypair {
 	digest := [privKeyLength]byte{}
 	sha3.ShakeSum256(digest[:], sym[:])
-	return deriveKeypair(digest, sym)
+	return createKeypair(digest, sym)
 }
 
-func deriveECDHKeypair(sym [symKeyLength]byte) *keypair {
-	// This implementation is based on the current libotr-ng implementation. IT IS NOT CORRECT.
-	digest := [privKeyLength]byte{}
-	kdfOtrv4(usageSK, digest[:], sym[:])
-	return deriveEDDSAKeypair(digest)
-}
-
-func deriveKeypair(digest [privKeyLength]byte, sym [symKeyLength]byte) *keypair {
+func createKeypair(digest [privKeyLength]byte, sym [symKeyLength]byte) *keypair {
 	digest[0] &= -(ed448.Cofactor)
 	digest[privKeyLength-1] = 0
 	digest[privKeyLength-2] |= 0x80

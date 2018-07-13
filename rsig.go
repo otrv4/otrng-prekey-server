@@ -25,7 +25,7 @@ func generateZqKeypair(r WithRandom) (ed448.Scalar, ed448.Point) {
 }
 
 func deriveZqKeypair(sym [symKeyLength]byte) (ed448.Scalar, ed448.Point) {
-	kp := deriveEDDSAKeypair(sym)
+	kp := deriveKeypair(sym)
 	return kp.priv.k, kp.pub.k
 }
 

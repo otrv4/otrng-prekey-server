@@ -91,7 +91,7 @@ func (m *dake3Message) validate(from string, s *GenericServer) error {
 }
 
 func (m *dake1Message) respond(from string, s *GenericServer) (serializable, error) {
-	sk := generateECDHKeypair(s)
+	sk := generateKeypair(s)
 	s.session(from).save(sk, m.i, m.instanceTag, m.clientProfile)
 
 	phi := appendData(appendData(nil, []byte(from)), []byte(s.identity))

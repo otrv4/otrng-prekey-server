@@ -13,15 +13,11 @@ func bnFromHex(s string) *big.Int {
 }
 
 func generatePointFrom(data [symKeyLength]byte) ed448.Point {
-	return generateECDHPublicKeyFrom(data).k
+	return generatePublicKeyFrom(data).k
 }
 
-func generateECDHPublicKeyFrom(data [symKeyLength]byte) *publicKey {
-	return deriveECDHKeypair(data).pub
-}
-
-func generateEDDSAPublicKeyFrom(data [symKeyLength]byte) *publicKey {
-	return deriveEDDSAKeypair(data).pub
+func generatePublicKeyFrom(data [symKeyLength]byte) *publicKey {
+	return deriveKeypair(data).pub
 }
 
 func generateScalarFrom(data ...byte) ed448.Scalar {

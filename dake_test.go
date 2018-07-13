@@ -6,7 +6,7 @@ import (
 )
 
 func (s *GenericServerSuite) Test_dake3Message_validate_acceptsAValidDake3Message(c *C) {
-	serverKey := deriveEDDSAKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        fixtureRand(),
@@ -17,7 +17,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_acceptsAValidDake3Messag
 
 	phi := appendData(appendData(nil, []byte("someone@example.org")), []byte(gs.identity))
 
-	spoint := generateECDHKeypair(gs)
+	spoint := generateKeypair(gs)
 	gs.session("someone@example.org").(*realSession).s = spoint
 	gs.session("someone@example.org").(*realSession).i = sita.i.pub.k
 	gs.session("someone@example.org").(*realSession).cp = sita.clientProfile
@@ -36,7 +36,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_acceptsAValidDake3Messag
 }
 
 func (s *GenericServerSuite) Test_dake3Message_validate_checksInstanceTag(c *C) {
-	serverKey := deriveEDDSAKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        fixtureRand(),
@@ -47,7 +47,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksInstanceTag(c *C) 
 
 	phi := appendData(appendData(nil, []byte("someone@example.org")), []byte(gs.identity))
 
-	spoint := generateECDHKeypair(gs)
+	spoint := generateKeypair(gs)
 	gs.session("someone@example.org").(*realSession).s = spoint
 	gs.session("someone@example.org").(*realSession).i = sita.i.pub.k
 	gs.session("someone@example.org").(*realSession).cp = sita.clientProfile
@@ -66,7 +66,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksInstanceTag(c *C) 
 }
 
 func (s *GenericServerSuite) Test_dake3Message_validate_checksRingSignature(c *C) {
-	serverKey := deriveEDDSAKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        fixtureRand(),
@@ -77,7 +77,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksRingSignature(c *C
 
 	phi := appendData(appendData(nil, []byte("someone@example.org")), []byte(gs.identity))
 
-	spoint := generateECDHKeypair(gs)
+	spoint := generateKeypair(gs)
 	gs.session("someone@example.org").(*realSession).s = spoint
 	gs.session("someone@example.org").(*realSession).i = sita.i.pub.k
 	gs.session("someone@example.org").(*realSession).cp = sita.clientProfile
@@ -97,7 +97,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksRingSignature(c *C
 }
 
 func (s *GenericServerSuite) Test_dake3Message_validate_checksMessage(c *C) {
-	serverKey := deriveEDDSAKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        fixtureRand(),
@@ -108,7 +108,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksMessage(c *C) {
 
 	phi := appendData(appendData(nil, []byte("someone@example.org")), []byte(gs.identity))
 
-	spoint := generateECDHKeypair(gs)
+	spoint := generateKeypair(gs)
 	gs.session("someone@example.org").(*realSession).s = spoint
 	gs.session("someone@example.org").(*realSession).i = sita.i.pub.k
 	gs.session("someone@example.org").(*realSession).cp = sita.clientProfile
@@ -128,7 +128,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksMessage(c *C) {
 
 func (s *GenericServerSuite) Test_dake3Message_respond_shouldFailOnInvalidRingSignatureGeneration(c *C) {
 	stor := createInMemoryStorage()
-	serverKey := deriveEDDSAKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        fixtureRand(),

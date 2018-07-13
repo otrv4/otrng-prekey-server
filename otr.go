@@ -73,7 +73,7 @@ func (m *clientProfile) validate(tag uint32) error {
 
 func generatePrekeyProfile(wr WithRandom, tag uint32, expiration time.Time, longTerm *keypair) (*prekeyProfile, *keypair) {
 	ident := randomUint32(wr)
-	sharedKey := generateEDDSAKeypair(wr)
+	sharedKey := generateKeypair(wr)
 	pp := &prekeyProfile{
 		identifier:   ident,
 		instanceTag:  tag,
@@ -88,7 +88,7 @@ func generatePrekeyProfile(wr WithRandom, tag uint32, expiration time.Time, long
 
 func generatePrekeyMessage(wr WithRandom, tag uint32) (*prekeyMessage, *keypair) {
 	ident := randomUint32(wr)
-	y := generateECDHKeypair(wr)
+	y := generateKeypair(wr)
 	b := []byte{0x04}
 
 	return &prekeyMessage{
