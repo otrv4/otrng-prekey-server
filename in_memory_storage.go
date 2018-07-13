@@ -1,18 +1,23 @@
 package prekeyserver
 
-// TODO: thread safety
+import "sync"
 
 type inMemoryStorageEntry struct {
 	clientProfiles map[uint32]*clientProfile
 	prekeyProfiles map[uint32]*prekeyProfile
 	prekeyMessages map[uint32][]*prekeyMessage
+	sync.Mutex
 }
 
 type inMemoryStorage struct {
 	perUser map[string]*inMemoryStorageEntry
+	sync.RWMutex
 }
 
 func (s *inMemoryStorageEntry) retrieve() []*prekeyEnsemble {
+	s.Lock()
+	defer s.Unlock()
+
 	entries := []*prekeyEnsemble{}
 	for itag, cp := range s.clientProfiles {
 		pp, ok := s.prekeyProfiles[itag]
@@ -36,13 +41,17 @@ func createInMemoryStorage() *inMemoryStorage {
 }
 
 func (s *inMemoryStorage) storageEntryFor(from string) *inMemoryStorageEntry {
+	s.RLock()
 	se, ok := s.perUser[from]
+	s.RUnlock()
 	if !ok {
 		se = &inMemoryStorageEntry{
 			clientProfiles: make(map[uint32]*clientProfile),
 			prekeyProfiles: make(map[uint32]*prekeyProfile),
 			prekeyMessages: make(map[uint32][]*prekeyMessage),
 		}
+		s.Lock()
+		defer s.Unlock()
 		s.perUser[from] = se
 	}
 	return se
@@ -50,6 +59,8 @@ func (s *inMemoryStorage) storageEntryFor(from string) *inMemoryStorageEntry {
 
 func (s *inMemoryStorage) storeClientProfile(from string, cp *clientProfile) error {
 	se := s.storageEntryFor(from)
+	se.Lock()
+	defer se.Unlock()
 	se.clientProfiles[cp.instanceTag] = cp
 	return nil
 }
@@ -57,6 +68,8 @@ func (s *inMemoryStorage) storeClientProfile(from string, cp *clientProfile) err
 func (s *inMemoryStorage) storePrekeyProfile(from string, pp *prekeyProfile) error {
 	if pp != nil {
 		se := s.storageEntryFor(from)
+		se.Lock()
+		defer se.Unlock()
 		se.prekeyProfiles[pp.instanceTag] = pp
 	}
 	return nil
@@ -67,6 +80,8 @@ func (s *inMemoryStorage) storePrekeyMessages(from string, pms []*prekeyMessage)
 		return nil
 	}
 	se := s.storageEntryFor(from)
+	se.Lock()
+	defer se.Unlock()
 	spms := se.prekeyMessages[pms[0].instanceTag]
 	for _, pm := range pms {
 		spms = append(spms, pm)
@@ -76,6 +91,8 @@ func (s *inMemoryStorage) storePrekeyMessages(from string, pms []*prekeyMessage)
 }
 
 func (s *inMemoryStorage) numberStored(from string, tag uint32) uint32 {
+	s.RLock()
+	defer s.RUnlock()
 	pu, ok := s.perUser[from]
 	if !ok {
 		return 0
@@ -84,7 +101,9 @@ func (s *inMemoryStorage) numberStored(from string, tag uint32) uint32 {
 }
 
 func (s *inMemoryStorage) retrieveFor(from string) []*prekeyEnsemble {
+	s.RLock()
 	pu, ok := s.perUser[from]
+	s.RUnlock()
 	if !ok {
 		return nil
 	}
@@ -122,6 +141,8 @@ func (s *inMemoryStorageEntry) hasAnyEntries() bool {
 }
 
 func (s *inMemoryStorageEntry) cleanup() bool {
+	s.Lock()
+	defer s.Unlock()
 	s.cleanupClientProfiles()
 	s.cleanupPrekeyProfiles()
 
@@ -129,6 +150,8 @@ func (s *inMemoryStorageEntry) cleanup() bool {
 }
 
 func (s *inMemoryStorage) cleanup() {
+	s.Lock()
+	defer s.Unlock()
 	toRemove := []string{}
 	for pu, pus := range s.perUser {
 		if !pus.cleanup() {
