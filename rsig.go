@@ -38,7 +38,7 @@ func chooseT(Ai ed448.Point, isSecret uint32, Ri ed448.Point, Ti ed448.Point, ci
 }
 
 func calculateC(A1, A2, A3, T1, T2, T3 ed448.Point, msg []byte) ed448.Scalar {
-	h := kdfxOtrv4(0x1D, 64,
+	h := kdfx(usageAuth, 64,
 		basePointBytesDup,
 		primeOrderBytesDup,
 		A1.DSAEncode(),

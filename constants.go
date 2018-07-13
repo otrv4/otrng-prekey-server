@@ -47,6 +47,7 @@ const (
 	usagePrekeyMessage                    = 0x0E
 	usageClientProfile                    = 0x0F
 	usagePrekeyProfile                    = 0x10
+	usageAuth                             = 0x11
 )
 
 const macLength = 64
