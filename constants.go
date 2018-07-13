@@ -19,10 +19,7 @@ const (
 )
 
 const (
-	version          = uint16(4)
-	dake1MessageType = uint8(0x01)
-	dake2MessageType = uint8(0x02)
-	dake3MessageType = uint8(0x03)
+	version = uint16(4)
 )
 
 const fragmentationPrefix = "?OTRP|"
@@ -55,9 +52,9 @@ const (
 const macLength = 64
 
 const (
-	messageTypeDAKE1                     = uint8(0x01)
-	messageTypeDAKE2                     = uint8(0x02)
-	messageTypeDAKE3                     = uint8(0x03)
+	messageTypeDAKE1                     = uint8(0x35)
+	messageTypeDAKE2                     = uint8(0x36)
+	messageTypeDAKE3                     = uint8(0x37)
 	messageTypePublication               = uint8(0x04)
 	messageTypeStorageInformationRequest = uint8(0x05)
 	messageTypeStorageStatusMessage      = uint8(0x06)

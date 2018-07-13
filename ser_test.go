@@ -28,7 +28,7 @@ func (s *GenericServerSuite) Test_dake1Message_shouldSerializeCorrectly(c *C) {
 		0x00, 0x04,
 
 		// message type
-		0x01,
+		0x35,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2A,
@@ -97,7 +97,7 @@ func (s *GenericServerSuite) Test_dake1Message_shouldDeserializeCorrectly(c *C) 
 		0x00, 0x04,
 
 		// message type
-		0x01,
+		0x35,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2A,
@@ -464,7 +464,7 @@ func (s *GenericServerSuite) Test_dake2Message_shouldSerializeCorrectly(c *C) {
 		0x00, 0x04,
 
 		// message type
-		0x02,
+		0x36,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2B,
@@ -563,7 +563,7 @@ func (s *GenericServerSuite) Test_dake2Message_shouldDeserializeCorrectly(c *C) 
 		0x00, 0x04,
 
 		// message type
-		0x02,
+		0x36,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2B,
@@ -683,7 +683,7 @@ func (s *GenericServerSuite) Test_dake3Message_shouldSerializeCorrectly(c *C) {
 		0x00, 0x04,
 
 		// message type
-		0x03,
+		0x37,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2C,
@@ -758,7 +758,7 @@ func (s *GenericServerSuite) Test_dake3Message_shouldDeserializeCorrectly(c *C) 
 		0x00, 0x04,
 
 		// message type
-		0x03,
+		0x37,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2C,

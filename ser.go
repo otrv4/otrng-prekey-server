@@ -19,7 +19,7 @@ func (m *dake1Message) deserialize(buf []byte) ([]byte, bool) {
 		return buf, false
 	}
 
-	if len(buf) < 1 || buf[0] != dake1MessageType {
+	if len(buf) < 1 || buf[0] != messageTypeDAKE1 {
 		return buf, false
 	}
 	buf = buf[1:]
@@ -45,7 +45,7 @@ func (m *dake1Message) deserialize(buf []byte) ([]byte, bool) {
 
 func (m *dake1Message) serialize() []byte {
 	out := appendShort(nil, version)
-	out = append(out, dake1MessageType)
+	out = append(out, messageTypeDAKE1)
 	out = appendWord(out, m.instanceTag)
 	out = append(out, m.clientProfile.serialize()...)
 	out = append(out, serializePoint(m.i)...)
@@ -54,7 +54,7 @@ func (m *dake1Message) serialize() []byte {
 
 func (m *dake2Message) serialize() []byte {
 	out := appendShort(nil, version)
-	out = append(out, dake2MessageType)
+	out = append(out, messageTypeDAKE2)
 	out = appendWord(out, m.instanceTag)
 	out = appendData(out, m.serverIdentity)
 	out = appendData(out, m.serverFingerprint[:])
@@ -70,7 +70,7 @@ func (m *dake2Message) deserialize(buf []byte) ([]byte, bool) {
 		return buf, false
 	}
 
-	if len(buf) < 1 || buf[0] != dake2MessageType {
+	if len(buf) < 1 || buf[0] != messageTypeDAKE2 {
 		return buf, false
 	}
 	buf = buf[1:]
@@ -103,7 +103,7 @@ func (m *dake2Message) deserialize(buf []byte) ([]byte, bool) {
 
 func (m *dake3Message) serialize() []byte {
 	out := appendShort(nil, version)
-	out = append(out, dake3MessageType)
+	out = append(out, messageTypeDAKE3)
 	out = appendWord(out, m.instanceTag)
 	out = append(out, m.sigma.serialize()...)
 	out = appendData(out, m.message)
@@ -117,7 +117,7 @@ func (m *dake3Message) deserialize(buf []byte) ([]byte, bool) {
 		return buf, false
 	}
 
-	if len(buf) < 1 || buf[0] != dake3MessageType {
+	if len(buf) < 1 || buf[0] != messageTypeDAKE3 {
 		return buf, false
 	}
 	buf = buf[1:]
