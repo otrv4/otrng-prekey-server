@@ -6,6 +6,8 @@ import (
 	"github.com/otrv4/ed448"
 )
 
+// TODO: thread safety
+
 type sessionManager struct {
 	s map[string]*realSession
 }

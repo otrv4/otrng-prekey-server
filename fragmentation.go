@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+// TODO: thread management here
+
 // This code will sometimes fragment messages in smaller
 // pieces than necessary - this is to ensure that the header part
 // fits. There exists an optimal algorithm for doing this, but honestly
