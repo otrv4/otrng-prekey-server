@@ -191,7 +191,7 @@ func (s *GenericServerSuite) Test_dake1Message_deserialize_shouldFailIfVersionIs
 		0x00, 0x05,
 
 		// message type
-		0x01,
+		0x35,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2A,
@@ -270,7 +270,7 @@ func (s *GenericServerSuite) Test_dake1Message_deserialize_shouldFailIfMessageTy
 		0x00, 0x04,
 
 		// message type
-		0x02,
+		0x42,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2A,
@@ -339,7 +339,7 @@ func (s *GenericServerSuite) Test_dake1Message_deserialize_shouldFailIfNotLongEn
 		0x00, 0x04,
 
 		// message type
-		0x01,
+		0x35,
 	})
 
 	c.Assert(ok, Equals, false)
@@ -364,7 +364,7 @@ func (s *GenericServerSuite) Test_dake1Message_deserialize_shouldFailIfClientPro
 		0x00, 0x04,
 
 		// message type
-		0x01,
+		0x35,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2A,
@@ -383,7 +383,7 @@ func (s *GenericServerSuite) Test_dake1Message_deserialize_shouldFailIfPointFail
 		0x00, 0x04,
 
 		// message type
-		0x01,
+		0x35,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2A,
@@ -854,7 +854,7 @@ func (s *GenericServerSuite) Test_dake2Message_deserialize_shouldFailIfVersionIs
 		0x00, 0x05,
 
 		// message type
-		0x02,
+		0x36,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2B,
@@ -1059,7 +1059,7 @@ func (s *GenericServerSuite) Test_dake2Message_deserialize_shouldFailOnInstanceT
 		0x00, 0x04,
 
 		// message type
-		0x02,
+		0x36,
 
 		// instance tag
 		0x42, 0x53,
@@ -1075,7 +1075,7 @@ func (s *GenericServerSuite) Test_dake2Message_deserialize_shouldFailOnServerIde
 		0x00, 0x04,
 
 		// message type
-		0x02,
+		0x36,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2B,
@@ -1097,7 +1097,7 @@ func (s *GenericServerSuite) Test_dake2Message_deserialize_shouldFailOnServerFin
 		0x00, 0x04,
 
 		// message type
-		0x02,
+		0x36,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2B,
@@ -1130,7 +1130,7 @@ func (s *GenericServerSuite) Test_dake2Message_deserialize_shouldFailOnS(c *C) {
 		0x00, 0x04,
 
 		// message type
-		0x02,
+		0x36,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2B,
@@ -1170,7 +1170,7 @@ func (s *GenericServerSuite) Test_dake2Message_deserialize_shouldFailOnRingSigna
 		0x00, 0x04,
 
 		// message type
-		0x02,
+		0x36,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2B,
@@ -1217,7 +1217,6 @@ func (s *GenericServerSuite) Test_dake2Message_deserialize_shouldFailOnRingSigna
 	c.Assert(ok, Equals, false)
 }
 
-// bla 3
 func (s *GenericServerSuite) Test_dake3Message_deserialize_shouldFailIfNotLongEnoughForVersion(c *C) {
 	d := &dake3Message{}
 	_, ok := d.deserialize([]byte{})
@@ -1238,7 +1237,7 @@ func (s *GenericServerSuite) Test_dake3Message_deserialize_shouldFailIfVersionIs
 		0x00, 0x05,
 
 		// message type
-		0x03,
+		0x37,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2C,
@@ -1395,7 +1394,7 @@ func (s *GenericServerSuite) Test_dake3Message_deserialize_shouldFailOnInstanceT
 		0x00, 0x04,
 
 		// message type
-		0x03,
+		0x37,
 
 		// instance tag
 		0x42, 0x53,
@@ -1411,7 +1410,7 @@ func (s *GenericServerSuite) Test_dake3Message_deserialize_shouldFailOnSigma(c *
 		0x00, 0x04,
 
 		// message type
-		0x03,
+		0x37,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2C,
@@ -1473,7 +1472,7 @@ func (s *GenericServerSuite) Test_dake3Message_deserialize_shouldFailOnMessage(c
 		0x00, 0x04,
 
 		// message type
-		0x03,
+		0x37,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2C,
@@ -1549,7 +1548,7 @@ func (s *GenericServerSuite) Test_noPrekeyEnsemblesMessage_shouldSerializeCorrec
 		0x00, 0x04,
 
 		// message type
-		0x11,
+		0x0E,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2D,
@@ -1571,7 +1570,7 @@ func (s *GenericServerSuite) Test_noPrekeyEnsemblesMessage_shouldDeserializeCorr
 		0x00, 0x04,
 
 		// message type
-		0x11,
+		0x0E,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2D,
@@ -1597,7 +1596,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalQueryMessage_shouldSerializeC
 		0x00, 0x04,
 
 		// message type
-		0x09,
+		0x10,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2E,
@@ -1622,7 +1621,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalQueryMessage_shouldDeserializ
 		0x00, 0x04,
 
 		// message type
-		0x09,
+		0x10,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2E,
@@ -1660,7 +1659,7 @@ func (s *GenericServerSuite) Test_successMessage_shouldSerializeCorrectly(c *C) 
 		0x00, 0x04,
 
 		// message type
-		0x07,
+		0x06,
 
 		// instance tag
 		0x42, 0x54, 0x11, 0x2E,
@@ -1686,7 +1685,7 @@ func (s *GenericServerSuite) Test_successMessage_shouldDeserializeCorrectly(c *C
 		0x00, 0x04,
 
 		// message type
-		0x07,
+		0x06,
 
 		// instance tag
 		0x42, 0x54, 0x11, 0x2E,
@@ -1733,7 +1732,7 @@ func (s *GenericServerSuite) Test_successMessage_deserialize_shouldFailIfVersion
 		0x00, 0x05,
 
 		// message type
-		0x07,
+		0x06,
 
 		// instance tag
 		0x42, 0x54, 0x11, 0x2E,
@@ -1791,7 +1790,7 @@ func (s *GenericServerSuite) Test_successMessage_deserialize_shouldFailOnInstanc
 		0x00, 0x04,
 
 		// message type
-		0x07,
+		0x06,
 
 		// instance tag
 		0x42, 0x54,
@@ -1806,7 +1805,7 @@ func (s *GenericServerSuite) Test_successMessage_deserialize_shouldFailOnMAC(c *
 		0x00, 0x04,
 
 		// message type
-		0x07,
+		0x06,
 
 		// instance tag
 		0x42, 0x54, 0x11, 0x2E,
@@ -1841,7 +1840,7 @@ func (s *GenericServerSuite) Test_failureMessage_shouldSerializeCorrectly(c *C) 
 		0x00, 0x04,
 
 		// message type
-		0x08,
+		0x05,
 
 		// instance tag
 		0x42, 0x64, 0x11, 0x2E,
@@ -1867,7 +1866,7 @@ func (s *GenericServerSuite) Test_failureMessage_shouldDeserializeCorrectly(c *C
 		0x00, 0x04,
 
 		// message type
-		0x08,
+		0x05,
 
 		// instance tag
 		0x42, 0x74, 0x11, 0x2E,
@@ -1914,7 +1913,7 @@ func (s *GenericServerSuite) Test_failureMessage_deserialize_shouldFailIfVersion
 		0x00, 0x05,
 
 		// message type
-		0x08,
+		0x05,
 
 		// instance tag
 		0x42, 0x54, 0x11, 0x2E,
@@ -1972,7 +1971,7 @@ func (s *GenericServerSuite) Test_failureMessage_deserialize_shouldFailOnInstanc
 		0x00, 0x04,
 
 		// message type
-		0x08,
+		0x05,
 
 		// instance tag
 		0x42, 0x54,
@@ -1987,7 +1986,7 @@ func (s *GenericServerSuite) Test_failureMessage_deserialize_shouldFailOnMAC(c *
 		0x00, 0x04,
 
 		// message type
-		0x08,
+		0x05,
 
 		// instance tag
 		0x42, 0x54, 0x11, 0x2E,
@@ -2021,7 +2020,7 @@ func (s *GenericServerSuite) Test_storageInformationRequestMessage_shouldSeriali
 		0x00, 0x04,
 
 		// message type
-		0x05,
+		0x09,
 
 		// MAC
 		0x02, 0x02, 0x03, 0x04, 0x05, 0x06, 0x08, 0x08,
@@ -2044,7 +2043,7 @@ func (s *GenericServerSuite) Test_storageInformationRequestMessage_shouldDeseria
 		0x00, 0x04,
 
 		// message type
-		0x05,
+		0x09,
 
 		// MAC
 		0x01, 0x03, 0x03, 0x04, 0x05, 0x09, 0x07, 0x08,
@@ -2088,7 +2087,7 @@ func (s *GenericServerSuite) Test_storageStatusMessage_shouldSerializeCorrectly(
 		0x00, 0x04,
 
 		// message type
-		0x06,
+		0x0B,
 
 		// instance tag
 		0x42, 0x64, 0x21, 0x2E,
@@ -2117,7 +2116,7 @@ func (s *GenericServerSuite) Test_storageStatusMessage_shouldDeserializeCorrectl
 		0x00, 0x04,
 
 		// message type
-		0x06,
+		0x0B,
 
 		// instance tag
 		0x42, 0x74, 0x23, 0x2E,
@@ -2188,7 +2187,7 @@ func (s *GenericServerSuite) Test_publicationMessage_shouldSerializeCorrectly_wi
 		0x00, 0x04,
 
 		// message type
-		0x04,
+		0x08,
 
 		// N
 		0x02,
@@ -2320,7 +2319,7 @@ func (s *GenericServerSuite) Test_publicationMessage_shouldSerializeCorrectly_wi
 		0x00, 0x04,
 
 		// message type
-		0x04,
+		0x08,
 
 		// N
 		0x01,
@@ -2464,7 +2463,7 @@ func (s *GenericServerSuite) Test_publicationMessage_shouldDeserializeCorrectly_
 		0x00, 0x04,
 
 		// message type
-		0x04,
+		0x08,
 
 		// N
 		0x02,
@@ -2576,7 +2575,7 @@ func (s *GenericServerSuite) Test_publicationMessage_shouldDeserializeCorrectly_
 		0x00, 0x04,
 
 		// message type
-		0x04,
+		0x08,
 
 		// N
 		0x01,
@@ -2792,7 +2791,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_shouldSerializeCorrec
 		0x00, 0x04,
 
 		// message type
-		0x10,
+		0x13,
 
 		// instance tag
 		0x12, 0x34, 0xAA, 0xBB,
@@ -2924,7 +2923,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_shouldDeserializeCorr
 		0x00, 0x04,
 
 		// message type
-		0x10,
+		0x13,
 
 		// instance tag
 		0x12, 0x34, 0xAA, 0xBB,
@@ -5297,7 +5296,7 @@ func (s *GenericServerSuite) Test_storageInformationRequestMessage_deserialize_s
 		0x00, 0x05,
 
 		// message type
-		0x05,
+		0x09,
 
 		// MAC
 		0x02, 0x02, 0x03, 0x04, 0x05, 0x06, 0x08, 0x08,
@@ -5320,7 +5319,7 @@ func (s *GenericServerSuite) Test_storageInformationRequestMessage_deserialize_s
 		0x00, 0x04,
 
 		// message type
-		0x07,
+		0x42,
 
 		// MAC
 		0x02, 0x02, 0x03, 0x04, 0x05, 0x06, 0x08, 0x08,
@@ -5343,7 +5342,7 @@ func (s *GenericServerSuite) Test_storageInformationRequestMessage_deserialize_s
 		0x00, 0x04,
 
 		// message type
-		0x05,
+		0x09,
 
 		// MAC
 		0x02, 0x02, 0x03, 0x04, 0x05, 0x06, 0x08, 0x08,
@@ -5379,7 +5378,7 @@ func (s *GenericServerSuite) Test_storageStatusMessage_deserialize_shouldFailIfI
 		0x00, 0x05,
 
 		// message type
-		0x06,
+		0x0B,
 
 		// instance tag
 		0x42, 0x42, 0x42, 0x42,
@@ -5408,7 +5407,7 @@ func (s *GenericServerSuite) Test_storageStatusMessage_deserialize_shouldFailIfI
 		0x00, 0x04,
 
 		// message type
-		0x07,
+		0x42,
 
 		// instance tag
 		0x42, 0x42, 0x42, 0x42,
@@ -5437,7 +5436,7 @@ func (s *GenericServerSuite) Test_storageStatusMessage_deserialize_shouldFailOnI
 		0x00, 0x04,
 
 		// message type
-		0x06,
+		0x0B,
 
 		// instance tag
 		0x42, 0x42,
@@ -5453,7 +5452,7 @@ func (s *GenericServerSuite) Test_storageStatusMessage_deserialize_shouldFailOnN
 		0x00, 0x04,
 
 		// message type
-		0x06,
+		0x0B,
 
 		// instance tag
 		0x42, 0x42, 0x42, 0x42,
@@ -5472,7 +5471,7 @@ func (s *GenericServerSuite) Test_storageStatusMessage_deserialize_shouldFailOnM
 		0x00, 0x04,
 
 		// message type
-		0x06,
+		0x0B,
 
 		// instance tag
 		0x42, 0x42, 0x42, 0x42,
@@ -5514,7 +5513,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalQueryMessage_deserialize_shou
 		0x00, 0x05,
 
 		// message type
-		0x09,
+		0x10,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2E,
@@ -5539,7 +5538,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalQueryMessage_deserialize_shou
 		0x00, 0x04,
 
 		// message type
-		0x07,
+		0x42,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2E,
@@ -5564,7 +5563,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalQueryMessage_deserialize_shou
 		0x00, 0x04,
 
 		// message type
-		0x09,
+		0x10,
 
 		// instance tag
 		0x13, 0x34,
@@ -5580,7 +5579,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalQueryMessage_deserialize_shou
 		0x00, 0x04,
 
 		// message type
-		0x09,
+		0x10,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2E,
@@ -5601,7 +5600,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalQueryMessage_deserialize_shou
 		0x00, 0x04,
 
 		// message type
-		0x09,
+		0x10,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2E,
@@ -5637,7 +5636,7 @@ func (s *GenericServerSuite) Test_noPrekeyEnsemblesMessage_deserialize_shouldFai
 		// version
 		0x00, 0x05,
 		// message type
-		0x11,
+		0x0E,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2D,
@@ -5659,7 +5658,7 @@ func (s *GenericServerSuite) Test_noPrekeyEnsemblesMessage_deserialize_shouldFai
 		0x00, 0x04,
 
 		// message type
-		0x06,
+		0x42,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2D,
@@ -5681,7 +5680,7 @@ func (s *GenericServerSuite) Test_noPrekeyEnsemblesMessage_deserialize_shouldFai
 		0x00, 0x04,
 
 		// message type
-		0x11,
+		0x0E,
 
 		// instance tag
 		0x13, 0x34,
@@ -5697,7 +5696,7 @@ func (s *GenericServerSuite) Test_noPrekeyEnsemblesMessage_deserialize_shouldFai
 		0x00, 0x04,
 
 		// message type
-		0x11,
+		0x0E,
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2D,
@@ -5730,7 +5729,7 @@ func (s *GenericServerSuite) Test_publicationMessage_deserialize_shouldFailIfInc
 		0x00, 0x05,
 
 		// message type
-		0x04,
+		0x08,
 
 		// N
 		0x01,
@@ -5874,7 +5873,7 @@ func (s *GenericServerSuite) Test_publicationMessage_deserialize_shouldFailIfInc
 		0x00, 0x04,
 
 		// message type
-		0x07,
+		0x42,
 
 		// N
 		0x01,
@@ -6018,7 +6017,7 @@ func (s *GenericServerSuite) Test_publicationMessage_deserialize_shouldFailOnN(c
 		0x00, 0x04,
 
 		// message type
-		0x04,
+		0x08,
 	})
 
 	c.Assert(ok, Equals, false)
@@ -6031,7 +6030,7 @@ func (s *GenericServerSuite) Test_publicationMessage_deserialize_shouldFailOnPre
 		0x00, 0x04,
 
 		// message type
-		0x04,
+		0x08,
 
 		// N
 		0x01,
@@ -6047,7 +6046,7 @@ func (s *GenericServerSuite) Test_publicationMessage_deserialize_shouldFailOnK(c
 		0x00, 0x04,
 
 		// message type
-		0x04,
+		0x08,
 
 		// N
 		0x01,
@@ -6091,7 +6090,7 @@ func (s *GenericServerSuite) Test_publicationMessage_deserialize_shouldFailOnInv
 		0x00, 0x04,
 
 		// message type
-		0x04,
+		0x08,
 
 		// N
 		0x00,
@@ -6192,7 +6191,7 @@ func (s *GenericServerSuite) Test_publicationMessage_deserialize_shouldFailOnCli
 		0x00, 0x04,
 
 		// message type
-		0x04,
+		0x08,
 
 		// N
 		0x00,
@@ -6211,7 +6210,7 @@ func (s *GenericServerSuite) Test_publicationMessage_deserialize_shouldFailOnJ(c
 		0x00, 0x04,
 
 		// message type
-		0x04,
+		0x08,
 
 		// N
 		0x00,
@@ -6230,7 +6229,7 @@ func (s *GenericServerSuite) Test_publicationMessage_deserialize_shouldFailOnPre
 		0x00, 0x04,
 
 		// message type
-		0x04,
+		0x08,
 
 		// N
 		0x00,
@@ -6252,7 +6251,7 @@ func (s *GenericServerSuite) Test_publicationMessage_deserialize_shouldFailOnMAC
 		0x00, 0x04,
 
 		// message type
-		0x04,
+		0x08,
 
 		// N
 		0x00,
@@ -6329,7 +6328,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_deserialize_shouldFai
 		0x00, 0x05,
 
 		// message type
-		0x10,
+		0x13,
 
 		// instance tag
 		0x12, 0x34, 0xAA, 0xBB,
@@ -6461,7 +6460,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_deserialize_shouldFai
 		0x00, 0x04,
 
 		// message type
-		0x11,
+		0x42,
 
 		// instance tag
 		0x12, 0x34, 0xAA, 0xBB,
@@ -6593,7 +6592,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_deserialize_shouldFai
 		0x00, 0x04,
 
 		// message type
-		0x10,
+		0x13,
 
 		// instance tag
 		0x13, 0x34,
@@ -6609,7 +6608,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_deserialize_shouldFai
 		0x00, 0x04,
 
 		// message type
-		0x10,
+		0x13,
 
 		// instance tag
 		0x12, 0x34, 0xAA, 0xBB,
@@ -6625,7 +6624,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_deserialize_shouldFai
 		0x00, 0x04,
 
 		// message type
-		0x10,
+		0x13,
 
 		// instance tag
 		0x12, 0x34, 0xAA, 0xBB,
@@ -6644,7 +6643,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_deserialize_shouldFai
 		0x00, 0x04,
 
 		// message type
-		0x10,
+		0x13,
 
 		// instance tag
 		0x12, 0x34, 0xAA, 0xBB,
