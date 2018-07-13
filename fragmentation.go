@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
-
-// TODO: thread management here
 
 // This code will sometimes fragment messages in smaller
 // pieces than necessary - this is to ensure that the header part
@@ -26,6 +25,10 @@ type fragmentationContext struct {
 
 type fragmentations struct {
 	contexts map[string]*fragmentationContext
+	// For now we will have one big mutex for all contexts
+	// This should be fine for large amounts of traffic
+	// since each fragmentation process is very very fast
+	sync.Mutex
 }
 
 func newFragmentations() *fragmentations {
@@ -75,6 +78,15 @@ func parseUint16(s string) (uint16, bool) {
 	return 0, false
 }
 
+func (f *fragmentations) getOrCreate(ctx string, tot uint16) *fragmentationContext {
+	fc, ok := f.contexts[ctx]
+	if !ok {
+		fc = newFragmentationContext(tot)
+		f.contexts[ctx] = fc
+	}
+	return fc
+}
+
 // newFragmentReceived receives a fragment, including the fragment prefix
 // it will add the received information to the fragmentation context
 // if the received fragment completes a message, it will be returned and the previous pieces will be removed
@@ -100,11 +112,9 @@ func (f *fragmentations) newFragmentReceived(from, frag string) (string, bool, e
 	}
 
 	ctxID := fmt.Sprintf("%s/%d", from, id)
-	fc, ok := f.contexts[ctxID]
-	if !ok {
-		fc = newFragmentationContext(tot)
-		f.contexts[ctxID] = fc
-	}
+	f.Lock()
+	defer f.Unlock()
+	fc := f.getOrCreate(ctxID, tot)
 
 	if fc.total != tot {
 		return "", false, errors.New("inconsistent total")
