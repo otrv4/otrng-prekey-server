@@ -23,7 +23,7 @@ type GenericServer struct {
 	messageHandler messageHandler
 
 	rand     io.Reader
-	sessions map[string]*realSession
+	sessions *sessionManager
 
 	storageImpl storage
 
@@ -89,16 +89,7 @@ func (g *GenericServer) Handle(from, message string) (returns []string, err erro
 }
 
 func (g *GenericServer) cleanupAfter() {
-	toRemove := []string{}
-	for nm, s := range g.sessions {
-		if s.hasExpired(g.sessionTimeout) {
-			toRemove = append(toRemove, nm)
-		}
-	}
-	for _, nm := range toRemove {
-		delete(g.sessions, nm)
-	}
-
+	g.sessions.cleanup(g.sessionTimeout)
 	g.fragmentations.cleanup(g.fragmentationTimeout)
 	g.storageImpl.cleanup()
 }
@@ -121,27 +112,21 @@ func (g *GenericServer) compositeIdentity() []byte {
 
 func (g *GenericServer) session(from string) session {
 	if g.sessions == nil {
-		g.sessions = make(map[string]*realSession)
+		g.sessions = newSessionManager()
 	}
-	s, ok := g.sessions[from]
-	if !ok {
-		s = &realSession{}
-		g.sessions[from] = s
-	}
-	return s
+	return g.sessions.get(from)
 }
 
 func (g *GenericServer) sessionComplete(from string) {
 	if g.sessions == nil {
 		return
 	}
-	delete(g.sessions, from)
+	g.sessions.complete(from)
 }
 
 func (g *GenericServer) hasSession(from string) bool {
 	if g.sessions == nil {
 		return false
 	}
-	_, ok := g.sessions[from]
-	return ok
+	return g.sessions.has(from)
 }

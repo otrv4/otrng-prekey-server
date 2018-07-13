@@ -42,6 +42,7 @@ func (s *GenericServerSuite) Test_Handle_WillPassOnTheIdentityToTheMessageHandle
 	gs := &GenericServer{
 		fragmentations: newFragmentations(),
 		storageImpl:    createInMemoryStorage(),
+		sessions:       newSessionManager(),
 	}
 	m := &mockMessageHandler{}
 	gs.messageHandler = m
@@ -53,6 +54,7 @@ func (s *GenericServerSuite) Test_Handle_WillDecodeBase64EncodedMessage(c *C) {
 	gs := &GenericServer{
 		fragmentations: newFragmentations(),
 		storageImpl:    createInMemoryStorage(),
+		sessions:       newSessionManager(),
 	}
 	m := &mockMessageHandler{}
 	gs.messageHandler = m
@@ -80,6 +82,7 @@ func (s *GenericServerSuite) Test_Handle_WillBase64EncodeAndFormatReturnValues(c
 	gs := &GenericServer{
 		fragmentations: newFragmentations(),
 		storageImpl:    createInMemoryStorage(),
+		sessions:       newSessionManager(),
 	}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
@@ -102,7 +105,7 @@ func (s *GenericServerSuite) Test_Handle_ReturnsAnErrorFromMessageHandler(c *C) 
 }
 
 func (s *GenericServerSuite) Test_Handle_HandlesAFragmentedMessage(c *C) {
-	gs := &GenericServer{fragmentations: newFragmentations(), storageImpl: createInMemoryStorage()}
+	gs := &GenericServer{fragmentations: newFragmentations(), storageImpl: createInMemoryStorage(), sessions: newSessionManager()}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
 	}
@@ -135,6 +138,7 @@ func (s *GenericServerSuite) Test_Handle_WillPotentiallyFragmentReturnValues(c *
 		rand:           fixtureRand(),
 		fragmentations: newFragmentations(),
 		storageImpl:    createInMemoryStorage(),
+		sessions:       newSessionManager(),
 	}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
@@ -185,6 +189,7 @@ func (s *GenericServerSuite) Test_cleanupAfter_doesntDoAnythingWithEmptySessions
 		sessionTimeout: time.Duration(30) * time.Minute,
 		fragmentations: newFragmentations(),
 		storageImpl:    createInMemoryStorage(),
+		sessions:       newSessionManager(),
 	}
 
 	gs.cleanupAfter()
@@ -195,6 +200,7 @@ func (s *GenericServerSuite) Test_cleanupAfter_cleansUpOldFragments(c *C) {
 		fragmentationTimeout: time.Duration(6) * time.Minute,
 		fragmentations:       newFragmentations(),
 		storageImpl:          createInMemoryStorage(),
+		sessions:             newSessionManager(),
 	}
 
 	gs.fragmentations.newFragmentReceived("me@example.org", "?OTRP|45243|AF1FDEAD|BEEF,1,2,hello,")

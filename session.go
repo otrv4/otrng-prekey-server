@@ -6,6 +6,10 @@ import (
 	"github.com/otrv4/ed448"
 )
 
+type sessionManager struct {
+	s map[string]*realSession
+}
+
 type session interface {
 	save(*keypair, ed448.Point, uint32, *clientProfile)
 	instanceTag() uint32
@@ -67,4 +71,40 @@ func (s *realSession) macKey() []byte {
 
 func (s *realSession) hasExpired(timeout time.Duration) bool {
 	return s.lastTouched.Add(timeout).Before(time.Now())
+}
+
+func newSessionManager() *sessionManager {
+	return &sessionManager{
+		s: make(map[string]*realSession),
+	}
+}
+
+func (sm *sessionManager) get(name string) session {
+	s, ok := sm.s[name]
+	if !ok {
+		s = &realSession{}
+		sm.s[name] = s
+	}
+	return s
+}
+
+func (sm *sessionManager) complete(name string) {
+	delete(sm.s, name)
+}
+
+func (sm *sessionManager) has(name string) bool {
+	_, ok := sm.s[name]
+	return ok
+}
+
+func (sm *sessionManager) cleanup(timeout time.Duration) {
+	toRemove := []string{}
+	for nm, s := range sm.s {
+		if s.hasExpired(timeout) {
+			toRemove = append(toRemove, nm)
+		}
+	}
+	for _, nm := range toRemove {
+		delete(sm.s, nm)
+	}
 }
