@@ -103,11 +103,12 @@ func (f *fragmentations) newFragmentReceived(from, frag string) (string, bool, e
 		fc = newFragmentationContext(tot)
 		f.contexts[ctxID] = fc
 	}
-	fc.lastTouched = time.Now()
 
 	if fc.total != tot {
 		return "", false, errors.New("inconsistent total")
 	}
+
+	fc.lastTouched = time.Now()
 
 	fc.add(ix, fragTwo[3])
 	if fc.done() {

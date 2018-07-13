@@ -215,3 +215,10 @@ func (s *GenericServerSuite) Test_fragmentations_cleanup_removesOldContexts(c *C
 	c.Assert(f.contexts, HasLen, 1)
 	c.Assert(f.contexts["me@example.org/45244"], Not(IsNil))
 }
+
+func (s *GenericServerSuite) Test_fragmentations_newFragmentReceived_willUpdateLastTouched(c *C) {
+	f := newFragmentations()
+	bef := time.Now()
+	f.newFragmentReceived("me@example.org", "?OTRP|45243|AF1FDEAD|BEEF,1,2,hello,")
+	c.Assert(f.contexts["me@example.org/45243"].lastTouched.After(bef), Equals, true)
+}
