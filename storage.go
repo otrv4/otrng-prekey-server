@@ -2,7 +2,7 @@ package prekeyserver
 
 type storage interface {
 	storeClientProfile(string, *clientProfile) error
-	storePrekeyProfiles(string, []*prekeyProfile) error
+	storePrekeyProfile(string, *prekeyProfile) error
 	storePrekeyMessages(string, []*prekeyMessage) error
 	numberStored(string, uint32) uint32
 	retrieveFor(string) []*prekeyEnsemble
@@ -11,7 +11,7 @@ type storage interface {
 
 type inMemoryStorageEntry struct {
 	clientProfiles map[uint32]*clientProfile
-	prekeyProfiles map[uint32][]*prekeyProfile
+	prekeyProfiles map[uint32]*prekeyProfile
 	prekeyMessages map[uint32][]*prekeyMessage
 }
 
@@ -24,10 +24,10 @@ func (s *inMemoryStorageEntry) retrieve() []*prekeyEnsemble {
 	for itag, cp := range s.clientProfiles {
 		pp, ok := s.prekeyProfiles[itag]
 		pms, ok2 := s.prekeyMessages[itag]
-		if ok && ok2 && len(pp) > 0 && len(pms) > 0 {
+		if ok && ok2 && pp != nil && len(pms) > 0 {
 			entries = append(entries, &prekeyEnsemble{
 				cp: cp,
-				pp: pp[0],
+				pp: pp,
 				pm: pms[0],
 			})
 			s.prekeyMessages[itag] = pms[1:]
@@ -47,7 +47,7 @@ func (s *inMemoryStorage) storageEntryFor(from string) *inMemoryStorageEntry {
 	if !ok {
 		se = &inMemoryStorageEntry{
 			clientProfiles: make(map[uint32]*clientProfile),
-			prekeyProfiles: make(map[uint32][]*prekeyProfile),
+			prekeyProfiles: make(map[uint32]*prekeyProfile),
 			prekeyMessages: make(map[uint32][]*prekeyMessage),
 		}
 		s.perUser[from] = se
@@ -61,16 +61,11 @@ func (s *inMemoryStorage) storeClientProfile(from string, cp *clientProfile) err
 	return nil
 }
 
-func (s *inMemoryStorage) storePrekeyProfiles(from string, pps []*prekeyProfile) error {
-	if len(pps) == 0 {
-		return nil
+func (s *inMemoryStorage) storePrekeyProfile(from string, pp *prekeyProfile) error {
+	if pp != nil {
+		se := s.storageEntryFor(from)
+		se.prekeyProfiles[pp.instanceTag] = pp
 	}
-	se := s.storageEntryFor(from)
-	spps := se.prekeyProfiles[pps[0].instanceTag]
-	for _, pp := range pps {
-		spps = append(spps, pp)
-	}
-	se.prekeyProfiles[pps[0].instanceTag] = spps
 	return nil
 }
 
@@ -117,16 +112,8 @@ func (s *inMemoryStorageEntry) cleanupClientProfiles() {
 
 func (s *inMemoryStorageEntry) cleanupPrekeyProfiles() {
 	toRemove := []uint32{}
-	for itag, pps := range s.prekeyProfiles {
-		newPps := []*prekeyProfile{}
-		for _, pp := range pps {
-			if !pp.hasExpired() {
-				newPps = append(newPps, pp)
-			}
-		}
-		s.prekeyProfiles[itag] = newPps
-
-		if len(newPps) == 0 {
+	for itag, pp := range s.prekeyProfiles {
+		if pp.hasExpired() {
 			toRemove = append(toRemove, itag)
 		}
 	}

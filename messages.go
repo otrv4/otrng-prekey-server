@@ -9,7 +9,7 @@ import (
 type publicationMessage struct {
 	prekeyMessages []*prekeyMessage
 	clientProfile  *clientProfile
-	prekeyProfiles []*prekeyProfile
+	prekeyProfile  *prekeyProfile
 	mac            [macLength]byte
 }
 
@@ -144,9 +144,9 @@ func (m *ensembleRetrievalQueryMessage) respond(from string, s *GenericServer) (
 	}, nil
 }
 
-func generateMACForPublicationMessage(cp *clientProfile, pps []*prekeyProfile, pms []*prekeyMessage, macKey []byte) []byte {
+func generateMACForPublicationMessage(cp *clientProfile, pp *prekeyProfile, pms []*prekeyMessage, macKey []byte) []byte {
 	kpms := kdfx(usagePrekeyMessage, 64, serializePrekeyMessages(pms))
-	kpps := kdfx(usagePrekeyProfile, 64, serializePrekeyProfiles(pps))
+	kpps := kdfx(usagePrekeyProfile, 64, pp.serialize())
 	k := []byte{byte(0)}
 	kcp := []byte{}
 	if cp != nil {
@@ -154,15 +154,20 @@ func generateMACForPublicationMessage(cp *clientProfile, pps []*prekeyProfile, p
 		kcp = kdfx(usageClientProfile, 64, cp.serialize())
 	}
 
-	return kdfx(usagePreMAC, 64, concat(macKey, []byte{messageTypePublication, byte(len(pms))}, kpms, k, kcp, []byte{byte(len(pps))}, kpps))
+	ppLen := 0
+	if pp != nil {
+		ppLen = 1
+	}
+
+	return kdfx(usagePreMAC, 64, concat(macKey, []byte{messageTypePublication, byte(len(pms))}, kpms, k, kcp, []byte{byte(ppLen)}, kpps))
 }
 
-func generatePublicationMessage(cp *clientProfile, pps []*prekeyProfile, pms []*prekeyMessage, macKey []byte) *publicationMessage {
-	mac := generateMACForPublicationMessage(cp, pps, pms, macKey)
+func generatePublicationMessage(cp *clientProfile, pp *prekeyProfile, pms []*prekeyMessage, macKey []byte) *publicationMessage {
+	mac := generateMACForPublicationMessage(cp, pp, pms, macKey)
 	pm := &publicationMessage{
 		prekeyMessages: pms,
 		clientProfile:  cp,
-		prekeyProfiles: pps,
+		prekeyProfile:  pp,
 	}
 	copy(pm.mac[:], mac)
 	return pm
@@ -171,7 +176,7 @@ func generatePublicationMessage(cp *clientProfile, pps []*prekeyProfile, pms []*
 func (m *publicationMessage) validate(from string, s *GenericServer) error {
 	macKey := s.session(from).macKey()
 	clientProfile := s.session(from).clientProfile()
-	mac := generateMACForPublicationMessage(m.clientProfile, m.prekeyProfiles, m.prekeyMessages, macKey)
+	mac := generateMACForPublicationMessage(m.clientProfile, m.prekeyProfile, m.prekeyMessages, macKey)
 	if !bytes.Equal(mac[:], m.mac[:]) {
 		return errors.New("invalid mac for publication message")
 	}
@@ -181,10 +186,8 @@ func (m *publicationMessage) validate(from string, s *GenericServer) error {
 		return errors.New("invalid client profile in publication message")
 	}
 
-	for _, pp := range m.prekeyProfiles {
-		if pp.validate(tag, clientProfile.publicKey) != nil {
-			return errors.New("invalid prekey profile in publication message")
-		}
+	if m.prekeyProfile != nil && m.prekeyProfile.validate(tag, clientProfile.publicKey) != nil {
+		return errors.New("invalid prekey profile in publication message")
 	}
 
 	for _, pm := range m.prekeyMessages {
@@ -210,7 +213,7 @@ func generateSuccessMessage(macKey []byte, tag uint32) *successMessage {
 func (m *publicationMessage) respond(from string, s *GenericServer) (serializable, error) {
 	stor := s.storage()
 	stor.storeClientProfile(from, m.clientProfile)
-	stor.storePrekeyProfiles(from, m.prekeyProfiles)
+	stor.storePrekeyProfile(from, m.prekeyProfile)
 	stor.storePrekeyMessages(from, m.prekeyMessages)
 
 	macKey := s.session(from).macKey()

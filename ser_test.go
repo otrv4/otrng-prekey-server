@@ -2153,7 +2153,7 @@ func (s *GenericServerSuite) Test_storageStatusMessage_shouldDeserializeCorrectl
 func (s *GenericServerSuite) Test_publicationMessage_shouldSerializeCorrectly_withJustPrekeyMessages(c *C) {
 	m := &publicationMessage{}
 	m.clientProfile = nil
-	m.prekeyProfiles = []*prekeyProfile{}
+	m.prekeyProfile = nil
 
 	pm1 := &prekeyMessage{}
 	pm1.identifier = 0x4264212E
@@ -2292,7 +2292,7 @@ func (s *GenericServerSuite) Test_publicationMessage_shouldSerializeCorrectly_wi
 	pp.sig = &eddsaSignature{
 		s: [114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11},
 	}
-	m.prekeyProfiles = []*prekeyProfile{pp}
+	m.prekeyProfile = pp
 
 	pm1 := &prekeyMessage{}
 	pm1.identifier = 0x4264212E
@@ -2544,7 +2544,7 @@ func (s *GenericServerSuite) Test_publicationMessage_shouldDeserializeCorrectly_
 
 	c.Assert(m.clientProfile, IsNil)
 
-	c.Assert(len(m.prekeyProfiles), Equals, 0)
+	c.Assert(m.prekeyProfile, IsNil)
 
 	c.Assert(len(m.prekeyMessages), Equals, 2)
 	c.Assert(m.prekeyMessages[0].identifier, Equals, uint32(0x4264212E))
@@ -2723,12 +2723,12 @@ func (s *GenericServerSuite) Test_publicationMessage_shouldDeserializeCorrectly_
 		s: [114]byte{0x15, 0x00, 0x00, 0x00, 0x12},
 	})
 
-	c.Assert(len(m.prekeyProfiles), Equals, 1)
-	c.Assert(m.prekeyProfiles[0].identifier, Equals, uint32(0x4264212F))
-	c.Assert(m.prekeyProfiles[0].instanceTag, Equals, uint32(0x1234ABC1))
-	c.Assert(m.prekeyProfiles[0].expiration, DeepEquals, time.Date(2034, 11, 5, 13, 46, 00, 00, time.UTC))
-	c.Assert(m.prekeyProfiles[0].sharedPrekey.k.Equals(generateECDHPublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
-	c.Assert(m.prekeyProfiles[0].sig, DeepEquals, &eddsaSignature{
+	c.Assert(m.prekeyProfile, Not(IsNil))
+	c.Assert(m.prekeyProfile.identifier, Equals, uint32(0x4264212F))
+	c.Assert(m.prekeyProfile.instanceTag, Equals, uint32(0x1234ABC1))
+	c.Assert(m.prekeyProfile.expiration, DeepEquals, time.Date(2034, 11, 5, 13, 46, 00, 00, time.UTC))
+	c.Assert(m.prekeyProfile.sharedPrekey.k.Equals(generateECDHPublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
+	c.Assert(m.prekeyProfile.sig, DeepEquals, &eddsaSignature{
 		s: [114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11},
 	})
 

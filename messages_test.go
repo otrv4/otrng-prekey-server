@@ -70,7 +70,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_willValidateAValid
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	msg := generatePublicationMessage(sita.clientProfile, []*prekeyProfile{pp1}, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
+	msg := generatePublicationMessage(sita.clientProfile, pp1, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
 	c.Assert(msg.validate("somewhere@example.org", gs), IsNil)
 }
 
@@ -103,7 +103,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidMac(
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	msg := generatePublicationMessage(sita.clientProfile, []*prekeyProfile{pp1}, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
+	msg := generatePublicationMessage(sita.clientProfile, pp1, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
 	c.Assert(msg.validate("somewhere@example.org", gs), ErrorMatches, "invalid mac for publication message")
 }
 
@@ -131,7 +131,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidClie
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	msg := generatePublicationMessage(cp, []*prekeyProfile{pp1}, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
+	msg := generatePublicationMessage(cp, pp1, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
 	c.Assert(msg.validate("somewhere@example.org", gs), ErrorMatches, "invalid client profile in publication message")
 }
 
@@ -158,7 +158,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidPrek
 	pp1.sig = &eddsaSignature{s: pp1.generateSignature(sita.longTerm)}
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	msg := generatePublicationMessage(sita.clientProfile, []*prekeyProfile{pp1}, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
+	msg := generatePublicationMessage(sita.clientProfile, pp1, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
 	c.Assert(msg.validate("somewhere@example.org", gs), ErrorMatches, "invalid prekey profile in publication message")
 }
 
@@ -184,7 +184,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidPrek
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2.y.k = identityPoint
-	msg := generatePublicationMessage(sita.clientProfile, []*prekeyProfile{pp1}, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
+	msg := generatePublicationMessage(sita.clientProfile, pp1, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
 	c.Assert(msg.validate("somewhere@example.org", gs), ErrorMatches, "invalid prekey message in publication message")
 }
 
@@ -219,7 +219,7 @@ func (s *GenericServerSuite) Test_publicationMessage_respond_willRemoveTheSessio
 
 	m := &publicationMessage{
 		clientProfile:  sita.clientProfile,
-		prekeyProfiles: []*prekeyProfile{},
+		prekeyProfile:  nil,
 		prekeyMessages: []*prekeyMessage{},
 	}
 	m.respond("somewhere@example.org", gs)

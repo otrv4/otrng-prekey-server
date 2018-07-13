@@ -146,14 +146,6 @@ func serializePrekeyMessages(pms []*prekeyMessage) []byte {
 	return out
 }
 
-func serializePrekeyProfiles(pps []*prekeyProfile) []byte {
-	out := []byte{}
-	for _, pp := range pps {
-		out = append(out, pp.serialize()...)
-	}
-	return out
-}
-
 func (m *publicationMessage) serialize() []byte {
 	out := appendShort(nil, version)
 	out = append(out, messageTypePublication)
@@ -167,8 +159,13 @@ func (m *publicationMessage) serialize() []byte {
 		out = append(out, uint8(0))
 	}
 
-	out = append(out, uint8(len(m.prekeyProfiles)))
-	out = append(out, serializePrekeyProfiles(m.prekeyProfiles)...)
+	if m.prekeyProfile != nil {
+		out = append(out, uint8(1))
+		out = append(out, m.prekeyProfile.serialize()...)
+	} else {
+		out = append(out, uint8(0))
+	}
+
 	out = append(out, m.mac[:]...)
 	return out
 }
@@ -213,10 +210,9 @@ func (m *publicationMessage) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	m.prekeyProfiles = make([]*prekeyProfile, tmp)
-	for ix := range m.prekeyProfiles {
-		m.prekeyProfiles[ix] = &prekeyProfile{}
-		if buf, ok = m.prekeyProfiles[ix].deserialize(buf); !ok {
+	if tmp == 1 {
+		m.prekeyProfile = &prekeyProfile{}
+		if buf, ok = m.prekeyProfile.deserialize(buf); !ok {
 			return nil, false
 		}
 	}

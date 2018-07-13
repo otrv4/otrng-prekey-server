@@ -51,10 +51,10 @@ func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_willRemoveExpiredPreke
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2017, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pp2, _ := generatePrekeyProfile(gs, 0x42424242, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 
-	is.storePrekeyProfiles("someone@example.org", []*prekeyProfile{pp1})
-	is.storePrekeyProfiles("someone@example.org", []*prekeyProfile{pp2})
-	is.storePrekeyProfiles("someoneElse@example.org", []*prekeyProfile{pp2})
-	is.storePrekeyProfiles("someoneThird@example.org", []*prekeyProfile{pp1})
+	is.storePrekeyProfile("someone@example.org", pp1)
+	is.storePrekeyProfile("someone@example.org", pp2)
+	is.storePrekeyProfile("someoneElse@example.org", pp2)
+	is.storePrekeyProfile("someoneThird@example.org", pp1)
 
 	is.cleanup()
 
@@ -74,10 +74,10 @@ func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_shouldNotRemoveUserIfT
 
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
 
-	is.storePrekeyProfiles("someone@example.org", []*prekeyProfile{pp1})
-	is.storePrekeyProfiles("someone@example.org", []*prekeyProfile{pp2})
-	is.storePrekeyProfiles("someoneElse@example.org", []*prekeyProfile{pp2})
-	is.storePrekeyProfiles("someoneThird@example.org", []*prekeyProfile{pp1})
+	is.storePrekeyProfile("someone@example.org", pp1)
+	is.storePrekeyProfile("someone@example.org", pp2)
+	is.storePrekeyProfile("someoneElse@example.org", pp2)
+	is.storePrekeyProfile("someoneThird@example.org", pp1)
 
 	is.storePrekeyMessages("someoneThird@example.org", []*prekeyMessage{pm1})
 

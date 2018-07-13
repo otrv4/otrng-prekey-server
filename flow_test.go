@@ -395,7 +395,7 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	msg := generatePublicationMessage(sita.clientProfile, []*prekeyProfile{pp1}, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
+	msg := generatePublicationMessage(sita.clientProfile, pp1, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
 
 	d3 := generateDake3(sita.instanceTag, sigma, msg.serialize())
 
@@ -421,8 +421,7 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 	entry := stor.perUser["sita@example.org"]
 	c.Assert(entry, Not(IsNil))
 	c.Assert(entry.clientProfiles[sita.instanceTag].Equals(sita.clientProfile), Equals, true)
-	c.Assert(entry.prekeyProfiles[sita.instanceTag], HasLen, 1)
-	c.Assert(entry.prekeyProfiles[sita.instanceTag][0].Equals(pp1), Equals, true)
+	c.Assert(entry.prekeyProfiles[sita.instanceTag].Equals(pp1), Equals, true)
 	c.Assert(entry.prekeyMessages[sita.instanceTag], HasLen, 2)
 	c.Assert(entry.prekeyMessages[sita.instanceTag][0].Equals(pm1), Equals, true)
 	c.Assert(entry.prekeyMessages[sita.instanceTag][1].Equals(pm2), Equals, true)
@@ -443,7 +442,7 @@ func (s *GenericServerSuite) Test_flow_retrieveEnsemblesFromKnownPerson(c *C) {
 
 	stor.storeClientProfile("sita@example.org", sita.clientProfile)
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
-	stor.storePrekeyProfiles("sita@example.org", []*prekeyProfile{pp1})
+	stor.storePrekeyProfile("sita@example.org", pp1)
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	stor.storePrekeyMessages("sita@example.org", []*prekeyMessage{pm1, pm2})
