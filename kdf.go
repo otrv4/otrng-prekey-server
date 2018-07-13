@@ -8,12 +8,6 @@ func kdfx(usageID uint8, size uint16, values ...[]byte) []byte {
 	return buf
 }
 
-func kdfxOtrv4(usageID uint8, size uint16, values ...[]byte) []byte {
-	buf := make([]byte, size)
-	kdfOtrv4(usageID, buf, values...)
-	return buf
-}
-
 func kdf(usageID uint8, buf []byte, values ...[]byte) {
 	sha3.ShakeSum256(buf, append(append([]byte("OTR-Prekey-Server"), usageID), concat(values...)...))
 }
