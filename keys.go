@@ -2,6 +2,7 @@ package prekeyserver
 
 import (
 	"errors"
+	"io"
 
 	"github.com/otrv4/ed448"
 	"golang.org/x/crypto/sha3"
@@ -92,4 +93,17 @@ func validatePoint(p ed448.Point) error {
 	// and thus not necessary.
 
 	return nil
+}
+
+func (kp *keypair) StoreInto(io.Writer) {
+	// TODO: implement
+}
+
+func (kp *keypair) Fingerprint() []byte {
+	v := kp.fingerprint()
+	return v[:]
+}
+
+func (kp *keypair) realKeys() *keypair {
+	return kp
 }
