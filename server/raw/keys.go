@@ -2,16 +2,39 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	pks "github.com/otrv4/otrng-prekey-server"
 )
 
-func loadOrCreateKeypair(f pks.Factory) pks.Keypair {
+func fileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	return err == nil
+}
+
+func loadOrCreateKeypair(f pks.Factory) (pks.Keypair, error) {
 	fl := *keyFile
-	fl = fl
-	// TODO: implement fully
-	kp := f.CreateKeypair()
-	return kp
+	if fileExists(fl) {
+		file, err := os.Open(fl)
+		if err != nil {
+			return nil, err
+		}
+		defer file.Close()
+		fmt.Printf("... loading keypair from '%v'\n", fl)
+		return f.LoadKeypairFrom(file)
+	}
+	file, err := os.Create(fl)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	fmt.Printf("... creating keypair and storing in '%v'\n", fl)
+	ret := f.CreateKeypair()
+	if e := ret.StoreInto(file); e != nil {
+		return nil, e
+	}
+
+	return ret, nil
 }
 
 func formatFingerprint(fp []byte) string {

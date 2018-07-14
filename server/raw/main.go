@@ -12,7 +12,7 @@ import (
 func main() {
 	flag.Parse()
 	f := pks.CreateFactory(rand.Reader)
-	kp := loadOrCreateKeypair(f)
+	kp, _ := loadOrCreateKeypair(f)
 	storage := f.LoadStorageType(*storageEngine)
 	server := f.NewServer(*serverIdentity,
 		kp,
