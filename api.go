@@ -2,19 +2,20 @@ package prekeyserver
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"io"
 	"time"
 )
 
 type Factory interface {
 	CreateKeypair() Keypair
-	LoadKeypairFrom(r io.Reader) Keypair
+	LoadKeypairFrom(r io.Reader) (Keypair, error)
 	LoadStorageType(name string) Storage
 	NewServer(identity string, keys Keypair, fragLen int, st Storage, sessionTimeout, fragmentTimeout time.Duration) Server
 }
 
 type Keypair interface {
-	StoreInto(io.Writer)
+	StoreInto(io.Writer) error
 	Fingerprint() []byte
 	realKeys() *keypair
 }
@@ -57,9 +58,34 @@ func (*realFactory) LoadStorageType(name string) Storage {
 	return nil
 }
 
-func (*realFactory) LoadKeypairFrom(r io.Reader) Keypair {
-	// TODO: implement fully
-	return nil
+type keypairInStorage struct {
+	Symmetric string
+	Private   string
+	Public    string
+}
+
+// TODO: errors
+func (kis *keypairInStorage) intoKeypair() (*keypair, error) {
+	sym, _ := decodeMessage(kis.Symmetric)
+	privb, _ := decodeMessage(kis.Private)
+	pubb, _ := decodeMessage(kis.Public)
+	_, priv, _ := deserializeScalar(privb)
+	_, pub, _ := deserializePoint(pubb)
+	res := &keypair{}
+	copy(res.sym[:], sym)
+	res.pub = &publicKey{k: pub}
+	res.priv = &privateKey{k: priv}
+	return res, nil
+}
+
+// TODO: errors
+func (*realFactory) LoadKeypairFrom(r io.Reader) (Keypair, error) {
+	dec := json.NewDecoder(r)
+	res := &keypairInStorage{}
+	if e := dec.Decode(res); e != nil {
+		return nil, e
+	}
+	return res.intoKeypair()
 }
 
 func (f *realFactory) CreateKeypair() Keypair {

@@ -1,6 +1,7 @@
 package prekeyserver
 
 import (
+	"encoding/json"
 	"errors"
 	"io"
 
@@ -95,8 +96,14 @@ func validatePoint(p ed448.Point) error {
 	return nil
 }
 
-func (kp *keypair) StoreInto(io.Writer) {
-	// TODO: implement
+func (kp *keypair) StoreInto(w io.Writer) error {
+	enc := json.NewEncoder(w)
+	kis := &keypairInStorage{
+		Symmetric: encodeMessage(kp.sym[:]),
+		Private:   encodeMessage(serializeScalar(kp.priv.k)),
+		Public:    encodeMessage(serializePoint(kp.pub.k)),
+	}
+	return enc.Encode(kis)
 }
 
 func (kp *keypair) Fingerprint() []byte {
