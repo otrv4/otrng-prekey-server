@@ -171,7 +171,7 @@ func (s *GenericServerSuite) Test_keypair_storeInto_willPrintTheExpectedJson(c *
 
 type erroringWriter struct{}
 
-func (*erroringWriter) Write(p []byte) (n int, err error) {
+func (*erroringWriter) Write([]byte) (int, error) {
 	return 0, errors.New("something bad")
 }
 

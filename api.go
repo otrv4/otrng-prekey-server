@@ -3,6 +3,7 @@ package prekeyserver
 import (
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"io"
 	"time"
 )
@@ -10,7 +11,7 @@ import (
 type Factory interface {
 	CreateKeypair() Keypair
 	LoadKeypairFrom(r io.Reader) (Keypair, error)
-	LoadStorageType(name string) Storage
+	LoadStorageType(name string) (Storage, error)
 	NewServer(identity string, keys Keypair, fragLen int, st Storage, sessionTimeout, fragmentTimeout time.Duration) Server
 }
 
@@ -49,13 +50,12 @@ func (*inMemoryStorageFactory) createStorage() storage {
 	return createInMemoryStorage()
 }
 
-func (*realFactory) LoadStorageType(name string) Storage {
+func (*realFactory) LoadStorageType(name string) (Storage, error) {
 	if name == "in-memory" {
-		return &inMemoryStorageFactory{}
+		return &inMemoryStorageFactory{}, nil
 	}
 
-	// TODO: return something better
-	return nil
+	return nil, errors.New("unknown storage type")
 }
 
 type keypairInStorage struct {
@@ -64,13 +64,27 @@ type keypairInStorage struct {
 	Public    string
 }
 
-// TODO: errors
 func (kis *keypairInStorage) intoKeypair() (*keypair, error) {
-	sym, _ := decodeMessage(kis.Symmetric)
-	privb, _ := decodeMessage(kis.Private)
-	pubb, _ := decodeMessage(kis.Public)
-	_, priv, _ := deserializeScalar(privb)
-	_, pub, _ := deserializePoint(pubb)
+	sym, ok := decodeMessage(kis.Symmetric)
+	if !ok {
+		return nil, errors.New("couldn't decode symmetric key")
+	}
+	privb, ok := decodeMessage(kis.Private)
+	if !ok {
+		return nil, errors.New("couldn't decode private key")
+	}
+	pubb, ok := decodeMessage(kis.Public)
+	if !ok {
+		return nil, errors.New("couldn't decode public key")
+	}
+	_, priv, ok := deserializeScalar(privb)
+	if !ok {
+		return nil, errors.New("couldn't decode scalar for private key")
+	}
+	_, pub, ok := deserializePoint(pubb)
+	if !ok {
+		return nil, errors.New("couldn't decode point for public key")
+	}
 	res := &keypair{}
 	copy(res.sym[:], sym)
 	res.pub = &publicKey{k: pub}
@@ -78,7 +92,6 @@ func (kis *keypairInStorage) intoKeypair() (*keypair, error) {
 	return res, nil
 }
 
-// TODO: errors
 func (*realFactory) LoadKeypairFrom(r io.Reader) (Keypair, error) {
 	dec := json.NewDecoder(r)
 	res := &keypairInStorage{}

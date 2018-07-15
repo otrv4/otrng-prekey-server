@@ -15,7 +15,7 @@ func main() {
 	flag.Parse()
 	f := pks.CreateFactory(rand.Reader)
 	kp, _ := loadOrCreateKeypair(f)
-	storage := f.LoadStorageType(*storageEngine)
+	storage, _ := f.LoadStorageType(*storageEngine)
 	server := f.NewServer(*serverIdentity,
 		kp,
 		int(*fragLen),
