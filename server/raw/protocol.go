@@ -46,46 +46,29 @@ func protocolHandleData(data []byte, s pks.Server) ([]byte, error) {
 func protocolParseData(data []byte) ([]*protocolElement, error) {
 	result := []*protocolElement{}
 	remaining := data
+	var ok bool
+	var l uint16
+	var from, d []byte
 
 	for len(remaining) > 0 {
-		remaining, fromLen, ok := extractShort(remaining)
+		remaining, l, ok = extractShort(remaining)
 		if !ok {
-			return nil, errors.New("blah")
+			return nil, errors.New("can't parse length of from element")
 		}
-		remaining, from, ok := extractFixedData(remaining, int(fromLen))
+		remaining, from, ok = extractFixedData(remaining, int(l))
 		if !ok {
-			return nil, errors.New("blah2")
+			return nil, errors.New("can't parse from element")
 		}
-		remaining, dataLen, ok := extractShort(remaining)
+		remaining, l, ok = extractShort(remaining)
 		if !ok {
-			return nil, errors.New("blah3")
+			return nil, errors.New("can't parse length of data element")
 		}
-		remaining, d, ok := extractFixedData(remaining, int(dataLen))
+		remaining, d, ok = extractFixedData(remaining, int(l))
 		if !ok {
-			return nil, errors.New("blah4")
+			return nil, errors.New("can't parse data element")
 		}
 		result = append(result, &protocolElement{from: string(from), data: string(d)})
 	}
 
 	return result, nil
-}
-
-func extractShort(d []byte) ([]byte, uint16, bool) {
-	if len(d) < 2 {
-		return nil, 0, false
-	}
-
-	return d[2:], uint16(d[0])<<8 |
-		uint16(d[1]), true
-}
-
-func extractFixedData(d []byte, l int) (newPoint []byte, data []byte, ok bool) {
-	if len(d) < l {
-		return d, nil, false
-	}
-	return d[l:], d[0:l], true
-}
-
-func appendShort(l []byte, r uint16) []byte {
-	return append(l, byte(r>>8), byte(r))
 }
