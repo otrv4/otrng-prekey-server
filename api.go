@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// Factory is the main entry point for the otrng prekey server functionality.
 type Factory interface {
 	CreateKeypair() Keypair
 	LoadKeypairFrom(r io.Reader) (Keypair, error)
@@ -15,20 +16,27 @@ type Factory interface {
 	NewServer(identity string, keys Keypair, fragLen int, st Storage, sessionTimeout, fragmentTimeout time.Duration) Server
 }
 
+// Keypair represents the minimum key functionality a server implementation will need
 type Keypair interface {
 	StoreInto(io.Writer) error
 	Fingerprint() []byte
 	realKeys() *keypair
 }
 
+// Storage has the responsibility of creating new storage implementations
 type Storage interface {
 	createStorage() storage
 }
 
+// Server is the core handling functionality of a prekey server
 type Server interface {
 	Handle(from, message string) ([]string, error)
 }
 
+// CreateFactory will return a new factory that can be used to access
+// the basic functionality of the prekey server. The rand argument can
+// be a reader to allow for fixed randomness. If nil is given, rand.Reader will
+// be used instead.
 func CreateFactory(rand io.Reader) Factory {
 	return &realFactory{rand}
 }
