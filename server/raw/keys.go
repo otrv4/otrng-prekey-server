@@ -15,21 +15,25 @@ func fileExists(filename string) bool {
 func loadOrCreateKeypair(f pks.Factory) (pks.Keypair, error) {
 	fl := *keyFile
 	if fileExists(fl) {
-		file, err := os.Open(fl)
-		if err != nil {
-			return nil, err
+		file, e := os.Open(fl)
+		if e != nil {
+			return nil, e
 		}
 		defer file.Close()
-		fmt.Printf("... loading keypair from '%v'\n", fl)
 		return f.LoadKeypairFrom(file)
 	}
-	file, err := os.Create(fl)
-	if err != nil {
-		return nil, err
+
+	file, e := os.Create(fl)
+	if e != nil {
+		return nil, e
 	}
+
 	defer file.Close()
-	fmt.Printf("... creating keypair and storing in '%v'\n", fl)
 	ret := f.CreateKeypair()
+
+	// There doesn't seem to exist any good way of
+	// hitting this branch with tests, so I'll
+	// leave it untested for now.
 	if e := ret.StoreInto(file); e != nil {
 		return nil, e
 	}
