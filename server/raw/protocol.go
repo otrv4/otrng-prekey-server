@@ -6,7 +6,6 @@ import (
 	pks "github.com/otrv4/otrng-prekey-server"
 )
 
-// Define the protocol, both incoming and outgoing
 // This protocol has a fragmentation length of 2**16
 // OK, on incoming, what we expect is this:
 // - 2 bytes uint16 len1
@@ -22,6 +21,10 @@ type protocolElement struct {
 	data string
 }
 
+func protocolEncodePacket(inp []byte) []byte {
+	return append(appendShort(nil, uint16(len(inp))), inp...)
+}
+
 func protocolHandleData(data []byte, s pks.Server) ([]byte, error) {
 	res, e := protocolParseData(data)
 	if e != nil {
@@ -34,7 +37,7 @@ func protocolHandleData(data []byte, s pks.Server) ([]byte, error) {
 			return nil, e
 		}
 		for _, o := range outp {
-			result = append(result, []byte(o)...)
+			result = append(result, protocolEncodePacket([]byte(o))...)
 		}
 	}
 	return result, nil
@@ -81,4 +84,8 @@ func extractFixedData(d []byte, l int) (newPoint []byte, data []byte, ok bool) {
 		return d, nil, false
 	}
 	return d[l:], d[0:l], true
+}
+
+func appendShort(l []byte, r uint16) []byte {
+	return append(l, byte(r>>8), byte(r))
 }

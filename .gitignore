@@ -6,3 +6,4 @@ bin/
 coverage.out
 
 server/raw/raw
+server/raw/raw-server.keys
