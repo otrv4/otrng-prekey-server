@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"errors"
+	"os"
 	"time"
 
 	. "gopkg.in/check.v1"
@@ -38,6 +39,20 @@ func (s *GenericServerSuite) Test_realFactory_LoadStorageType_returnsInMemorySto
 	res, _ := (&realFactory{}).LoadStorageType("in-memory")
 	c.Assert(res, Not(IsNil))
 	c.Assert(res, FitsTypeOf, &inMemoryStorageFactory{})
+}
+
+func (s *GenericServerSuite) Test_realFactory_LoadStorageType_returnsFileStorage(c *C) {
+	os.Mkdir(testDir, 0700)
+	defer os.RemoveAll(testDir)
+
+	res, _ := (&realFactory{}).LoadStorageType("dir:" + testDir)
+	c.Assert(res, Not(IsNil))
+	c.Assert(res, FitsTypeOf, &fileStorageFactory{})
+}
+
+func (s *GenericServerSuite) Test_realFactory_LoadStorageType_returnsErrorForNonExistantDirectory(c *C) {
+	_, e := (&realFactory{}).LoadStorageType("dir:unknown/dir/please/dont/create")
+	c.Assert(e, ErrorMatches, "directory doesn't exist")
 }
 
 func (s *GenericServerSuite) Test_realFactory_LoadStorageType_givesErrorForUnknownStorageType(c *C) {
