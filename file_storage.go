@@ -165,6 +165,7 @@ func (fs *fileStorage) getOrCreatePmDir(userDir string) string {
 }
 
 func (fs *fileStorage) storePrekeyMessages(user string, pms []*prekeyMessage) error {
+	// TODO: we probably need to be able to deal with different instance tags for the different messages
 	userDir := fs.getOrCreateDirFor(user)
 	fs.lock(userDir)
 	defer fs.unlock(userDir)
