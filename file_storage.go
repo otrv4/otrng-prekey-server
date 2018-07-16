@@ -1,6 +1,11 @@
 package prekeyserver
 
-import "strings"
+import (
+	"fmt"
+	"io/ioutil"
+	"path"
+	"strings"
+)
 
 // Design:
 // - a production level storage mechanism that stores data into separate files
@@ -47,27 +52,66 @@ func createFileStorageFrom(descriptor string) *fileStorage {
 	}
 }
 
-func (fs *fileStorage) storeClientProfile(from string, cp *clientProfile) error {
-	// TODO: implement
+func (fs *fileStorage) writeData(user, file string, itag uint32, data []byte) error {
+	userDir := fs.getOrCreateDirFor(user)
+	fs.lock(userDir)
+	defer fs.unlock(userDir)
+
+	itagDir := fs.getOrCreateInstanceTagDir(itag)
+	return ioutil.WriteFile(path.Join(itagDir, file), data, 0600)
+}
+
+func (fs *fileStorage) storeClientProfile(user string, cp *clientProfile) error {
+	return fs.writeData(user, "cp.bin", cp.instanceTag, cp.serialize())
+}
+
+func (fs *fileStorage) storePrekeyProfile(user string, pp *prekeyProfile) error {
+	return fs.writeData(user, "pp.bin", pp.instanceTag, pp.serialize())
+}
+
+func formatUint32(v uint32) string {
+	return fmt.Sprintf("%08X", v)
+}
+
+func (fs *fileStorage) storePrekeyMessages(user string, pms []*prekeyMessage) error {
+	userDir := fs.getOrCreateDirFor(user)
+	fs.lock(userDir)
+	defer fs.unlock(userDir)
+
+	itagDir := fs.getOrCreateInstanceTagDir(pms[0].instanceTag)
+	pmDir := fs.getOrCreatePmDir(itagDir)
+	for _, pm := range pms {
+		if e := ioutil.WriteFile(path.Join(pmDir, pm.identifier), pm.serialize(), 0600); e != nil {
+			return e
+		}
+	}
 	return nil
 }
 
-func (fs *fileStorage) storePrekeyProfile(string, *prekeyProfile) error {
-	// TODO: implement
-	return nil
+func (fs *fileStorage) numberStored(user string, itag uint32) uint32 {
+	userDir, ok := fs.getDirFor(user)
+	if !ok {
+		return 0
+	}
+	fs.lock(userDir)
+	defer fs.unlock(userDir)
+
+	pmDir := fs.getPmDir(fs.getInstanceTagDir(itag))
+	files, err := ioutil.ReadDir(pmDir)
+	if err != nil {
+		return 0
+	}
+	count := uint32(0)
+	for _, f := range files {
+		if !f.IsDir() && path.Ext(f.Name()) == ".bin" && len(f.Name()) == 12 {
+			count++
+		}
+	}
+
+	return count
 }
 
-func (fs *fileStorage) storePrekeyMessages(string, []*prekeyMessage) error {
-	// TODO: implement
-	return nil
-}
-
-func (fs *fileStorage) numberStored(string, uint32) uint32 {
-	// TODO: implement
-	return 0
-}
-
-func (fs *fileStorage) retrieveFor(string) []*prekeyEnsemble {
+func (fs *fileStorage) retrieveFor(user string) []*prekeyEnsemble {
 	// TODO: implement
 	return nil
 }
