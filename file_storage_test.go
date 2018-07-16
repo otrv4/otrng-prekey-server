@@ -225,4 +225,21 @@ func (s *GenericServerSuite) Test_fileStorage_retrieveFor_willReturnAPrekeyEnsem
 	c.Assert(listDir(path.Join(testDir, prefixHexForUser2, hexForUser2)), HasLen, 2)
 	c.Assert(listDir(path.Join(testDir, prefixHexForUser2, hexForUser2, "1245ABCD", "pm")), HasLen, 3)
 	c.Assert(listDir(path.Join(testDir, prefixHexForUser2, hexForUser2, "42424242", "pm")), HasLen, 2)
+
+	pes = fs.retrieveFor("someone@example.org")
+	c.Assert(pes, HasLen, 2)
+	c.Assert(pes[0].pm.identifier, DeepEquals, pm3.identifier)
+	c.Assert(pes[1].pm.identifier, DeepEquals, pm2x2.identifier)
+
+	pes = fs.retrieveFor("someone@example.org")
+	c.Assert(pes, HasLen, 2)
+	c.Assert(pes[0].pm.identifier, DeepEquals, pm4.identifier)
+	c.Assert(pes[1].pm.identifier, DeepEquals, pm2x3.identifier)
+
+	pes = fs.retrieveFor("someone@example.org")
+	c.Assert(pes, HasLen, 1)
+	c.Assert(pes[0].pm.identifier, DeepEquals, pm1.identifier)
+
+	pes = fs.retrieveFor("someone@example.org")
+	c.Assert(pes, HasLen, 0)
 }
