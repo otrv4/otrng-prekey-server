@@ -10,6 +10,8 @@ import (
 	pks "github.com/otrv4/otrng-prekey-server"
 )
 
+// TODO: add a sigint / ctrl-c handler that shuts down everything properly
+
 // This implements the TCP network protocol for talking to
 // the prekey server. The format follows what's documented
 // in protocol.go
