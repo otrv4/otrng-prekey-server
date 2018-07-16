@@ -1,11 +1,8 @@
 package main
 
 import (
-	"bytes"
-	"io"
 	"io/ioutil"
 	"net"
-	"os"
 	"time"
 
 	pks "github.com/otrv4/otrng-prekey-server"
@@ -13,18 +10,8 @@ import (
 )
 
 func (s *RawServerSuite) Test_flowTest_success(c *C) {
-	old := os.Stdout // keep backup of the real stdout
-	r, w, _ := os.Pipe()
-	defer func() {
-		os.Stdout = old
-	}()
-	os.Stdout = w
-	outC := make(chan string)
-	go func() {
-		var buf bytes.Buffer
-		io.Copy(&buf, r)
-		outC <- buf.String()
-	}()
+	capture := startStdoutCapture()
+	defer capture.restore()
 
 	rs := &rawServer{}
 	rs.load(pks.CreateFactory(fixtureRand()))
@@ -34,8 +21,8 @@ func (s *RawServerSuite) Test_flowTest_success(c *C) {
 
 	time.Sleep(time.Duration(100) * time.Millisecond)
 
-	a := rs.l.Addr()
-	con, _ := net.Dial(a.Network(), a.String())
+	a := rs.l.Addr().(*net.TCPAddr)
+	con, _ := net.DialTCP(a.Network(), nil, a)
 	defer con.Close()
 
 	ensembleRetrievalQueryMessage := "AAQQEkRVEQAAABBzaXRhQGV4YW1wbGUub3JnAAAAAQQ=."
@@ -51,6 +38,7 @@ func (s *RawServerSuite) Test_flowTest_success(c *C) {
 	n, e := con.Write(toSend)
 	c.Assert(e, IsNil)
 	c.Assert(n, Equals, 65)
+	con.CloseWrite()
 
 	res, e := ioutil.ReadAll(con)
 	c.Assert(e, IsNil)
@@ -58,9 +46,7 @@ func (s *RawServerSuite) Test_flowTest_success(c *C) {
 	c.Assert(ss, Equals, uint16(77))
 	c.Assert(string(res[2:]), Equals, expectedResult)
 
-	w.Close()
-	sout := <-outC
-	c.Assert(sout, Equals,
+	c.Assert(capture.finish(), Equals,
 		"Starting server on localhost:0...\n"+
 			"  [3B72D580C05DE282 3A14B02B682636BF 58F291A7E831D237 ECE8FC14DA50A187 A50ACF665442AB2D 140E140B813CFCCA 993BC02AA4A3D35C]\n")
 

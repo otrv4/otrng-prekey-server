@@ -3,16 +3,25 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
 	"time"
 
 	pks "github.com/otrv4/otrng-prekey-server"
 )
 
+// This implements the TCP network protocol for talking to
+// the prekey server. The format follows what's documented
+// in protocol.go
+// In general, the server expects a connection to first write
+// all its data, and then close the write pipe - the processing
+// will only happen after we have reached EOF from the other side.
+
 type rawServer struct {
-	s  pks.Server
-	l  net.Listener
-	kp pks.Keypair
+	s               pks.Server
+	l               *net.TCPListener
+	kp              pks.Keypair
+	finishRequested bool
 }
 
 func (rs *rawServer) load(f pks.Factory) error {
@@ -48,41 +57,29 @@ func (rs *rawServer) run() error {
 }
 
 func (rs *rawServer) listenWith() error {
-	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", *listenIP, *listenPort))
+	addr, e := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", *listenIP, *listenPort))
+	if e != nil {
+		return e
+	}
+	l, err := net.ListenTCP("tcp", addr)
 	if err != nil {
 		return err
 	}
 	rs.l = l
 	defer rs.l.Close()
-	for {
+	for !rs.finishRequested {
 		conn, err := rs.l.Accept()
 		if err != nil {
 			return err
 		}
 		go rs.handleRequest(conn)
 	}
+	return nil
 }
 
-func readAvailable(r io.Reader) ([]byte, error) {
-	res := make([]byte, 0, 2048)
-	buf := make([]byte, 1024)
-	done := false
-
-	for !done {
-		n, e := r.Read(buf)
-		if e != nil && e != io.EOF {
-			return nil, e
-		}
-		res = append(res, buf[0:n]...)
-		done = e == io.EOF || n < len(buf)
-	}
-
-	return res, nil
-}
-
-func (rs *rawServer) handleRequest(c net.Conn) {
+func (rs *rawServer) handleRequest(c io.ReadWriteCloser) {
 	defer c.Close()
-	data, e := readAvailable(c)
+	data, e := ioutil.ReadAll(c)
 	if e != nil {
 		fmt.Printf("Encountered error when reading data: %v\n", e)
 		return
