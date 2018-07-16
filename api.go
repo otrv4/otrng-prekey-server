@@ -52,15 +52,11 @@ func (f *realFactory) randReader() io.Reader {
 	return f.r
 }
 
-type inMemoryStorageFactory struct{}
-
-func (*inMemoryStorageFactory) createStorage() storage {
-	return createInMemoryStorage()
-}
-
 func (*realFactory) LoadStorageType(name string) (Storage, error) {
-	if name == "in-memory" {
+	if isInMemoryStorageDescriptor(name) {
 		return &inMemoryStorageFactory{}, nil
+	} else if isFileStorageDescriptor(name) {
+		return &fileStorageFactory{name}, nil
 	}
 
 	return nil, errors.New("unknown storage type")

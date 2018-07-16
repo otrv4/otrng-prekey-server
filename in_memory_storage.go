@@ -1,6 +1,18 @@
 package prekeyserver
 
-import "sync"
+import (
+	"sync"
+)
+
+func isInMemoryStorageDescriptor(desc string) bool {
+	return desc == "in-memory"
+}
+
+type inMemoryStorageFactory struct{}
+
+func (*inMemoryStorageFactory) createStorage() storage {
+	return createInMemoryStorage()
+}
 
 type inMemoryStorageEntry struct {
 	clientProfiles map[uint32]*clientProfile
