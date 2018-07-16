@@ -14,7 +14,9 @@ func (s *RawServerSuite) Test_flowTest_success(c *C) {
 	defer capture.restore()
 
 	rs := &rawServer{}
-	rs.load(pks.CreateFactory(fixtureRand()))
+	e := rs.load(pks.CreateFactory(fixtureRand()))
+	c.Assert(e, IsNil)
+
 	*listenIP = "localhost"
 	*listenPort = 0
 	go rs.run()

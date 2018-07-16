@@ -2,6 +2,7 @@ package prekeyserver
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -35,11 +36,20 @@ import (
 //   - The cleanup method is in charge of deleting empty directories - we don't care about that in the main path
 
 type fileStorageFactory struct {
-	desc string
+	path string
+}
+
+func createFileStorageFactoryFrom(desc string) (Storage, error) {
+	path := strings.TrimPrefix(desc, "dir:")
+
+	if !entryExists(path) {
+		return nil, errors.New("directory doesn't exist")
+	}
+	return &fileStorageFactory{path: path}, nil
 }
 
 func (fsf *fileStorageFactory) createStorage() storage {
-	return createFileStorageFrom(fsf.desc)
+	return createFileStorageFrom(fsf.path)
 }
 
 type fileStorage struct {
@@ -50,9 +60,7 @@ func isFileStorageDescriptor(desc string) bool {
 	return strings.HasPrefix(desc, "dir:")
 }
 
-func createFileStorageFrom(descriptor string) *fileStorage {
-	// TODO: this should return an error if the directory doesn't exist
-	path := strings.TrimPrefix(descriptor, "dir:")
+func createFileStorageFrom(path string) *fileStorage {
 	return &fileStorage{
 		path: path,
 	}
@@ -129,11 +137,11 @@ func (fs *fileStorage) getOrCreateDirFor(user string) string {
 	pref, us := fs.composeDirNameFor(user)
 	if !entryExists(pref) {
 		fs.lock(fs.path)
-		os.Mkdir(pref, 0600)
+		os.Mkdir(pref, 0700)
 		fs.unlock(fs.path)
 	}
 	fs.lock(pref)
-	os.Mkdir(us, 0600)
+	os.Mkdir(us, 0700)
 	fs.unlock(pref)
 	return us
 }
@@ -142,7 +150,7 @@ func (fs *fileStorage) getOrCreateDirFor(user string) string {
 func (fs *fileStorage) getOrCreateInstanceTagDir(userDir string, itag uint32) string {
 	name := path.Join(userDir, formatUint32(itag))
 	if !entryExists(name) {
-		os.Mkdir(name, 0600)
+		os.Mkdir(name, 0700)
 	}
 	return name
 }
@@ -151,7 +159,7 @@ func (fs *fileStorage) getOrCreateInstanceTagDir(userDir string, itag uint32) st
 func (fs *fileStorage) getOrCreatePmDir(userDir string) string {
 	name := path.Join(userDir, "pm")
 	if !entryExists(name) {
-		os.Mkdir(name, 0600)
+		os.Mkdir(name, 0700)
 	}
 	return name
 }
@@ -253,14 +261,145 @@ func (fs *fileStorage) retrieveFor(user string) []*prekeyEnsemble {
 	return entries
 }
 
+func (fs *fileStorage) cleanupClientProfile(p string) {
+	cpFile := path.Join(p, "cp.bin")
+	if entryExists(cpFile) {
+		cp := &clientProfile{}
+		cpd, e := ioutil.ReadFile(cpFile)
+		if e != nil {
+			return
+		}
+		_, ok := cp.deserialize(cpd)
+		if !ok || cp.hasExpired() {
+			os.Remove(cpFile)
+		}
+	}
+}
+
+func (fs *fileStorage) cleanupPrekeyProfile(p string) {
+	ppFile := path.Join(p, "pp.bin")
+	if entryExists(ppFile) {
+		pp := &prekeyProfile{}
+		ppd, e := ioutil.ReadFile(ppFile)
+		if e != nil {
+			return
+		}
+		_, ok := pp.deserialize(ppd)
+		if !ok || pp.hasExpired() {
+			os.Remove(ppFile)
+		}
+	}
+}
+
+func (fs *fileStorage) cleanupPrekeyMessages(p string) {
+	pmDir := path.Join(p, "pm")
+	if entryExists(pmDir) {
+		ff, _ := ioutil.ReadDir(pmDir)
+		if len(ff) == 0 {
+			os.Remove(pmDir)
+		}
+	}
+}
+
+func (fs *fileStorage) cleanupInstanceTag(p string) {
+	fs.cleanupClientProfile(p)
+	fs.cleanupPrekeyProfile(p)
+	fs.cleanupPrekeyMessages(p)
+	if entryExists(p) {
+		ff, _ := ioutil.ReadDir(p)
+		if len(ff) == 0 {
+			os.Remove(p)
+		}
+	}
+}
+
+func listInstanceTagsIn(p string) []string {
+	result := []string{}
+	if !entryExists(p) {
+		return result
+	}
+
+	f, e := ioutil.ReadDir(p)
+	if e != nil {
+		return result
+	}
+
+	for _, ff := range f {
+		if ff.IsDir() && isUint32Hex(ff.Name()) {
+			result = append(result, path.Join(p, ff.Name()))
+		}
+	}
+
+	return result
+}
+
+func (fs *fileStorage) cleanupUser(p string) {
+	fs.lock(p)
+	defer fs.unlock(p)
+
+	for _, itag := range listInstanceTagsIn(p) {
+		fs.cleanupInstanceTag(itag)
+	}
+}
+
+func listUsersInPrefix(p string) []string {
+	result := []string{}
+	f, e := ioutil.ReadDir(p)
+	if e != nil {
+		return result
+	}
+	for _, ff := range f {
+		if ff.IsDir() {
+			result = append(result, path.Join(p, ff.Name()))
+		}
+	}
+	return result
+}
+
+func (fs *fileStorage) cleanupPrefix(p string) {
+	for _, ff := range listUsersInPrefix(p) {
+		fs.cleanupUser(ff)
+	}
+
+	fs.lock(p)
+	defer fs.unlock(p)
+
+	for _, ff := range listUsersInPrefix(p) {
+		fs.lock(ff)
+		if len(listInstanceTagsIn(ff)) == 0 {
+			os.RemoveAll(ff)
+		}
+		fs.unlock(ff)
+	}
+}
+
+func listPrefixesIn(p string) []string {
+	result := []string{}
+	f, e := ioutil.ReadDir(p)
+	if e != nil {
+		return result
+	}
+	for _, ff := range f {
+		if ff.IsDir() {
+			result = append(result, path.Join(p, ff.Name()))
+		}
+	}
+	return result
+}
+
 func (fs *fileStorage) cleanup() {
-	// For each user:
-	//    for each instance tag:
-	//       - check if the client profile has expired - if so, remove it
-	//       - check if the prekey profile has expired - if so, remove it
-	//       - check if the prekey message directory is empty - if so, remove it
-	//       - check if the instance tag directory is empty - if so, remove it
-	//    - check if the user directory has any instance tags - if not, remove it
-	// Check the prefix directory for the user - if it's empty, remove it
-	// TODO: implement
+	for _, ff := range listPrefixesIn(fs.path) {
+		fs.cleanupPrefix(ff)
+	}
+
+	fs.lock(fs.path)
+	defer fs.unlock(fs.path)
+
+	for _, ff := range listPrefixesIn(fs.path) {
+		fs.lock(ff)
+		if len(listUsersInPrefix(ff)) == 0 {
+			os.RemoveAll(ff)
+		}
+		fs.unlock(ff)
+	}
 }

@@ -56,7 +56,7 @@ func (*realFactory) LoadStorageType(name string) (Storage, error) {
 	if isInMemoryStorageDescriptor(name) {
 		return &inMemoryStorageFactory{}, nil
 	} else if isFileStorageDescriptor(name) {
-		return &fileStorageFactory{name}, nil
+		return createFileStorageFactoryFrom(name)
 	}
 
 	return nil, errors.New("unknown storage type")
