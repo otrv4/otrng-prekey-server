@@ -65,14 +65,19 @@ func (rs *rawServer) listenWith() error {
 	if err != nil {
 		return err
 	}
+	l.SetDeadline(time.Now().Add(time.Duration(100) * time.Millisecond))
 	rs.l = l
 	defer rs.l.Close()
 	for !rs.finishRequested {
 		conn, err := rs.l.Accept()
-		if err != nil {
-			return err
+		if err == nil {
+			go rs.handleRequest(conn)
+		} else {
+			te, ok := err.(net.Error)
+			if !ok || !te.Timeout() {
+				return err
+			}
 		}
-		go rs.handleRequest(conn)
 	}
 	return nil
 }

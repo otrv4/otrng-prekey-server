@@ -13,12 +13,12 @@ type Factory interface {
 	CreateKeypair() Keypair
 	LoadKeypairFrom(r io.Reader) (Keypair, error)
 	LoadStorageType(name string) (Storage, error)
+	StoreKeysInto(Keypair, io.Writer) error
 	NewServer(identity string, keys Keypair, fragLen int, st Storage, sessionTimeout, fragmentTimeout time.Duration) Server
 }
 
 // Keypair represents the minimum key functionality a server implementation will need
 type Keypair interface {
-	StoreInto(io.Writer) error
 	Fingerprint() []byte
 	realKeys() *keypair
 }
@@ -98,6 +98,17 @@ func (kis *keypairInStorage) intoKeypair() (*keypair, error) {
 	res.pub = &publicKey{k: pub}
 	res.priv = &privateKey{k: priv}
 	return res, nil
+}
+
+func (f *realFactory) StoreKeysInto(kpp Keypair, w io.Writer) error {
+	kp := kpp.realKeys()
+	enc := json.NewEncoder(w)
+	kis := &keypairInStorage{
+		Symmetric: encodeMessage(kp.sym[:]),
+		Private:   encodeMessage(serializeScalar(kp.priv.k)),
+		Public:    encodeMessage(serializePoint(kp.pub.k)),
+	}
+	return enc.Encode(kis)
 }
 
 func (*realFactory) LoadKeypairFrom(r io.Reader) (Keypair, error) {

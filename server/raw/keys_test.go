@@ -28,6 +28,7 @@ type mockFactory struct {
 	loadKeypairFromArgFileName string
 	loadKeypairFromReturn      pks.Keypair
 	loadKeypairFromReturnError error
+	storeKeysIntoReturnError   error
 }
 
 func (f *mockFactory) CreateKeypair() pks.Keypair {
@@ -38,6 +39,10 @@ func (f *mockFactory) LoadKeypairFrom(r io.Reader) (pks.Keypair, error) {
 	ff := r.(*os.File)
 	f.loadKeypairFromArgFileName = ff.Name()
 	return f.loadKeypairFromReturn, f.loadKeypairFromReturnError
+}
+
+func (f *mockFactory) StoreKeysInto(pks.Keypair, io.Writer) error {
+	return f.storeKeysIntoReturnError
 }
 
 func (f *mockFactory) LoadStorageType(name string) (pks.Storage, error) {
@@ -106,4 +111,14 @@ func (s *RawServerSuite) Test_loadOrCreateKeypair_writesANewlyCreatedKeypairToTh
 	r2, e2 := loadOrCreateKeypair(f)
 	c.Assert(e2, IsNil)
 	c.Assert(r.Fingerprint(), DeepEquals, r2.Fingerprint())
+}
+
+func (s *RawServerSuite) Test_loadOrCreateKeypair_willReturnTheErrorFromStoringKeysInto(c *C) {
+	fn := "__test_file_for_keys"
+	defer os.Remove(fn)
+	*keyFile = fn
+	f := &mockFactory{}
+	f.storeKeysIntoReturnError = errors.New("something blah")
+	_, e := loadOrCreateKeypair(f)
+	c.Assert(e, ErrorMatches, "something blah")
 }

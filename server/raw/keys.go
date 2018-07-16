@@ -31,10 +31,7 @@ func loadOrCreateKeypair(f pks.Factory) (pks.Keypair, error) {
 	defer file.Close()
 	ret := f.CreateKeypair()
 
-	// There doesn't seem to exist any good way of
-	// hitting this branch with tests, so I'll
-	// leave it untested for now.
-	if e := ret.StoreInto(file); e != nil {
+	if e := f.StoreKeysInto(ret, file); e != nil {
 		return nil, e
 	}
 
