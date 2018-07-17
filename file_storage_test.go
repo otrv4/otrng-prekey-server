@@ -242,4 +242,95 @@ func (s *GenericServerSuite) Test_fileStorage_retrieveFor_willReturnAPrekeyEnsem
 
 	pes = fs.retrieveFor("someone@example.org")
 	c.Assert(pes, HasLen, 0)
+
+	c.Assert(entryExists(path.Join(testDir, prefixHexForUser2, hexForUser2, "1245ABCD", "pm")), Equals, true)
+	fs.cleanup()
+	c.Assert(entryExists(path.Join(testDir, prefixHexForUser2, hexForUser2, "1245ABCD", "pm")), Equals, false)
+}
+
+func (s *GenericServerSuite) Test_fileStorage_storePrekeyMessages_reportsErrorWhenItCantWriteToTheDirectory(c *C) {
+	os.Mkdir(testDir, 0700)
+	defer os.RemoveAll(testDir)
+
+	gs := &GenericServer{
+		rand: fixtureRand(),
+	}
+
+	fsf, _ := createFileStorageFactoryFrom("dir:" + testDir)
+	fs := fsf.createStorage()
+
+	os.MkdirAll(path.Join(testDir, prefixHexForUser2, hexForUser2, "1245ABCD"), 0700)
+	os.Mkdir(path.Join(testDir, prefixHexForUser2, hexForUser2, "1245ABCD", "pm"), 0500)
+
+	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	e := fs.storePrekeyMessages("someone@example.org", []*prekeyMessage{pm1})
+	c.Assert(e, ErrorMatches, "open __dir_for_tests/79A6/79A6123C2DB3B110C92F2872D217545DFC5FF5147BBDD47E67E72F223747A538/1245ABCD/pm/ABCDABCD.bin: permission denied")
+}
+
+func (s *GenericServerSuite) Test_fileStorage_numberStored_returns0WhenItCantReadThePmDir(c *C) {
+	os.Mkdir(testDir, 0700)
+	defer os.RemoveAll(testDir)
+
+	fsf, _ := createFileStorageFactoryFrom("dir:" + testDir)
+	fs := fsf.createStorage()
+
+	os.MkdirAll(path.Join(testDir, prefixHexForUser2, hexForUser2, "1245ABCD"), 0700)
+	res := fs.numberStored("someone@example.org", 0x1245ABCD)
+	c.Assert(res, Equals, uint32(0))
+}
+
+func (s *GenericServerSuite) Test_fileStorage_retrieveFor_returnsEmptyForNonExistantUser(c *C) {
+	os.Mkdir(testDir, 0700)
+	defer os.RemoveAll(testDir)
+
+	fsf, _ := createFileStorageFactoryFrom("dir:" + testDir)
+	fs := fsf.createStorage()
+
+	res := fs.retrieveFor("someone@example.org")
+	c.Assert(res, HasLen, 0)
+}
+
+func (s *GenericServerSuite) Test_fileStorage_retrieveFor_returnsEmptyIfItCantReadDirectory(c *C) {
+	os.Mkdir(testDir, 0700)
+	defer os.RemoveAll(testDir)
+
+	fsf, _ := createFileStorageFactoryFrom("dir:" + testDir)
+	fs := fsf.createStorage()
+
+	os.Mkdir(path.Join(testDir, prefixHexForUser2), 0700)
+	os.Mkdir(path.Join(testDir, prefixHexForUser2, hexForUser2), 0000)
+	res := fs.retrieveFor("someone@example.org")
+	c.Assert(res, HasLen, 0)
+}
+
+func (s *GenericServerSuite) Test_fileStorage_listDirsIn_returnsEmptyIfItCantReadDirectory(c *C) {
+	os.Mkdir(testDir, 0600)
+	defer os.RemoveAll(testDir)
+
+	c.Assert(listDirsIn(testDir), HasLen, 0)
+}
+
+func (s *GenericServerSuite) Test_fileStorage_listInstanceTagsIn_returnsEmptyIfItCantReadDirectory(c *C) {
+	os.Mkdir(testDir, 0600)
+	defer os.RemoveAll(testDir)
+
+	c.Assert(listInstanceTagsIn(testDir), HasLen, 0)
+}
+
+func (s *GenericServerSuite) Test_fileStorage_cleanupClientProfile_returnsErrorIfItCantReadTheFile(c *C) {
+	os.Mkdir(testDir, 0600)
+	defer os.RemoveAll(testDir)
+
+	ioutil.WriteFile(path.Join(testDir, "cp.bin"), []byte{}, 0200)
+
+	c.Assert(cleanupClientProfile(testDir), ErrorMatches, "open __dir_for_tests/cp.bin: permission denied")
+}
+
+func (s *GenericServerSuite) Test_fileStorage_cleanupPrekeyProfile_returnsErrorIfItCantReadTheFile(c *C) {
+	os.Mkdir(testDir, 0600)
+	defer os.RemoveAll(testDir)
+
+	ioutil.WriteFile(path.Join(testDir, "pp.bin"), []byte{}, 0200)
+
+	c.Assert(cleanupPrekeyProfile(testDir), ErrorMatches, "open __dir_for_tests/pp.bin: permission denied")
 }

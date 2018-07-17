@@ -5,12 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"os"
 	"path"
 	"regexp"
 	"strings"
-	"time"
 )
 
 // Design:
@@ -68,8 +66,8 @@ func createFileStorageFrom(path string) *fileStorage {
 
 func (fs *fileStorage) writeData(user, file string, itag uint32, data []byte) error {
 	userDir := fs.getOrCreateDirFor(user)
-	fs.lock(userDir)
-	defer fs.unlock(userDir)
+	t1 := lockDir(userDir)
+	defer unlockDir(userDir, t1)
 
 	itagDir := fs.getOrCreateInstanceTagDir(userDir, itag)
 	return ioutil.WriteFile(path.Join(itagDir, file), data, 0600)
@@ -90,23 +88,6 @@ func formatUint32(v uint32) string {
 func entryExists(entry string) bool {
 	_, err := os.Stat(entry)
 	return err == nil
-}
-
-// TODO: maybe add pid to the lock file name?
-
-// lock will place a lock file in the named directory
-//  if there is already a lock file there, it will wait
-//  until it's been removed
-func (fs *fileStorage) lock(dirName string) {
-	lockFile := path.Join(dirName, ".lock")
-	for entryExists(lockFile) {
-		time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
-	}
-	ioutil.WriteFile(lockFile, []byte{}, 0600)
-}
-
-func (fs *fileStorage) unlock(dirName string) {
-	os.Remove(path.Join(dirName, ".lock"))
 }
 
 func (fs *fileStorage) composeDirNameFor(user string) (string, string) {
@@ -136,13 +117,13 @@ func (fs *fileStorage) getOrCreateDirFor(user string) string {
 
 	pref, us := fs.composeDirNameFor(user)
 	if !entryExists(pref) {
-		fs.lock(fs.path)
+		t1 := lockDir(fs.path)
 		os.Mkdir(pref, 0700)
-		fs.unlock(fs.path)
+		unlockDir(fs.path, t1)
 	}
-	fs.lock(pref)
+	t1 := lockDir(pref)
 	os.Mkdir(us, 0700)
-	fs.unlock(pref)
+	unlockDir(pref, t1)
 	return us
 }
 
@@ -165,14 +146,13 @@ func (fs *fileStorage) getOrCreatePmDir(userDir string) string {
 }
 
 func (fs *fileStorage) storePrekeyMessages(user string, pms []*prekeyMessage) error {
-	// TODO: we probably need to be able to deal with different instance tags for the different messages
 	userDir := fs.getOrCreateDirFor(user)
-	fs.lock(userDir)
-	defer fs.unlock(userDir)
+	t1 := lockDir(userDir)
+	defer unlockDir(userDir, t1)
 
-	itagDir := fs.getOrCreateInstanceTagDir(userDir, pms[0].instanceTag)
-	pmDir := fs.getOrCreatePmDir(itagDir)
 	for _, pm := range pms {
+		itagDir := fs.getOrCreateInstanceTagDir(userDir, pm.instanceTag)
+		pmDir := fs.getOrCreatePmDir(itagDir)
 		if e := ioutil.WriteFile(path.Join(pmDir, formatUint32(pm.identifier)+".bin"), pm.serialize(), 0600); e != nil {
 			return e
 		}
@@ -185,8 +165,8 @@ func (fs *fileStorage) numberStored(user string, itag uint32) uint32 {
 	if !ok {
 		return 0
 	}
-	fs.lock(userDir)
-	defer fs.unlock(userDir)
+	t1 := lockDir(userDir)
+	defer unlockDir(userDir, t1)
 
 	pmDir := fs.getPmDir(fs.getInstanceTagDir(userDir, itag))
 	files, err := ioutil.ReadDir(pmDir)
@@ -213,8 +193,8 @@ func (fs *fileStorage) retrieveFor(user string) []*prekeyEnsemble {
 	if !ok {
 		return nil
 	}
-	fs.lock(userDir)
-	defer fs.unlock(userDir)
+	t1 := lockDir(userDir)
+	defer unlockDir(userDir, t1)
 
 	files, err := ioutil.ReadDir(userDir)
 	if err != nil {
@@ -262,37 +242,35 @@ func (fs *fileStorage) retrieveFor(user string) []*prekeyEnsemble {
 	return entries
 }
 
-func (fs *fileStorage) cleanupClientProfile(p string) {
+func cleanupClientProfile(p string) error {
 	cpFile := path.Join(p, "cp.bin")
-	if entryExists(cpFile) {
-		cp := &clientProfile{}
-		cpd, e := ioutil.ReadFile(cpFile)
-		if e != nil {
-			return
-		}
-		_, ok := cp.deserialize(cpd)
-		if !ok || cp.hasExpired() {
-			os.Remove(cpFile)
-		}
+	cp := &clientProfile{}
+	cpd, e := ioutil.ReadFile(cpFile)
+	if e != nil {
+		return e
 	}
+	_, ok := cp.deserialize(cpd)
+	if !ok || cp.hasExpired() {
+		os.Remove(cpFile)
+	}
+	return nil
 }
 
-func (fs *fileStorage) cleanupPrekeyProfile(p string) {
+func cleanupPrekeyProfile(p string) error {
 	ppFile := path.Join(p, "pp.bin")
-	if entryExists(ppFile) {
-		pp := &prekeyProfile{}
-		ppd, e := ioutil.ReadFile(ppFile)
-		if e != nil {
-			return
-		}
-		_, ok := pp.deserialize(ppd)
-		if !ok || pp.hasExpired() {
-			os.Remove(ppFile)
-		}
+	pp := &prekeyProfile{}
+	ppd, e := ioutil.ReadFile(ppFile)
+	if e != nil {
+		return e
 	}
+	_, ok := pp.deserialize(ppd)
+	if !ok || pp.hasExpired() {
+		os.Remove(ppFile)
+	}
+	return nil
 }
 
-func (fs *fileStorage) cleanupPrekeyMessages(p string) {
+func cleanupPrekeyMessages(p string) {
 	pmDir := path.Join(p, "pm")
 	if entryExists(pmDir) {
 		ff, _ := ioutil.ReadDir(pmDir)
@@ -302,10 +280,10 @@ func (fs *fileStorage) cleanupPrekeyMessages(p string) {
 	}
 }
 
-func (fs *fileStorage) cleanupInstanceTag(p string) {
-	fs.cleanupClientProfile(p)
-	fs.cleanupPrekeyProfile(p)
-	fs.cleanupPrekeyMessages(p)
+func cleanupInstanceTag(p string) {
+	cleanupClientProfile(p)
+	cleanupPrekeyProfile(p)
+	cleanupPrekeyMessages(p)
 	if entryExists(p) {
 		ff, _ := ioutil.ReadDir(p)
 		if len(ff) == 0 {
@@ -316,14 +294,7 @@ func (fs *fileStorage) cleanupInstanceTag(p string) {
 
 func listInstanceTagsIn(p string) []string {
 	result := []string{}
-	if !entryExists(p) {
-		return result
-	}
-
-	f, e := ioutil.ReadDir(p)
-	if e != nil {
-		return result
-	}
+	f, _ := ioutil.ReadDir(p)
 
 	for _, ff := range f {
 		if ff.IsDir() && isUint32Hex(ff.Name()) {
@@ -335,20 +306,17 @@ func listInstanceTagsIn(p string) []string {
 }
 
 func (fs *fileStorage) cleanupUser(p string) {
-	fs.lock(p)
-	defer fs.unlock(p)
+	t1 := lockDir(p)
+	defer unlockDir(p, t1)
 
 	for _, itag := range listInstanceTagsIn(p) {
-		fs.cleanupInstanceTag(itag)
+		cleanupInstanceTag(itag)
 	}
 }
 
-func listUsersInPrefix(p string) []string {
+func listDirsIn(p string) []string {
 	result := []string{}
-	f, e := ioutil.ReadDir(p)
-	if e != nil {
-		return result
-	}
+	f, _ := ioutil.ReadDir(p)
 	for _, ff := range f {
 		if ff.IsDir() {
 			result = append(result, path.Join(p, ff.Name()))
@@ -358,49 +326,35 @@ func listUsersInPrefix(p string) []string {
 }
 
 func (fs *fileStorage) cleanupPrefix(p string) {
-	for _, ff := range listUsersInPrefix(p) {
+	for _, ff := range listDirsIn(p) {
 		fs.cleanupUser(ff)
 	}
 
-	fs.lock(p)
-	defer fs.unlock(p)
+	t1 := lockDir(p)
+	defer unlockDir(p, t1)
 
-	for _, ff := range listUsersInPrefix(p) {
-		fs.lock(ff)
-		if len(listInstanceTagsIn(ff)) == 0 {
+	for _, ff := range listDirsIn(p) {
+		t2 := lockDir(ff)
+		if len(listDirsIn(ff)) == 0 {
 			os.RemoveAll(ff)
 		}
-		fs.unlock(ff)
+		unlockDir(ff, t2)
 	}
-}
-
-func listPrefixesIn(p string) []string {
-	result := []string{}
-	f, e := ioutil.ReadDir(p)
-	if e != nil {
-		return result
-	}
-	for _, ff := range f {
-		if ff.IsDir() {
-			result = append(result, path.Join(p, ff.Name()))
-		}
-	}
-	return result
 }
 
 func (fs *fileStorage) cleanup() {
-	for _, ff := range listPrefixesIn(fs.path) {
+	for _, ff := range listDirsIn(fs.path) {
 		fs.cleanupPrefix(ff)
 	}
 
-	fs.lock(fs.path)
-	defer fs.unlock(fs.path)
+	t1 := lockDir(fs.path)
+	defer unlockDir(fs.path, t1)
 
-	for _, ff := range listPrefixesIn(fs.path) {
-		fs.lock(ff)
-		if len(listUsersInPrefix(ff)) == 0 {
+	for _, ff := range listDirsIn(fs.path) {
+		t2 := lockDir(ff)
+		if len(listDirsIn(ff)) == 0 {
 			os.RemoveAll(ff)
 		}
-		fs.unlock(ff)
+		unlockDir(ff, t2)
 	}
 }
