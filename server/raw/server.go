@@ -5,12 +5,11 @@ import (
 	"io"
 	"io/ioutil"
 	"net"
+	"sync"
 	"time"
 
 	pks "github.com/otrv4/otrng-prekey-server"
 )
-
-// TODO: add a sigint / ctrl-c handler that shuts down everything properly
 
 // This implements the TCP network protocol for talking to
 // the prekey server. The format follows what's documented
@@ -24,6 +23,7 @@ type rawServer struct {
 	l               *net.TCPListener
 	kp              pks.Keypair
 	finishRequested bool
+	activeConns     sync.WaitGroup
 }
 
 func (rs *rawServer) load(f pks.Factory) error {
@@ -87,6 +87,8 @@ func (rs *rawServer) listenWith() error {
 const readLimit = 268435456 // 2 ** 28 ~ 268 Mb
 
 func (rs *rawServer) handleRequest(c io.ReadWriteCloser) {
+	rs.activeConns.Add(1)
+	defer rs.activeConns.Done()
 	defer c.Close()
 	data, e := ioutil.ReadAll(io.LimitReader(c, readLimit))
 	if e != nil {
@@ -103,4 +105,10 @@ func (rs *rawServer) handleRequest(c io.ReadWriteCloser) {
 		fmt.Printf("Encountered error when writing data: %v\n", e)
 		return
 	}
+}
+
+func (rs *rawServer) shutdown() {
+	fmt.Println("Shutting down server carefully...")
+	rs.finishRequested = true
+	rs.activeConns.Wait()
 }

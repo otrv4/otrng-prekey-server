@@ -46,5 +46,25 @@ func (s *RawServerSuite) Test_main_printsErrorFromRun(c *C) {
 			"  [3B72D580C05DE282 3A14B02B682636BF 58F291A7E831D237 ECE8FC14DA50A187 A50ACF665442AB2D 140E140B813CFCCA 993BC02AA4A3D35C]\n"+
 			"encountered error when running listener: listen tcp 127.0.0.1:3242: bind: address already in use\n",
 	)
+}
 
+func (s *RawServerSuite) Test_main_shutsdownIfSigintIsSent(c *C) {
+	flag.Parse()
+	*listenPort = 3242
+	*keyFile = "raw-server.keys"
+	*storageEngine = "in-memory"
+	defer os.Remove(*keyFile)
+
+	capture := startStdoutCapture()
+	defer capture.restore()
+
+	ch := make(chan bool)
+
+	go func() {
+		main()
+		ch <- true
+	}()
+
+	signalHandler <- os.Interrupt
+	c.Assert(<-ch, Equals, true)
 }
