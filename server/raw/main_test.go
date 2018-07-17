@@ -33,7 +33,7 @@ func (s *RawServerSuite) Test_main_printsErrorFromRun(c *C) {
 
 	var l *net.TCPListener
 	go func() {
-		addr, _ := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", *listenIP, *listenPort))
+		addr, _ := net.ResolveTCPAddr("tcp", net.JoinHostPort(*listenIP, fmt.Sprintf("%d", *listenPort)))
 		l, _ = net.ListenTCP("tcp", addr)
 	}()
 

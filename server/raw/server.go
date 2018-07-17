@@ -49,7 +49,7 @@ func (rs *rawServer) load(f pks.Factory) error {
 }
 
 func (rs *rawServer) run() error {
-	fmt.Printf("Starting server on %s:%v...\n", *listenIP, *listenPort)
+	fmt.Printf("Starting server on %s...\n", net.JoinHostPort(*listenIP, fmt.Sprintf("%d", *listenPort)))
 	fmt.Printf("  [%s]\n", formatFingerprint(rs.kp.Fingerprint()))
 
 	if e := rs.listenWith(); e != nil {
@@ -59,7 +59,7 @@ func (rs *rawServer) run() error {
 }
 
 func (rs *rawServer) listenWith() error {
-	addr, e := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", *listenIP, *listenPort))
+	addr, e := net.ResolveTCPAddr("tcp", net.JoinHostPort(*listenIP, fmt.Sprintf("%d", *listenPort)))
 	if e != nil {
 		return e
 	}
