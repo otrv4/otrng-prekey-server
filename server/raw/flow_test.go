@@ -21,7 +21,9 @@ func (s *RawServerSuite) Test_flowTest_success(c *C) {
 	*listenPort = 0
 	go rs.run()
 
-	time.Sleep(time.Duration(100) * time.Millisecond)
+	for rs.l == nil {
+		time.Sleep(time.Duration(10) * time.Millisecond)
+	}
 
 	a := rs.l.Addr().(*net.TCPAddr)
 	con, _ := net.DialTCP(a.Network(), nil, a)

@@ -67,16 +67,16 @@ func (rs *rawServer) listenWith() error {
 	if err != nil {
 		return err
 	}
-	l.SetDeadline(time.Now().Add(time.Duration(100) * time.Millisecond))
 	rs.l = l
 	defer rs.l.Close()
 	for !rs.finishRequested {
+		l.SetDeadline(time.Now().Add(time.Duration(100) * time.Millisecond))
 		conn, err := rs.l.Accept()
 		if err == nil {
+			conn.SetDeadline(time.Now().Add(time.Duration(2) * time.Minute))
 			go rs.handleRequest(conn)
 		} else {
-			te, ok := err.(net.Error)
-			if !ok || !te.Timeout() {
+			if te, ok := err.(net.Error); !ok || !te.Timeout() {
 				return err
 			}
 		}
@@ -84,9 +84,11 @@ func (rs *rawServer) listenWith() error {
 	return nil
 }
 
+const readLimit = 268435456 // 2 ** 28 ~ 268 Mb
+
 func (rs *rawServer) handleRequest(c io.ReadWriteCloser) {
 	defer c.Close()
-	data, e := ioutil.ReadAll(c)
+	data, e := ioutil.ReadAll(io.LimitReader(c, readLimit))
 	if e != nil {
 		fmt.Printf("Encountered error when reading data: %v\n", e)
 		return
