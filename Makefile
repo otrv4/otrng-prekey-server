@@ -17,6 +17,12 @@ raw:
 	mkdir -p $(BUILD_DIR)
 	go build -i -o $(BUILD_DIR)/raw-server ./server/raw
 
+http:
+	mkdir -p $(BUILD_DIR)
+	go build -i -o $(BUILD_DIR)/http-server ./server/http
+
+all: build raw http
+
 .PHONY: build test
 
 deps:
