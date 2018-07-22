@@ -58,7 +58,7 @@ func extractWord(d []byte) ([]byte, uint32, bool) {
 		uint32(d[3]), true
 }
 
-func extractDoubleWord(d []byte) ([]byte, uint64, bool) {
+func extractLong(d []byte) ([]byte, uint64, bool) {
 	if len(d) < 8 {
 		return nil, 0, false
 	}
@@ -86,7 +86,7 @@ func extractData(d []byte) (newPoint []byte, data []byte, ok bool) {
 }
 
 func extractTime(d []byte) (newPoint []byte, t time.Time, ok bool) {
-	newPoint, tt, ok := extractDoubleWord(d)
+	newPoint, tt, ok := extractLong(d)
 	if !ok {
 		return d, time.Time{}, false
 	}
