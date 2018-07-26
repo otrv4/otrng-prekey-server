@@ -12,4 +12,7 @@ var (
 	fragLen              = flag.Uint("fragmentation-length", 0, "Fragmentation length - 0 means no fragmenting")
 	sessionTimeout       = flag.Uint("session-timeout", 5, "Session timeout, in minutes")
 	fragmentationTimeout = flag.Uint("fragmentation-timeout", 5, "Fragment timeout, in minutes")
+	allowOnlyPrefix      = flag.String("only-prefix", "", "The prefixes of 'from' that should be allowed, separated by comma. Empty means no restrictions")
+	allowOnlySuffix      = flag.String("only-suffix", "", "The suffixes of 'from' that should be allowed, separated by comma. Empty means no restrictions")
+	allowOnly            = flag.String("only", "", "The only 'from' addresses that are allowed, separated by comma. Empty means no restrictions")
 )

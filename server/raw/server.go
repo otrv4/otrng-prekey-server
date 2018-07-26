@@ -42,7 +42,7 @@ func (rs *rawServer) load(f pks.Factory) error {
 		storage,
 		time.Duration(*sessionTimeout)*time.Minute,
 		time.Duration(*fragmentationTimeout)*time.Minute,
-		nil)
+		commandLineRestrictor)
 
 	rs.s = server
 
