@@ -4911,6 +4911,58 @@ func (s *GenericServerSuite) Test_publicKey_serializesCorrectly(c *C) {
 	c.Assert(ser, DeepEquals, expectedSer)
 }
 
+func (s *GenericServerSuite) Test_publicKey_deserializesCorrectly(c *C) {
+	pk := generatePublicKeyFrom([symKeyLength]byte{0xAB, 0x42})
+
+	ser := []byte{
+		0x00, 0x10,
+		0x85, 0x9f, 0x37, 0x1f, 0xf3, 0x4f, 0x36, 0x44,
+		0x5a, 0x99, 0xca, 0x8a, 0x11, 0x17, 0x6b, 0xb8,
+		0x1e, 0xe0, 0x60, 0x39, 0x32, 0x76, 0x71, 0xf4,
+		0xc6, 0x83, 0x77, 0x01, 0x45, 0x27, 0x35, 0x3c,
+		0x75, 0xae, 0xee, 0xaa, 0xf9, 0x79, 0x69, 0xa0,
+		0xd8, 0x9a, 0x3a, 0xb1, 0x48, 0xf6, 0x44, 0x41,
+		0x83, 0x30, 0x9f, 0x41, 0x38, 0x1b, 0xf3, 0x29,
+		0x00,
+	}
+
+	pk1 := &publicKey{}
+	_, ok := pk1.deserialize(ser)
+	c.Assert(ok, Equals, true)
+	c.Assert(pk1.k.Equals(pk.k), Equals, true)
+}
+
+func (s *GenericServerSuite) Test_publicKey_deserialize_failsOnKeyTypeExtraction(c *C) {
+	ser := []byte{
+		0x00,
+	}
+
+	pk1 := &publicKey{}
+	_, ok := pk1.deserialize(ser)
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_publicKey_deserialize_failsOnKeyType(c *C) {
+	ser := []byte{
+		0x00, 0x09,
+	}
+
+	pk1 := &publicKey{}
+	_, ok := pk1.deserialize(ser)
+	c.Assert(ok, Equals, false)
+}
+
+func (s *GenericServerSuite) Test_publicKey_deserialize_failsOnMissingKey(c *C) {
+	ser := []byte{
+		0x00, 0x10,
+		0x00, 0x01,
+	}
+
+	pk1 := &publicKey{}
+	_, ok := pk1.deserialize(ser)
+	c.Assert(ok, Equals, false)
+}
+
 func (s *GenericServerSuite) Test_eddsaSignature_serializesCorrectly(c *C) {
 	sig := &eddsaSignature{
 		s: [114]byte{0x12, 0x34, 0x55},
