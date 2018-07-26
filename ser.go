@@ -624,7 +624,6 @@ func (cp *clientProfile) deserialize(buf []byte) ([]byte, bool) {
 
 func (pp *prekeyProfile) serializeForSignature() []byte {
 	var out []byte
-	out = appendWord(out, pp.identifier)
 	out = appendWord(out, pp.instanceTag)
 	out = append(out, serializeExpiry(pp.expiration)...)
 	out = append(out, serializePoint(pp.sharedPrekey)...)
@@ -637,9 +636,6 @@ func (pp *prekeyProfile) serialize() []byte {
 
 func (pp *prekeyProfile) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
-	if buf, pp.identifier, ok = extractWord(buf); !ok {
-		return nil, false
-	}
 
 	if buf, pp.instanceTag, ok = extractWord(buf); !ok {
 		return nil, false
@@ -733,8 +729,7 @@ func (pe *prekeyEnsemble) deserialize(buf []byte) ([]byte, bool) {
 }
 
 func (p *publicKey) serialize() []byte {
-	// See ED448-PUBKEY
-	return append(appendShort(nil, 0x0010), p.k.DSAEncode()...)
+	return append(ed448KeyType, p.k.DSAEncode()...)
 }
 
 func (s *eddsaSignature) serialize() []byte {
@@ -763,7 +758,6 @@ func deserializePoint(buf []byte) ([]byte, ed448.Point, bool) {
 }
 
 func (p *publicKey) deserialize(buf []byte) ([]byte, bool) {
-	// See ED448-PUBKEY
 	var ok bool
 	pubKeyType := uint16(0)
 
@@ -771,7 +765,7 @@ func (p *publicKey) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	if pubKeyType != 0x0010 {
+	if pubKeyType != ed448KeyTypeInt {
 		return nil, false
 	}
 

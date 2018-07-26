@@ -20,7 +20,6 @@ type clientProfile struct {
 }
 
 type prekeyProfile struct {
-	identifier   uint32 // TODO REMOVE
 	instanceTag  uint32
 	expiration   time.Time
 	sharedPrekey ed448.Point
@@ -28,7 +27,7 @@ type prekeyProfile struct {
 }
 
 type prekeyMessage struct {
-	identifier  uint32 // TODO REMOVE
+	identifier  uint32
 	instanceTag uint32
 	y           ed448.Point
 	b           []byte
@@ -71,10 +70,8 @@ func (m *clientProfile) validate(tag uint32) error {
 }
 
 func generatePrekeyProfile(wr WithRandom, tag uint32, expiration time.Time, longTerm *keypair) (*prekeyProfile, *keypair) {
-	ident := randomUint32(wr)
 	sharedKey := generateKeypair(wr)
 	pp := &prekeyProfile{
-		identifier:   ident,
 		instanceTag:  tag,
 		expiration:   expiration,
 		sharedPrekey: sharedKey.pub.k,

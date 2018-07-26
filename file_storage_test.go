@@ -210,12 +210,10 @@ func (s *GenericServerSuite) Test_fileStorage_retrieveFor_willReturnAPrekeyEnsem
 	c.Assert(pes, HasLen, 2)
 	c.Assert(pes[0].cp.sig, DeepEquals, cp.sig)
 	c.Assert(pes[1].cp.sig, DeepEquals, cp2.sig)
-	c.Assert(pes[0].pp.identifier, DeepEquals, pp1.identifier)
 	c.Assert(pes[0].pp.sig, DeepEquals, pp1.sig)
-	c.Assert(pes[1].pp.identifier, DeepEquals, pp2.identifier)
 	c.Assert(pes[1].pp.sig, DeepEquals, pp2.sig)
-	c.Assert(pes[0].pm.identifier, DeepEquals, pm2.identifier)
-	c.Assert(pes[0].pm.b, DeepEquals, pm2.b)
+	c.Assert(pes[0].pm.identifier, DeepEquals, pm3.identifier)
+	c.Assert(pes[0].pm.b, DeepEquals, pm3.b)
 	c.Assert(pes[1].pm.identifier, DeepEquals, pm2x1.identifier)
 	c.Assert(pes[1].pm.b, DeepEquals, pm2x1.b)
 
@@ -226,17 +224,17 @@ func (s *GenericServerSuite) Test_fileStorage_retrieveFor_willReturnAPrekeyEnsem
 
 	pes = fs.retrieveFor("someone@example.org")
 	c.Assert(pes, HasLen, 2)
-	c.Assert(pes[0].pm.identifier, DeepEquals, pm3.identifier)
+	c.Assert(pes[0].pm.identifier, DeepEquals, pm4.identifier)
 	c.Assert(pes[1].pm.identifier, DeepEquals, pm2x2.identifier)
 
 	pes = fs.retrieveFor("someone@example.org")
 	c.Assert(pes, HasLen, 2)
-	c.Assert(pes[0].pm.identifier, DeepEquals, pm4.identifier)
+	c.Assert(pes[0].pm.identifier, DeepEquals, pm1.identifier)
 	c.Assert(pes[1].pm.identifier, DeepEquals, pm2x3.identifier)
 
 	pes = fs.retrieveFor("someone@example.org")
 	c.Assert(pes, HasLen, 1)
-	c.Assert(pes[0].pm.identifier, DeepEquals, pm1.identifier)
+	c.Assert(pes[0].pm.identifier, DeepEquals, pm2.identifier)
 
 	pes = fs.retrieveFor("someone@example.org")
 	c.Assert(pes, HasLen, 0)

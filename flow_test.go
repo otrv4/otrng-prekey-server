@@ -16,7 +16,6 @@ func generateSitaClientProfile(longTerm *keypair) *clientProfile {
 	sita.expiration = time.Date(2028, 11, 5, 13, 46, 00, 13, time.UTC)
 	sita.dsaKey = nil
 	sita.transitionalSignature = nil
-	//sita.sig = &eddsaSignature{s: sita.generateSignature(longTerm)}
 	sita.sig = &eddsaSignature{s: [114]byte{
 		0x2c, 0xb1, 0x20, 0x40, 0x18, 0xfa, 0xe4, 0xb5,
 		0xfc, 0x9e, 0xf, 0xee, 0xf4, 0x87, 0xc6, 0x9f,
