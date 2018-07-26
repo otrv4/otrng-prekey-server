@@ -53,7 +53,7 @@ func (m *clientProfile) validate(tag uint32) error {
 		return errors.New("client profile has expired")
 	}
 
-	if !bytes.Contains(m.versions, []byte{0x04}) {
+	if !bytes.Contains(m.versions, []byte{'4'}) {
 		return errors.New("client profile doesn't support version 4")
 	}
 
