@@ -2272,7 +2272,7 @@ func (s *GenericServerSuite) Test_publicationMessage_shouldSerializeCorrectly_wi
 	pp.identifier = 0x4264212F
 	pp.instanceTag = 0x1234ABC1
 	pp.expiration = time.Date(2034, 11, 5, 13, 46, 00, 12, time.UTC)
-	pp.sharedPrekey = generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF})
+	pp.sharedPrekey = generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k
 	pp.sig = &eddsaSignature{
 		s: [114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11},
 	}
@@ -2706,7 +2706,7 @@ func (s *GenericServerSuite) Test_publicationMessage_shouldDeserializeCorrectly_
 	c.Assert(m.prekeyProfile.identifier, Equals, uint32(0x4264212F))
 	c.Assert(m.prekeyProfile.instanceTag, Equals, uint32(0x1234ABC1))
 	c.Assert(m.prekeyProfile.expiration, DeepEquals, time.Date(2034, 11, 5, 13, 46, 00, 00, time.UTC))
-	c.Assert(m.prekeyProfile.sharedPrekey.k.Equals(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
+	c.Assert(m.prekeyProfile.sharedPrekey.Equals(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
 	c.Assert(m.prekeyProfile.sig, DeepEquals, &eddsaSignature{
 		s: [114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11},
 	})
@@ -2750,7 +2750,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_shouldSerializeCorrec
 	pe.pp.identifier = 0x4264212F
 	pe.pp.instanceTag = 0x1234ABC1
 	pe.pp.expiration = time.Date(2034, 11, 5, 13, 46, 00, 12, time.UTC)
-	pe.pp.sharedPrekey = generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF})
+	pe.pp.sharedPrekey = generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k
 	pe.pp.sig = &eddsaSignature{
 		s: [114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11},
 	}
@@ -3035,7 +3035,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_shouldDeserializeCorr
 	c.Assert(m.ensembles[0].pp.identifier, Equals, uint32(0x4264212F))
 	c.Assert(m.ensembles[0].pp.instanceTag, Equals, uint32(0x1234ABC1))
 	c.Assert(m.ensembles[0].pp.expiration, DeepEquals, time.Date(2034, 11, 5, 13, 46, 00, 00, time.UTC))
-	c.Assert(m.ensembles[0].pp.sharedPrekey.k.Equals(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
+	c.Assert(m.ensembles[0].pp.sharedPrekey.Equals(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
 	c.Assert(m.ensembles[0].pp.sig, DeepEquals, &eddsaSignature{
 		s: [114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11},
 	})
@@ -3666,7 +3666,7 @@ func (s *GenericServerSuite) Test_prekeyProfile_shouldSerializeCorrectly(c *C) {
 	m.identifier = 0x4264212F
 	m.instanceTag = 0x1234ABC1
 	m.expiration = time.Date(2034, 11, 5, 13, 46, 00, 12, time.UTC)
-	m.sharedPrekey = generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF})
+	m.sharedPrekey = generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k
 	m.sig = &eddsaSignature{
 		s: [114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11},
 	}
@@ -3766,7 +3766,7 @@ func (s *GenericServerSuite) Test_prekeyProfile_shouldDeserializeCorrectly(c *C)
 	c.Assert(m.identifier, Equals, uint32(0x4264212F))
 	c.Assert(m.instanceTag, Equals, uint32(0x1234ABC1))
 	c.Assert(m.expiration, DeepEquals, time.Date(2034, 11, 5, 13, 46, 00, 00, time.UTC))
-	c.Assert(m.sharedPrekey.k.Equals(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
+	c.Assert(m.sharedPrekey.Equals(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
 	c.Assert(m.sig, DeepEquals, &eddsaSignature{
 		s: [114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11},
 	})
@@ -3790,7 +3790,7 @@ func (s *GenericServerSuite) Test_prekeyEnsemble_shouldSerializeCorrectly(c *C) 
 	pp.identifier = 0x4264212F
 	pp.instanceTag = 0x1234ABC1
 	pp.expiration = time.Date(2034, 11, 5, 13, 46, 00, 12, time.UTC)
-	pp.sharedPrekey = generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF})
+	pp.sharedPrekey = generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k
 	pp.sig = &eddsaSignature{
 		s: [114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11},
 	}
@@ -4052,7 +4052,7 @@ func (s *GenericServerSuite) Test_prekeyEnsemble_shouldDeserializeCorrectly(c *C
 	c.Assert(m.pp.identifier, Equals, uint32(0x4264212F))
 	c.Assert(m.pp.instanceTag, Equals, uint32(0x1234ABC1))
 	c.Assert(m.pp.expiration, DeepEquals, time.Date(2034, 11, 5, 13, 46, 00, 00, time.UTC))
-	c.Assert(m.pp.sharedPrekey.k.Equals(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
+	c.Assert(m.pp.sharedPrekey.Equals(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
 	c.Assert(m.pp.sig, DeepEquals, &eddsaSignature{
 		s: [114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11},
 	})

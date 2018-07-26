@@ -638,7 +638,7 @@ func (pp *prekeyProfile) serializeForSignature() []byte {
 	out = appendWord(out, pp.identifier)
 	out = appendWord(out, pp.instanceTag)
 	out = append(out, serializeExpiry(pp.expiration)...)
-	out = append(out, pp.sharedPrekey.serialize()...)
+	out = append(out, serializePoint(pp.sharedPrekey)...)
 	return out
 }
 
@@ -660,8 +660,7 @@ func (pp *prekeyProfile) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	pp.sharedPrekey = &publicKey{}
-	if buf, ok = pp.sharedPrekey.deserialize(buf); !ok {
+	if buf, pp.sharedPrekey, ok = deserializePoint(buf); !ok {
 		return nil, false
 	}
 

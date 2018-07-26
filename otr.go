@@ -23,7 +23,7 @@ type prekeyProfile struct {
 	identifier   uint32 // TODO REMOVE
 	instanceTag  uint32
 	expiration   time.Time
-	sharedPrekey *publicKey
+	sharedPrekey ed448.Point
 	sig          *eddsaSignature
 }
 
@@ -77,7 +77,7 @@ func generatePrekeyProfile(wr WithRandom, tag uint32, expiration time.Time, long
 		identifier:   ident,
 		instanceTag:  tag,
 		expiration:   expiration,
-		sharedPrekey: sharedKey.pub,
+		sharedPrekey: sharedKey.pub.k,
 	}
 
 	pp.sig = &eddsaSignature{s: pp.generateSignature(longTerm)}
@@ -133,7 +133,7 @@ func (pp *prekeyProfile) validate(tag uint32, pub *publicKey) error {
 		return errors.New("prekey profile has expired")
 	}
 
-	if validatePoint(pp.sharedPrekey.k) != nil {
+	if validatePoint(pp.sharedPrekey) != nil {
 		return errors.New("prekey profile shared prekey is not a valid point")
 	}
 

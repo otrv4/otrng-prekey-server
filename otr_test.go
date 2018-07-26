@@ -90,7 +90,7 @@ func (s *GenericServerSuite) Test_prekeyProfile_validate_checksValidSharedPrekey
 	}
 	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
 	pp, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
-	pp.sharedPrekey.k = identityPoint
+	pp.sharedPrekey = identityPoint
 	pp.sig = &eddsaSignature{s: pp.generateSignature(sita.longTerm)}
 	c.Assert(pp.validate(sita.instanceTag, sita.longTerm.pub), ErrorMatches, "prekey profile shared prekey is not a valid point")
 }
