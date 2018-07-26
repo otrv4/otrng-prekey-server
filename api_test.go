@@ -80,7 +80,12 @@ func (s *GenericServerSuite) Test_realFactory_CreateKeypair_createsAKeypairFromT
 func (s *GenericServerSuite) Test_realFactory_NewServer_createsAServerWithTheGivenValues(c *C) {
 	f := &realFactory{r: fixtureRand()}
 	kp := f.CreateKeypair()
-	res := f.NewServer("foobar", kp, 42, &inMemoryStorageFactory{}, time.Duration(25), time.Duration(77))
+	mockCalled := false
+	mockRestrictor := func(string) bool {
+		mockCalled = true
+		return false
+	}
+	res := f.NewServer("foobar", kp, 42, &inMemoryStorageFactory{}, time.Duration(25), time.Duration(77), mockRestrictor)
 	c.Assert(res, Not(IsNil))
 	c.Assert(res, FitsTypeOf, &GenericServer{})
 	gs := res.(*GenericServer)
@@ -95,6 +100,17 @@ func (s *GenericServerSuite) Test_realFactory_NewServer_createsAServerWithTheGiv
 	c.Assert(gs.fragmentationTimeout, Equals, time.Duration(77))
 	c.Assert(gs.messageHandler, Not(IsNil))
 	c.Assert(gs.messageHandler.(*otrngMessageHandler).s, Equals, gs)
+	c.Assert(gs.rest("bla"), Equals, false)
+	c.Assert(mockCalled, Equals, true)
+
+}
+
+func (s *GenericServerSuite) Test_realFactory_NewServer_setsANullRestrictorIfNoneIsGiven(c *C) {
+	f := &realFactory{r: fixtureRand()}
+	kp := f.CreateKeypair()
+	res := f.NewServer("foobar", kp, 42, &inMemoryStorageFactory{}, time.Duration(25), time.Duration(77), nil)
+	gs := res.(*GenericServer)
+	c.Assert(gs.rest("bla"), Equals, false)
 }
 
 func (s *GenericServerSuite) Test_keypairInStorage_intoKeypair_decodesACorrectMessage(c *C) {

@@ -14,7 +14,7 @@ type Factory interface {
 	LoadKeypairFrom(r io.Reader) (Keypair, error)
 	LoadStorageType(name string) (Storage, error)
 	StoreKeysInto(Keypair, io.Writer) error
-	NewServer(identity string, keys Keypair, fragLen int, st Storage, sessionTimeout, fragmentTimeout time.Duration) Server
+	NewServer(identity string, keys Keypair, fragLen int, st Storage, sessionTimeout, fragmentTimeout time.Duration, r Restrictor) Server
 }
 
 // Keypair represents the minimum key functionality a server implementation will need
@@ -120,8 +120,11 @@ func (f *realFactory) CreateKeypair() Keypair {
 	return generateKeypair(f)
 }
 
-func (*realFactory) NewServer(identity string, keys Keypair, fragLen int, st Storage, sessionTimeout, fragmentTimeout time.Duration) Server {
+func (*realFactory) NewServer(identity string, keys Keypair, fragLen int, st Storage, sessionTimeout, fragmentTimeout time.Duration, r Restrictor) Server {
 	kp := keys.realKeys()
+	if r == nil {
+		r = nullRestrictor
+	}
 	gs := &GenericServer{
 		identity:             identity,
 		fingerprint:          kp.fingerprint(),
@@ -132,6 +135,7 @@ func (*realFactory) NewServer(identity string, keys Keypair, fragLen int, st Sto
 		storageImpl:          st.createStorage(),
 		sessionTimeout:       sessionTimeout,
 		fragmentationTimeout: fragmentTimeout,
+		rest:                 r,
 	}
 	gs.messageHandler = &otrngMessageHandler{s: gs}
 	return gs

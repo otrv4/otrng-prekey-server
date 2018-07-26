@@ -49,7 +49,7 @@ func (f *mockFactory) LoadStorageType(name string) (pks.Storage, error) {
 	return nil, nil
 }
 
-func (f *mockFactory) NewServer(string, pks.Keypair, int, pks.Storage, time.Duration, time.Duration) pks.Server {
+func (f *mockFactory) NewServer(string, pks.Keypair, int, pks.Storage, time.Duration, time.Duration, pks.Restrictor) pks.Server {
 	return nil
 }
 

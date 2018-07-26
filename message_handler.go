@@ -1,5 +1,7 @@
 package prekeyserver
 
+import "errors"
+
 type messageHandler interface {
 	handleMessage(from string, message []byte) ([]byte, error)
 	handleInnerMessage(from string, message []byte) (serializable, error)
@@ -17,10 +19,19 @@ func (mh *otrngMessageHandler) handleMessage(from string, message []byte) ([]byt
 	return r.serialize(), nil
 }
 
+func (mh *otrngMessageHandler) shouldRestrict(from string, mt uint8) bool {
+	return (mt == messageTypeDAKE1 || mt == messageTypeDAKE3) && mh.s.rest(from)
+
+}
+
 func (mh *otrngMessageHandler) handleInnerMessage(from string, message []byte) (serializable, error) {
-	result, e := parseMessage(message)
+	result, mt, e := parseMessage(message)
 	if e != nil {
 		return nil, e
+	}
+
+	if mh.shouldRestrict(from, mt) {
+		return nil, errors.New("this from-string is restricted for these kinds of messages")
 	}
 
 	if e := result.validate(from, mh.s); e != nil {

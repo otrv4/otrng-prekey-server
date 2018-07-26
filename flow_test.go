@@ -69,6 +69,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 		fingerprint: serverKey.pub.fingerprint(),
 		storageImpl: stor,
 		sessions:    newSessionManager(),
+		rest:        nullRestrictor,
 	}
 	mh := &otrngMessageHandler{s: gs}
 	gs.messageHandler = mh
@@ -236,6 +237,7 @@ func (s *GenericServerSuite) Test_flow_invalidUserProfileInDAKE1(c *C) {
 		rand:        fixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
+		rest:        nullRestrictor,
 	}
 	mh := &otrngMessageHandler{s: gs}
 
@@ -257,6 +259,7 @@ func (s *GenericServerSuite) Test_flow_invalidPointI(c *C) {
 		rand:        fixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
+		rest:        nullRestrictor,
 	}
 	mh := &otrngMessageHandler{s: gs}
 
@@ -278,6 +281,7 @@ func (s *GenericServerSuite) Test_flow_invalidDAKE3(c *C) {
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		sessions:    newSessionManager(),
+		rest:        nullRestrictor,
 	}
 	mh := &otrngMessageHandler{s: gs}
 
@@ -321,6 +325,7 @@ func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		sessions:    newSessionManager(),
+		rest:        nullRestrictor,
 	}
 	mh := &otrngMessageHandler{s: gs}
 	gs.messageHandler = mh
@@ -369,6 +374,7 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 		fingerprint: serverKey.pub.fingerprint(),
 		storageImpl: stor,
 		sessions:    newSessionManager(),
+		rest:        nullRestrictor,
 	}
 	mh := &otrngMessageHandler{s: gs}
 	gs.messageHandler = mh

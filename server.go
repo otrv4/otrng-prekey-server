@@ -28,6 +28,7 @@ type GenericServer struct {
 
 	sessionTimeout       time.Duration
 	fragmentationTimeout time.Duration
+	rest                 Restrictor
 }
 
 func (g *GenericServer) storage() storage {

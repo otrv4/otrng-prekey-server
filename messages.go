@@ -60,13 +60,13 @@ func parseVersion(message []byte) uint16 {
 	return v
 }
 
-func parseMessage(msg []byte) (message, error) {
+func parseMessage(msg []byte) (message, uint8, error) {
 	if len(msg) <= indexOfMessageType {
-		return nil, errors.New("message too short to be a valid message")
+		return nil, 0, errors.New("message too short to be a valid message")
 	}
 
 	if v := parseVersion(msg); v != uint16(4) {
-		return nil, errors.New("invalid protocol version")
+		return nil, 0, errors.New("invalid protocol version")
 	}
 
 	messageType := msg[indexOfMessageType]
@@ -84,12 +84,12 @@ func parseMessage(msg []byte) (message, error) {
 	case messageTypeEnsembleRetrievalQuery:
 		r = &ensembleRetrievalQueryMessage{}
 	default:
-		return nil, fmt.Errorf("unknown message type: 0x%x", messageType)
+		return nil, 0, fmt.Errorf("unknown message type: 0x%x", messageType)
 	}
 
 	r.deserialize(msg)
 
-	return r, nil
+	return r, messageType, nil
 }
 
 func generateStorageInformationRequestMessage(macKey []byte) *storageInformationRequestMessage {
