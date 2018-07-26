@@ -30,7 +30,7 @@ type prekeyProfile struct {
 type prekeyMessage struct {
 	identifier  uint32 // TODO REMOVE
 	instanceTag uint32
-	y           *publicKey
+	y           ed448.Point
 	b           []byte
 }
 
@@ -93,7 +93,7 @@ func generatePrekeyMessage(wr WithRandom, tag uint32) (*prekeyMessage, *keypair)
 	return &prekeyMessage{
 		identifier:  ident,
 		instanceTag: tag,
-		y:           y.pub,
+		y:           y.pub.k,
 		b:           b,
 	}, y
 }
@@ -145,7 +145,7 @@ func (pm *prekeyMessage) validate(tag uint32) error {
 		return errors.New("invalid instance tag in prekey message")
 	}
 
-	if validatePoint(pm.y.k) != nil {
+	if validatePoint(pm.y) != nil {
 		return errors.New("prekey profile Y point is not a valid point")
 	}
 

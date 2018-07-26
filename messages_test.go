@@ -188,7 +188,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidPrek
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	pm2.y.k = identityPoint
+	pm2.y = identityPoint
 	msg := generatePublicationMessage(sita.clientProfile, pp1, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
 	c.Assert(msg.validate("somewhere@example.org", gs), ErrorMatches, "invalid prekey message in publication message")
 }

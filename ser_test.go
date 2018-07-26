@@ -2143,13 +2143,13 @@ func (s *GenericServerSuite) Test_publicationMessage_shouldSerializeCorrectly_wi
 	pm1 := &prekeyMessage{}
 	pm1.identifier = 0x4264212E
 	pm1.instanceTag = 0x1234ABC0
-	pm1.y = generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF})
+	pm1.y = generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k
 	pm1.b = []byte{0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0F}
 
 	pm2 := &prekeyMessage{}
 	pm2.identifier = 0x4264212F
 	pm2.instanceTag = 0x1234ABC0
-	pm2.y = generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF})
+	pm2.y = generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k
 	pm2.b = []byte{0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x1C}
 
 	m.prekeyMessages = []*prekeyMessage{
@@ -2281,7 +2281,7 @@ func (s *GenericServerSuite) Test_publicationMessage_shouldSerializeCorrectly_wi
 	pm1 := &prekeyMessage{}
 	pm1.identifier = 0x4264212E
 	pm1.instanceTag = 0x1234ABC0
-	pm1.y = generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF})
+	pm1.y = generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k
 	pm1.b = []byte{0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0F}
 
 	m.prekeyMessages = []*prekeyMessage{
@@ -2531,12 +2531,12 @@ func (s *GenericServerSuite) Test_publicationMessage_shouldDeserializeCorrectly_
 	c.Assert(len(m.prekeyMessages), Equals, 2)
 	c.Assert(m.prekeyMessages[0].identifier, Equals, uint32(0x4264212E))
 	c.Assert(m.prekeyMessages[0].instanceTag, Equals, uint32(0x1234ABC0))
-	c.Assert(m.prekeyMessages[0].y.k.Equals(generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
+	c.Assert(m.prekeyMessages[0].y.Equals(generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
 	c.Assert(m.prekeyMessages[0].b, DeepEquals, []byte{0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0F})
 
 	c.Assert(m.prekeyMessages[1].identifier, Equals, uint32(0x4264212F))
 	c.Assert(m.prekeyMessages[1].instanceTag, Equals, uint32(0x1234ABC0))
-	c.Assert(m.prekeyMessages[1].y.k.Equals(generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
+	c.Assert(m.prekeyMessages[1].y.Equals(generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
 	c.Assert(m.prekeyMessages[1].b, DeepEquals, []byte{0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x1C})
 
 	c.Assert(m.mac[:], DeepEquals, []byte{
@@ -2714,7 +2714,7 @@ func (s *GenericServerSuite) Test_publicationMessage_shouldDeserializeCorrectly_
 	c.Assert(len(m.prekeyMessages), Equals, 1)
 	c.Assert(m.prekeyMessages[0].identifier, Equals, uint32(0x4264212E))
 	c.Assert(m.prekeyMessages[0].instanceTag, Equals, uint32(0x1234ABC0))
-	c.Assert(m.prekeyMessages[0].y.k.Equals(generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
+	c.Assert(m.prekeyMessages[0].y.Equals(generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
 	c.Assert(m.prekeyMessages[0].b, DeepEquals, []byte{0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0F})
 
 	c.Assert(m.mac[:], DeepEquals, []byte{
@@ -2758,7 +2758,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_shouldSerializeCorrec
 	pe.pm = &prekeyMessage{}
 	pe.pm.identifier = 0x4264212E
 	pe.pm.instanceTag = 0x1234ABC0
-	pe.pm.y = generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF})
+	pe.pm.y = generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k
 	pe.pm.b = []byte{0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0F}
 
 	m.ensembles = []*prekeyEnsemble{
@@ -3042,7 +3042,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_shouldDeserializeCorr
 
 	c.Assert(m.ensembles[0].pm.identifier, Equals, uint32(0x4264212E))
 	c.Assert(m.ensembles[0].pm.instanceTag, Equals, uint32(0x1234ABC0))
-	c.Assert(m.ensembles[0].pm.y.k.Equals(generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
+	c.Assert(m.ensembles[0].pm.y.Equals(generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
 	c.Assert(m.ensembles[0].pm.b, DeepEquals, []byte{0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0F})
 }
 
@@ -3592,7 +3592,7 @@ func (s *GenericServerSuite) Test_prekeyMessage_shouldSerializeCorrectly(c *C) {
 	m := &prekeyMessage{}
 	m.identifier = 0x4264212E
 	m.instanceTag = 0x1234ABC0
-	m.y = generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF})
+	m.y = generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k
 	m.b = []byte{0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0F}
 	expected := []byte{
 		// version
@@ -3657,7 +3657,7 @@ func (s *GenericServerSuite) Test_prekeyMessage_shouldDeserializeCorrectly(c *C)
 	c.Assert(ok, Equals, true)
 	c.Assert(m.identifier, Equals, uint32(0x4264212E))
 	c.Assert(m.instanceTag, Equals, uint32(0x1234ABC0))
-	c.Assert(m.y.k.Equals(generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
+	c.Assert(m.y.Equals(generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
 	c.Assert(m.b, DeepEquals, []byte{0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0F})
 }
 
@@ -3799,7 +3799,7 @@ func (s *GenericServerSuite) Test_prekeyEnsemble_shouldSerializeCorrectly(c *C) 
 	pm := &prekeyMessage{}
 	pm.identifier = 0x4264212E
 	pm.instanceTag = 0x1234ABC0
-	pm.y = generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF})
+	pm.y = generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k
 	pm.b = []byte{0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0F}
 	m.pm = pm
 
@@ -4059,7 +4059,7 @@ func (s *GenericServerSuite) Test_prekeyEnsemble_shouldDeserializeCorrectly(c *C
 
 	c.Assert(m.pm.identifier, Equals, uint32(0x4264212E))
 	c.Assert(m.pm.instanceTag, Equals, uint32(0x1234ABC0))
-	c.Assert(m.pm.y.k.Equals(generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
+	c.Assert(m.pm.y.Equals(generatePublicKeyFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).k), Equals, true)
 	c.Assert(m.pm.b, DeepEquals, []byte{0x01, 0x03, 0x05, 0x07, 0x09, 0x0B, 0x0D, 0x0F})
 }
 

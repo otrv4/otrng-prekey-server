@@ -116,7 +116,7 @@ func (s *GenericServerSuite) Test_prekeyMessage_validate_checksInvalidYPoint(c *
 		rand: fixtureRand(),
 	}
 	pm, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	pm.y.k = identityPoint
+	pm.y = identityPoint
 	c.Assert(pm.validate(sita.instanceTag), ErrorMatches, "prekey profile Y point is not a valid point")
 }
 

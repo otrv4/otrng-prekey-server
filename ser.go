@@ -678,7 +678,7 @@ func (pm *prekeyMessage) serialize() []byte {
 	out = append(out, messageTypePrekeyMessage)
 	out = appendWord(out, pm.identifier)
 	out = appendWord(out, pm.instanceTag)
-	out = append(out, pm.y.serialize()...)
+	out = append(out, serializePoint(pm.y)...)
 	out = appendData(out, pm.b)
 	return out
 }
@@ -704,11 +704,9 @@ func (pm *prekeyMessage) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	y := &publicKey{}
-	if buf, ok1 = y.deserialize(buf); !ok1 {
+	if buf, pm.y, ok1 = deserializePoint(buf); !ok1 {
 		return nil, false
 	}
-	pm.y = y
 
 	if buf, pm.b, ok1 = extractData(buf); !ok1 {
 		return nil, false
