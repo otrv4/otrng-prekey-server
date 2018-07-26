@@ -9,12 +9,11 @@ import (
 var dsaKeyType = []byte{0x00, 0x00}
 
 const (
-	clientProfileTagIdentifier            = uint16(0x0001)
-	clientProfileTagInstanceTag           = uint16(0x0002)
-	clientProfileTagPublicKey             = uint16(0x0003)
-	clientProfileTagVersions              = uint16(0x0005)
-	clientProfileTagExpiry                = uint16(0x0006)
-	clientProfileTagDSAKey                = uint16(0x0007)
+	clientProfileTagInstanceTag           = uint16(0x0001)
+	clientProfileTagPublicKey             = uint16(0x0002)
+	clientProfileTagVersions              = uint16(0x0004)
+	clientProfileTagExpiry                = uint16(0x0005)
+	clientProfileTagDSAKey                = uint16(0x0006)
 	clientProfileTagTransitionalSignature = uint16(0x0008)
 )
 

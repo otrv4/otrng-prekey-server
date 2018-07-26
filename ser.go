@@ -520,7 +520,7 @@ func deserializeDSAKey(buf []byte) ([]byte, *dsa.PublicKey, bool) {
 
 func (cp *clientProfile) serializeForSignature() []byte {
 	out := []byte{}
-	fields := uint32(5)
+	fields := uint32(4)
 
 	if cp.dsaKey != nil {
 		fields++
@@ -531,9 +531,6 @@ func (cp *clientProfile) serializeForSignature() []byte {
 	}
 
 	out = appendWord(out, fields)
-
-	out = appendShort(out, clientProfileTagIdentifier)
-	out = appendWord(out, cp.identifier)
 
 	out = appendShort(out, clientProfileTagInstanceTag)
 	out = appendWord(out, cp.instanceTag)
@@ -573,32 +570,28 @@ func (cp *clientProfile) deserializeField(buf []byte) ([]byte, bool) {
 	}
 
 	switch tp {
-	case uint16(1):
-		if buf, cp.identifier, ok = extractWord(buf); !ok {
-			return nil, false
-		}
-	case uint16(2):
+	case clientProfileTagInstanceTag:
 		if buf, cp.instanceTag, ok = extractWord(buf); !ok {
 			return nil, false
 		}
-	case uint16(3):
+	case clientProfileTagPublicKey:
 		cp.publicKey = &publicKey{}
 		if buf, ok = cp.publicKey.deserialize(buf); !ok {
 			return nil, false
 		}
-	case uint16(5):
+	case clientProfileTagVersions:
 		if buf, cp.versions, ok = extractData(buf); !ok {
 			return nil, false
 		}
-	case uint16(6):
+	case clientProfileTagExpiry:
 		if buf, cp.expiration, ok = extractTime(buf); !ok {
 			return nil, false
 		}
-	case uint16(7):
+	case clientProfileTagDSAKey:
 		if buf, cp.dsaKey, ok = deserializeDSAKey(buf); !ok {
 			return nil, false
 		}
-	case uint16(8):
+	case clientProfileTagTransitionalSignature:
 		if buf, cp.transitionalSignature, ok = extractFixedData(buf, 40); !ok {
 			return nil, false
 		}

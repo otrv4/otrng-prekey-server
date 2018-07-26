@@ -208,9 +208,7 @@ func (s *GenericServerSuite) Test_fileStorage_retrieveFor_willReturnAPrekeyEnsem
 
 	pes := fs.retrieveFor("someone@example.org")
 	c.Assert(pes, HasLen, 2)
-	c.Assert(pes[0].cp.identifier, DeepEquals, cp.identifier)
 	c.Assert(pes[0].cp.sig, DeepEquals, cp.sig)
-	c.Assert(pes[1].cp.identifier, DeepEquals, cp2.identifier)
 	c.Assert(pes[1].cp.sig, DeepEquals, cp2.sig)
 	c.Assert(pes[0].pp.identifier, DeepEquals, pp1.identifier)
 	c.Assert(pes[0].pp.sig, DeepEquals, pp1.sig)

@@ -10,7 +10,6 @@ import (
 )
 
 type clientProfile struct {
-	identifier            uint32
 	instanceTag           uint32
 	publicKey             *publicKey
 	versions              []byte
@@ -21,7 +20,7 @@ type clientProfile struct {
 }
 
 type prekeyProfile struct {
-	identifier   uint32
+	identifier   uint32 // TODO REMOVE
 	instanceTag  uint32
 	expiration   time.Time
 	sharedPrekey *publicKey
@@ -29,7 +28,7 @@ type prekeyProfile struct {
 }
 
 type prekeyMessage struct {
-	identifier  uint32
+	identifier  uint32 // TODO REMOVE
 	instanceTag uint32
 	y           *publicKey
 	b           []byte
