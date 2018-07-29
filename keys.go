@@ -76,8 +76,7 @@ func (kp *keypair) fingerprint() fingerprint {
 
 func (p *publicKey) fingerprint() fingerprint {
 	var f fingerprint
-	rep := p.k.DSAEncode()
-	kdfOtrv4(usageFingerprint, f[:], rep)
+	kdfOtrv4(usageFingerprint, f[:], p.serialize())
 	return f
 }
 
