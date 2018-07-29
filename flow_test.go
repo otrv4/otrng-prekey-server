@@ -170,7 +170,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 	t = append(t, serializePoint(d2.s)...)
 	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{d2.s}, t)
+	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{k: d2.s}, t)
 
 	sk := kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
 	sitaPrekeyMac := kdfx(usagePreMACKey, 64, sk)
@@ -304,7 +304,7 @@ func (s *GenericServerSuite) Test_flow_invalidDAKE3(c *C) {
 	t = append(t, serializePoint(d2.s)...)
 	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{d2.s}, t)
+	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{k: d2.s}, t)
 
 	sk := kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
 	sitaPrekeyMac := kdfx(usagePreMACKey, 64, sk)
@@ -349,7 +349,7 @@ func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
 	t = append(t, serializePoint(d2.s)...)
 	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{d2.s}, t)
+	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{k: d2.s}, t)
 
 	sk := kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
 	sitaBadPrekeyMacK := kdfx(usagePreMACKey, 64, sk)
@@ -398,7 +398,7 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 	t = append(t, serializePoint(d2.s)...)
 	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{d2.s}, t)
+	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{k: d2.s}, t)
 
 	sk := kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
 	sitaPrekeyMacK := kdfx(usagePreMACKey, 64, sk)

@@ -9,6 +9,8 @@ import (
 var dsaKeyType = []byte{0x00, 0x00}
 var ed448KeyType = []byte{0x00, 0x10}
 var ed448KeyTypeInt = uint16(0x0010)
+var sharedPrekeyKeyType = []byte{0x00, 0x11}
+var sharedPrekeyKeyTypeInt = uint16(0x0011)
 
 const (
 	clientProfileTagInstanceTag           = uint16(0x0001)

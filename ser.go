@@ -575,7 +575,7 @@ func (cp *clientProfile) deserializeField(buf []byte) ([]byte, bool) {
 			return nil, false
 		}
 	case clientProfileTagPublicKey:
-		cp.publicKey = &publicKey{}
+		cp.publicKey = &publicKey{keyType: ed448Key}
 		if buf, ok = cp.publicKey.deserialize(buf); !ok {
 			return nil, false
 		}
@@ -626,7 +626,7 @@ func (pp *prekeyProfile) serializeForSignature() []byte {
 	var out []byte
 	out = appendWord(out, pp.instanceTag)
 	out = append(out, serializeExpiry(pp.expiration)...)
-	out = append(out, serializePoint(pp.sharedPrekey)...)
+	out = append(out, pp.sharedPrekey.serialize()...)
 	return out
 }
 
@@ -645,7 +645,8 @@ func (pp *prekeyProfile) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	if buf, pp.sharedPrekey, ok = deserializePoint(buf); !ok {
+	pp.sharedPrekey = &publicKey{keyType: sharedPrekeyKey}
+	if buf, ok = pp.sharedPrekey.deserialize(buf); !ok {
 		return nil, false
 	}
 
@@ -729,7 +730,14 @@ func (pe *prekeyEnsemble) deserialize(buf []byte) ([]byte, bool) {
 }
 
 func (p *publicKey) serialize() []byte {
-	return append(ed448KeyType, p.k.DSAEncode()...)
+	keyType := []byte{0xBA, 0xD0}
+	switch p.keyType {
+	case ed448Key:
+		keyType = ed448KeyType
+	case sharedPrekeyKey:
+		keyType = sharedPrekeyKeyType
+	}
+	return append(keyType, p.k.DSAEncode()...)
 }
 
 func (s *eddsaSignature) serialize() []byte {
@@ -765,7 +773,15 @@ func (p *publicKey) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	if pubKeyType != ed448KeyTypeInt {
+	keyType := uint16(0xBAD0)
+	switch p.keyType {
+	case ed448Key:
+		keyType = ed448KeyTypeInt
+	case sharedPrekeyKey:
+		keyType = sharedPrekeyKeyTypeInt
+	}
+
+	if pubKeyType != keyType {
 		return nil, false
 	}
 

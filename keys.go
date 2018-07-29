@@ -7,8 +7,13 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-// keypair represents and can be used for either an ecdh keypair, or for an eddsa keypiar
-// the key generation is slightly different, but the struct retains all needed information
+type keyType uint8
+
+const (
+	ed448Key keyType = iota
+	sharedPrekeyKey
+)
+
 type keypair struct {
 	sym  [symKeyLength]byte
 	priv *privateKey
@@ -16,7 +21,8 @@ type keypair struct {
 }
 
 type publicKey struct {
-	k ed448.Point
+	k       ed448.Point
+	keyType keyType
 }
 
 type privateKey struct {

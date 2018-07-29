@@ -22,7 +22,7 @@ type clientProfile struct {
 type prekeyProfile struct {
 	instanceTag  uint32
 	expiration   time.Time
-	sharedPrekey ed448.Point
+	sharedPrekey *publicKey
 	sig          *eddsaSignature
 }
 
@@ -71,10 +71,11 @@ func (m *clientProfile) validate(tag uint32) error {
 
 func generatePrekeyProfile(wr WithRandom, tag uint32, expiration time.Time, longTerm *keypair) (*prekeyProfile, *keypair) {
 	sharedKey := generateKeypair(wr)
+	sharedKey.pub.keyType = sharedPrekeyKey
 	pp := &prekeyProfile{
 		instanceTag:  tag,
 		expiration:   expiration,
-		sharedPrekey: sharedKey.pub.k,
+		sharedPrekey: sharedKey.pub,
 	}
 
 	pp.sig = &eddsaSignature{s: pp.generateSignature(longTerm)}
@@ -130,7 +131,7 @@ func (pp *prekeyProfile) validate(tag uint32, pub *publicKey) error {
 		return errors.New("prekey profile has expired")
 	}
 
-	if validatePoint(pp.sharedPrekey) != nil {
+	if validatePoint(pp.sharedPrekey.k) != nil {
 		return errors.New("prekey profile shared prekey is not a valid point")
 	}
 

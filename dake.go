@@ -103,7 +103,7 @@ func (m *dake1Message) respond(from string, s *GenericServer) (serializable, err
 	t = append(t, serializePoint(sk.pub.k)...)
 	t = append(t, kdfx(usageInitiatorPrekeyCompositePHI, 64, phi)...)
 
-	sigma, e := generateSignature(s, s.key.priv, s.key.pub, m.clientProfile.publicKey, s.key.pub, &publicKey{m.i}, t)
+	sigma, e := generateSignature(s, s.key.priv, s.key.pub, m.clientProfile.publicKey, s.key.pub, &publicKey{k: m.i}, t)
 	if e != nil {
 		return nil, errors.New("invalid ring signature generation")
 	}
