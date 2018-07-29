@@ -91,7 +91,7 @@ func (kis *keypairInStorage) intoKeypair() (*keypair, error) {
 	}
 	res := &keypair{}
 	copy(res.sym[:], sym)
-	res.pub = &publicKey{k: pub}
+	res.pub = &publicKey{k: pub, keyType: ed448Key}
 	res.priv = &privateKey{k: priv}
 	return res, nil
 }
