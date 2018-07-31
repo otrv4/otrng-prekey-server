@@ -57,7 +57,8 @@ func (m *dake2Message) serialize() []byte {
 	out = append(out, messageTypeDAKE2)
 	out = appendWord(out, m.instanceTag)
 	out = appendData(out, m.serverIdentity)
-	out = appendData(out, m.serverFingerprint[:])
+	sk := &publicKey{k: m.serverKey, keyType: ed448Key}
+	out = append(out, sk.serialize()...)
 	out = append(out, serializePoint(m.s)...)
 	out = append(out, m.sigma.serialize()...)
 	return out
@@ -83,11 +84,11 @@ func (m *dake2Message) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	var tmp []byte
-	if buf, tmp, ok = extractData(buf); !ok {
+	sk := &publicKey{keyType: ed448Key}
+	if buf, ok = sk.deserialize(buf); !ok {
 		return nil, false
 	}
-	copy(m.serverFingerprint[:], tmp)
+	m.serverKey = sk.k
 
 	if buf, m.s, ok = deserializePoint(buf); !ok {
 		return nil, false

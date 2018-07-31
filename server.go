@@ -95,7 +95,7 @@ func (g *GenericServer) cleanupAfter() {
 }
 
 func (g *GenericServer) compositeIdentity() []byte {
-	return appendData(appendData(nil, []byte(g.identity)), g.fingerprint[:])
+	return append(appendData(nil, []byte(g.identity)), g.key.pub.serialize()...)
 }
 
 func (g *GenericServer) session(from string) session {

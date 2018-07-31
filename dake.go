@@ -13,11 +13,11 @@ type dake1Message struct {
 }
 
 type dake2Message struct {
-	instanceTag       uint32
-	serverIdentity    []byte
-	serverFingerprint fingerprint
-	s                 ed448.Point
-	sigma             *ringSignature
+	instanceTag    uint32
+	serverIdentity []byte
+	serverKey      ed448.Point
+	s              ed448.Point
+	sigma          *ringSignature
 }
 
 type dake3Message struct {
@@ -34,13 +34,13 @@ func generateDake1(it uint32, cp *clientProfile, i ed448.Point) *dake1Message {
 	}
 }
 
-func generateDake2(it uint32, si []byte, sf fingerprint, s ed448.Point, sigma *ringSignature) *dake2Message {
+func generateDake2(it uint32, si []byte, sk ed448.Point, s ed448.Point, sigma *ringSignature) *dake2Message {
 	return &dake2Message{
-		instanceTag:       it,
-		serverIdentity:    si,
-		serverFingerprint: sf,
-		s:                 s,
-		sigma:             sigma,
+		instanceTag:    it,
+		serverIdentity: si,
+		serverKey:      sk,
+		s:              s,
+		sigma:          sigma,
 	}
 }
 
@@ -108,7 +108,7 @@ func (m *dake1Message) respond(from string, s *GenericServer) (serializable, err
 		return nil, errors.New("invalid ring signature generation")
 	}
 
-	return generateDake2(m.instanceTag, []byte(s.identity), s.fingerprint, sk.pub.k, sigma), nil
+	return generateDake2(m.instanceTag, []byte(s.identity), s.key.pub.k, sk.pub.k, sigma), nil
 }
 
 func (m *dake3Message) respond(from string, s *GenericServer) (serializable, error) {
