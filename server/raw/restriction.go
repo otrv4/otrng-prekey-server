@@ -13,7 +13,7 @@ func contains(a []string, x string) bool {
 
 func hasAnyPrefix(a []string, x string) bool {
 	for _, n := range a {
-		if strings.HasPrefix(n, x) {
+		if strings.HasPrefix(x, n) {
 			return true
 		}
 	}
@@ -22,15 +22,22 @@ func hasAnyPrefix(a []string, x string) bool {
 
 func hasAnySuffix(a []string, x string) bool {
 	for _, n := range a {
-		if strings.HasPrefix(n, x) {
+		if strings.HasSuffix(x, n) {
 			return true
 		}
 	}
 	return false
 }
 
+func splitOrEmpty(s, sep string) []string {
+	if s == "" {
+		return []string{}
+	}
+	return strings.Split(s, sep)
+}
+
 func separateRestrictions() ([]string, []string, []string) {
-	return strings.Split(*allowOnlyPrefix, ","), strings.Split(*allowOnlySuffix, ","), strings.Split(*allowOnly, ",")
+	return splitOrEmpty(*allowOnlyPrefix, ","), splitOrEmpty(*allowOnlySuffix, ","), splitOrEmpty(*allowOnly, ",")
 }
 
 func commandLineRestrictor(from string) bool {
