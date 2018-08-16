@@ -2,7 +2,6 @@ package prekeyserver
 
 import (
 	"bytes"
-	"encoding/base64"
 	"errors"
 	"fmt"
 )
@@ -160,12 +159,6 @@ func generateMACForPublicationMessage(cp *clientProfile, pp *prekeyProfile, pms 
 		ppLen = 1
 	}
 
-	fmt.Printf("\n\n\nGenerating SIG for publication message\n")
-	fmt.Printf("prekeyMsgKDF = %s\n", base64.StdEncoding.EncodeToString(kpms))
-	fmt.Printf("prekeyProfileKDF = %s\n", base64.StdEncoding.EncodeToString(kpps))
-	fmt.Printf("clientProfileKDF = %s\n", base64.StdEncoding.EncodeToString(kcp))
-	fmt.Printf("fullKDFBody = %s\n", base64.StdEncoding.EncodeToString(concat(macKey, []byte{messageTypePublication, byte(len(pms))}, kpms, k, kcp, []byte{byte(ppLen)}, kpps)))
-
 	return kdfx(usagePreMAC, 64, concat(macKey, []byte{messageTypePublication, byte(len(pms))}, kpms, k, kcp, []byte{byte(ppLen)}, kpps))
 }
 
@@ -184,8 +177,6 @@ func (m *publicationMessage) validate(from string, s *GenericServer) error {
 	macKey := s.session(from).macKey()
 	clientProfile := s.session(from).clientProfile()
 	mac := generateMACForPublicationMessage(m.clientProfile, m.prekeyProfile, m.prekeyMessages, macKey)
-
-	fmt.Printf("mac = %s\n", base64.StdEncoding.EncodeToString(mac))
 	if !bytes.Equal(mac[:], m.mac[:]) {
 		return errors.New("invalid mac for publication message")
 	}

@@ -2,7 +2,6 @@ package prekeyserver
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/otrv4/ed448"
 )
@@ -95,15 +94,7 @@ func (m *dake1Message) respond(from string, s *GenericServer) (serializable, err
 	sk := generateKeypair(s)
 	s.session(from).save(sk, m.i, m.instanceTag, m.clientProfile)
 
-	fmt.Printf("\n\n\nGenerating dake2\n")
-
 	phi := appendData(appendData(nil, []byte(from)), []byte(s.identity))
-
-	fmt.Printf("clientProfile = %#v\n", m.clientProfile.serialize())
-	fmt.Printf("compositeId = %#v\n", s.compositeIdentity())
-	fmt.Printf("I = %#v\n", serializePoint(m.i))
-	fmt.Printf("S = %#v\n", serializePoint(sk.pub.k))
-	fmt.Printf("phi = %#v\n", phi)
 
 	t := append([]byte{}, 0x00)
 	t = append(t, kdfx(usageInitiatorClientProfile, 64, m.clientProfile.serialize())...)
@@ -111,8 +102,6 @@ func (m *dake1Message) respond(from string, s *GenericServer) (serializable, err
 	t = append(t, serializePoint(m.i)...)
 	t = append(t, serializePoint(sk.pub.k)...)
 	t = append(t, kdfx(usageInitiatorPrekeyCompositePHI, 64, phi)...)
-
-	fmt.Printf("t = %#v\n", t)
 
 	sigma, e := generateSignature(s, s.key.priv, s.key.pub, m.clientProfile.publicKey, s.key.pub, &publicKey{k: m.i}, t)
 	if e != nil {
