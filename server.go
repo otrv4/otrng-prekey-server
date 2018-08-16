@@ -91,7 +91,8 @@ func (g *GenericServer) Handle(from, message string) (returns []string, err erro
 func (g *GenericServer) cleanupAfter() {
 	g.sessions.cleanup(g.sessionTimeout)
 	g.fragmentations.cleanup(g.fragmentationTimeout)
-	g.storageImpl.cleanup()
+	// Keep returned prekeys on storage so we can test without re-publishing them
+	//g.storageImpl.cleanup()
 }
 
 func (g *GenericServer) compositeIdentity() []byte {
