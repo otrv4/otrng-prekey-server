@@ -4,6 +4,7 @@ import (
 	"crypto/dsa"
 	"time"
 
+	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
 )
 
@@ -14,7 +15,7 @@ type serializable interface {
 
 func (m *dake1Message) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
-	buf, v, ok := extractShort(buf)
+	buf, v, ok := gotrax.ExtractShort(buf)
 	if !ok || v != version {
 		return buf, false
 	}
@@ -24,7 +25,7 @@ func (m *dake1Message) deserialize(buf []byte) ([]byte, bool) {
 	}
 	buf = buf[1:]
 
-	buf, m.instanceTag, ok = extractWord(buf)
+	buf, m.instanceTag, ok = gotrax.ExtractWord(buf)
 	if !ok {
 		return buf, false
 	}
@@ -44,19 +45,19 @@ func (m *dake1Message) deserialize(buf []byte) ([]byte, bool) {
 }
 
 func (m *dake1Message) serialize() []byte {
-	out := appendShort(nil, version)
+	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypeDAKE1)
-	out = appendWord(out, m.instanceTag)
+	out = gotrax.AppendWord(out, m.instanceTag)
 	out = append(out, m.clientProfile.serialize()...)
 	out = append(out, serializePoint(m.i)...)
 	return out
 }
 
 func (m *dake2Message) serialize() []byte {
-	out := appendShort(nil, version)
+	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypeDAKE2)
-	out = appendWord(out, m.instanceTag)
-	out = appendData(out, m.serverIdentity)
+	out = gotrax.AppendWord(out, m.instanceTag)
+	out = gotrax.AppendData(out, m.serverIdentity)
 	sk := &publicKey{k: m.serverKey, keyType: ed448Key}
 	out = append(out, sk.serialize()...)
 	out = append(out, serializePoint(m.s)...)
@@ -66,7 +67,7 @@ func (m *dake2Message) serialize() []byte {
 
 func (m *dake2Message) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
-	buf, v, ok := extractShort(buf)
+	buf, v, ok := gotrax.ExtractShort(buf)
 	if !ok || v != version {
 		return buf, false
 	}
@@ -76,11 +77,11 @@ func (m *dake2Message) deserialize(buf []byte) ([]byte, bool) {
 	}
 	buf = buf[1:]
 
-	if buf, m.instanceTag, ok = extractWord(buf); !ok {
+	if buf, m.instanceTag, ok = gotrax.ExtractWord(buf); !ok {
 		return nil, false
 	}
 
-	if buf, m.serverIdentity, ok = extractData(buf); !ok {
+	if buf, m.serverIdentity, ok = gotrax.ExtractData(buf); !ok {
 		return nil, false
 	}
 
@@ -103,17 +104,17 @@ func (m *dake2Message) deserialize(buf []byte) ([]byte, bool) {
 }
 
 func (m *dake3Message) serialize() []byte {
-	out := appendShort(nil, version)
+	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypeDAKE3)
-	out = appendWord(out, m.instanceTag)
+	out = gotrax.AppendWord(out, m.instanceTag)
 	out = append(out, m.sigma.serialize()...)
-	out = appendData(out, m.message)
+	out = gotrax.AppendData(out, m.message)
 	return out
 }
 
 func (m *dake3Message) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
-	buf, v, ok := extractShort(buf)
+	buf, v, ok := gotrax.ExtractShort(buf)
 	if !ok || v != version {
 		return buf, false
 	}
@@ -123,7 +124,7 @@ func (m *dake3Message) deserialize(buf []byte) ([]byte, bool) {
 	}
 	buf = buf[1:]
 
-	if buf, m.instanceTag, ok = extractWord(buf); !ok {
+	if buf, m.instanceTag, ok = gotrax.ExtractWord(buf); !ok {
 		return nil, false
 	}
 
@@ -132,7 +133,7 @@ func (m *dake3Message) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	if buf, m.message, ok = extractData(buf); !ok {
+	if buf, m.message, ok = gotrax.ExtractData(buf); !ok {
 		return nil, false
 	}
 
@@ -148,7 +149,7 @@ func serializePrekeyMessages(pms []*prekeyMessage) []byte {
 }
 
 func (m *publicationMessage) serialize() []byte {
-	out := appendShort(nil, version)
+	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypePublication)
 	out = append(out, uint8(len(m.prekeyMessages)))
 	out = append(out, serializePrekeyMessages(m.prekeyMessages)...)
@@ -173,7 +174,7 @@ func (m *publicationMessage) serialize() []byte {
 
 func (m *publicationMessage) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
-	buf, v, ok := extractShort(buf)
+	buf, v, ok := gotrax.ExtractShort(buf)
 	if !ok || v != version {
 		return nil, false
 	}
@@ -184,7 +185,7 @@ func (m *publicationMessage) deserialize(buf []byte) ([]byte, bool) {
 	buf = buf[1:]
 
 	var tmp uint8
-	if buf, tmp, ok = extractByte(buf); !ok {
+	if buf, tmp, ok = gotrax.ExtractByte(buf); !ok {
 		return nil, false
 	}
 
@@ -196,7 +197,7 @@ func (m *publicationMessage) deserialize(buf []byte) ([]byte, bool) {
 		}
 	}
 
-	if buf, tmp, ok = extractByte(buf); !ok || tmp > 1 {
+	if buf, tmp, ok = gotrax.ExtractByte(buf); !ok || tmp > 1 {
 		return nil, false
 	}
 
@@ -207,7 +208,7 @@ func (m *publicationMessage) deserialize(buf []byte) ([]byte, bool) {
 		}
 	}
 
-	if buf, tmp, ok = extractByte(buf); !ok {
+	if buf, tmp, ok = gotrax.ExtractByte(buf); !ok {
 		return nil, false
 	}
 
@@ -219,7 +220,7 @@ func (m *publicationMessage) deserialize(buf []byte) ([]byte, bool) {
 	}
 
 	var tmpb []byte
-	if buf, tmpb, ok = extractFixedData(buf, 64); !ok {
+	if buf, tmpb, ok = gotrax.ExtractFixedData(buf, 64); !ok {
 		return nil, false
 	}
 	copy(m.mac[:], tmpb)
@@ -228,7 +229,7 @@ func (m *publicationMessage) deserialize(buf []byte) ([]byte, bool) {
 }
 
 func (m *storageInformationRequestMessage) serialize() []byte {
-	out := appendShort(nil, version)
+	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypeStorageInformationRequest)
 	out = append(out, m.mac[:]...)
 	return out
@@ -236,7 +237,7 @@ func (m *storageInformationRequestMessage) serialize() []byte {
 
 func (m *storageInformationRequestMessage) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
-	buf, v, ok := extractShort(buf)
+	buf, v, ok := gotrax.ExtractShort(buf)
 	if !ok || v != version {
 		return buf, false
 	}
@@ -247,7 +248,7 @@ func (m *storageInformationRequestMessage) deserialize(buf []byte) ([]byte, bool
 	buf = buf[1:]
 
 	var tmp []byte
-	if buf, tmp, ok = extractFixedData(buf, 64); !ok {
+	if buf, tmp, ok = gotrax.ExtractFixedData(buf, 64); !ok {
 		return nil, false
 	}
 	copy(m.mac[:], tmp)
@@ -256,17 +257,17 @@ func (m *storageInformationRequestMessage) deserialize(buf []byte) ([]byte, bool
 }
 
 func (m *storageStatusMessage) serialize() []byte {
-	out := appendShort(nil, version)
+	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypeStorageStatusMessage)
-	out = appendWord(out, m.instanceTag)
-	out = appendWord(out, m.number)
+	out = gotrax.AppendWord(out, m.instanceTag)
+	out = gotrax.AppendWord(out, m.number)
 	out = append(out, m.mac[:]...)
 	return out
 }
 
 func (m *storageStatusMessage) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
-	buf, v, ok := extractShort(buf)
+	buf, v, ok := gotrax.ExtractShort(buf)
 	if !ok || v != version {
 		return buf, false
 	}
@@ -276,16 +277,16 @@ func (m *storageStatusMessage) deserialize(buf []byte) ([]byte, bool) {
 	}
 	buf = buf[1:]
 
-	if buf, m.instanceTag, ok = extractWord(buf); !ok {
+	if buf, m.instanceTag, ok = gotrax.ExtractWord(buf); !ok {
 		return nil, false
 	}
 
-	if buf, m.number, ok = extractWord(buf); !ok {
+	if buf, m.number, ok = gotrax.ExtractWord(buf); !ok {
 		return nil, false
 	}
 
 	var tmp []byte
-	if buf, tmp, ok = extractFixedData(buf, 64); !ok {
+	if buf, tmp, ok = gotrax.ExtractFixedData(buf, 64); !ok {
 		return nil, false
 	}
 	copy(m.mac[:], tmp)
@@ -294,16 +295,16 @@ func (m *storageStatusMessage) deserialize(buf []byte) ([]byte, bool) {
 }
 
 func (m *successMessage) serialize() []byte {
-	out := appendShort(nil, version)
+	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypeSuccess)
-	out = appendWord(out, m.instanceTag)
+	out = gotrax.AppendWord(out, m.instanceTag)
 	out = append(out, m.mac[:]...)
 	return out
 }
 
 func (m *successMessage) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
-	buf, v, ok := extractShort(buf)
+	buf, v, ok := gotrax.ExtractShort(buf)
 	if !ok || v != version {
 		return buf, false
 	}
@@ -313,12 +314,12 @@ func (m *successMessage) deserialize(buf []byte) ([]byte, bool) {
 	}
 	buf = buf[1:]
 
-	if buf, m.instanceTag, ok = extractWord(buf); !ok {
+	if buf, m.instanceTag, ok = gotrax.ExtractWord(buf); !ok {
 		return nil, false
 	}
 
 	var tmp []byte
-	if buf, tmp, ok = extractFixedData(buf, 64); !ok {
+	if buf, tmp, ok = gotrax.ExtractFixedData(buf, 64); !ok {
 		return nil, false
 	}
 	copy(m.mac[:], tmp)
@@ -327,16 +328,16 @@ func (m *successMessage) deserialize(buf []byte) ([]byte, bool) {
 }
 
 func (m *failureMessage) serialize() []byte {
-	out := appendShort(nil, version)
+	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypeFailure)
-	out = appendWord(out, m.instanceTag)
+	out = gotrax.AppendWord(out, m.instanceTag)
 	out = append(out, m.mac[:]...)
 	return out
 }
 
 func (m *failureMessage) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
-	buf, v, ok := extractShort(buf)
+	buf, v, ok := gotrax.ExtractShort(buf)
 	if !ok || v != version {
 		return buf, false
 	}
@@ -346,12 +347,12 @@ func (m *failureMessage) deserialize(buf []byte) ([]byte, bool) {
 	}
 	buf = buf[1:]
 
-	if buf, m.instanceTag, ok = extractWord(buf); !ok {
+	if buf, m.instanceTag, ok = gotrax.ExtractWord(buf); !ok {
 		return nil, false
 	}
 
 	var tmp []byte
-	if buf, tmp, ok = extractFixedData(buf, 64); !ok {
+	if buf, tmp, ok = gotrax.ExtractFixedData(buf, 64); !ok {
 		return nil, false
 	}
 	copy(m.mac[:], tmp)
@@ -360,17 +361,17 @@ func (m *failureMessage) deserialize(buf []byte) ([]byte, bool) {
 }
 
 func (m *ensembleRetrievalQueryMessage) serialize() []byte {
-	out := appendShort(nil, version)
+	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypeEnsembleRetrievalQuery)
-	out = appendWord(out, m.instanceTag)
-	out = appendData(out, []byte(m.identity))
-	out = appendData(out, m.versions)
+	out = gotrax.AppendWord(out, m.instanceTag)
+	out = gotrax.AppendData(out, []byte(m.identity))
+	out = gotrax.AppendData(out, m.versions)
 	return out
 }
 
 func (m *ensembleRetrievalQueryMessage) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
-	buf, v, ok := extractShort(buf)
+	buf, v, ok := gotrax.ExtractShort(buf)
 	if !ok || v != version {
 		return nil, false
 	}
@@ -380,17 +381,17 @@ func (m *ensembleRetrievalQueryMessage) deserialize(buf []byte) ([]byte, bool) {
 	}
 	buf = buf[1:]
 
-	if buf, m.instanceTag, ok = extractWord(buf); !ok {
+	if buf, m.instanceTag, ok = gotrax.ExtractWord(buf); !ok {
 		return nil, false
 	}
 
 	var tmp []byte
-	if buf, tmp, ok = extractData(buf); !ok {
+	if buf, tmp, ok = gotrax.ExtractData(buf); !ok {
 		return nil, false
 	}
 	m.identity = string(tmp)
 
-	if buf, m.versions, ok = extractData(buf); !ok {
+	if buf, m.versions, ok = gotrax.ExtractData(buf); !ok {
 		return nil, false
 	}
 
@@ -398,9 +399,9 @@ func (m *ensembleRetrievalQueryMessage) deserialize(buf []byte) ([]byte, bool) {
 }
 
 func (m *ensembleRetrievalMessage) serialize() []byte {
-	out := appendShort(nil, version)
+	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypeEnsembleRetrieval)
-	out = appendWord(out, m.instanceTag)
+	out = gotrax.AppendWord(out, m.instanceTag)
 	out = append(out, uint8(len(m.ensembles)))
 	for _, pe := range m.ensembles {
 		out = append(out, pe.serialize()...)
@@ -411,7 +412,7 @@ func (m *ensembleRetrievalMessage) serialize() []byte {
 
 func (m *ensembleRetrievalMessage) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
-	buf, v, ok := extractShort(buf)
+	buf, v, ok := gotrax.ExtractShort(buf)
 	if !ok || v != version {
 		return nil, false
 	}
@@ -421,12 +422,12 @@ func (m *ensembleRetrievalMessage) deserialize(buf []byte) ([]byte, bool) {
 	}
 	buf = buf[1:]
 
-	if buf, m.instanceTag, ok = extractWord(buf); !ok {
+	if buf, m.instanceTag, ok = gotrax.ExtractWord(buf); !ok {
 		return nil, false
 	}
 
 	var tmp uint8
-	if buf, tmp, ok = extractByte(buf); !ok || tmp == 0 {
+	if buf, tmp, ok = gotrax.ExtractByte(buf); !ok || tmp == 0 {
 		return nil, false
 	}
 
@@ -442,16 +443,16 @@ func (m *ensembleRetrievalMessage) deserialize(buf []byte) ([]byte, bool) {
 }
 
 func (m *noPrekeyEnsemblesMessage) serialize() []byte {
-	out := appendShort(nil, version)
+	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypeNoPrekeyEnsembles)
-	out = appendWord(out, m.instanceTag)
-	out = appendData(out, []byte(m.message))
+	out = gotrax.AppendWord(out, m.instanceTag)
+	out = gotrax.AppendData(out, []byte(m.message))
 	return out
 }
 
 func (m *noPrekeyEnsemblesMessage) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
-	buf, v, ok := extractShort(buf)
+	buf, v, ok := gotrax.ExtractShort(buf)
 	if !ok || v != version {
 		return nil, false
 	}
@@ -461,12 +462,12 @@ func (m *noPrekeyEnsemblesMessage) deserialize(buf []byte) ([]byte, bool) {
 	}
 	buf = buf[1:]
 
-	if buf, m.instanceTag, ok = extractWord(buf); !ok {
+	if buf, m.instanceTag, ok = gotrax.ExtractWord(buf); !ok {
 		return nil, false
 	}
 
 	var tmp []byte
-	if buf, tmp, ok = extractData(buf); !ok {
+	if buf, tmp, ok = gotrax.ExtractData(buf); !ok {
 		return nil, false
 	}
 	m.message = string(tmp)
@@ -475,20 +476,20 @@ func (m *noPrekeyEnsemblesMessage) deserialize(buf []byte) ([]byte, bool) {
 }
 
 func serializeVersions(v []byte) []byte {
-	return appendData(nil, v)
+	return gotrax.AppendData(nil, v)
 }
 
 func serializeExpiry(t time.Time) []byte {
 	val := t.Unix()
-	return appendLong(nil, uint64(val))
+	return gotrax.AppendLong(nil, uint64(val))
 }
 
 func serializeDSAKey(k *dsa.PublicKey) []byte {
 	result := dsaKeyType
-	result = appendMPI(result, k.P)
-	result = appendMPI(result, k.Q)
-	result = appendMPI(result, k.G)
-	result = appendMPI(result, k.Y)
+	result = gotrax.AppendMPI(result, k.P)
+	result = gotrax.AppendMPI(result, k.Q)
+	result = gotrax.AppendMPI(result, k.G)
+	result = gotrax.AppendMPI(result, k.Y)
 	return result
 }
 
@@ -496,23 +497,23 @@ func deserializeDSAKey(buf []byte) ([]byte, *dsa.PublicKey, bool) {
 	res := &dsa.PublicKey{}
 	var ok bool
 	var keyType uint16
-	if buf, keyType, ok = extractShort(buf); !ok || keyType != uint16(0x0000) { // key type
+	if buf, keyType, ok = gotrax.ExtractShort(buf); !ok || keyType != uint16(0x0000) { // key type
 		return nil, nil, false
 	}
 
-	if buf, res.P, ok = extractMPI(buf); !ok {
+	if buf, res.P, ok = gotrax.ExtractMPI(buf); !ok {
 		return nil, nil, false
 	}
 
-	if buf, res.Q, ok = extractMPI(buf); !ok {
+	if buf, res.Q, ok = gotrax.ExtractMPI(buf); !ok {
 		return nil, nil, false
 	}
 
-	if buf, res.G, ok = extractMPI(buf); !ok {
+	if buf, res.G, ok = gotrax.ExtractMPI(buf); !ok {
 		return nil, nil, false
 	}
 
-	if buf, res.Y, ok = extractMPI(buf); !ok {
+	if buf, res.Y, ok = gotrax.ExtractMPI(buf); !ok {
 		return nil, nil, false
 	}
 
@@ -531,27 +532,27 @@ func (cp *clientProfile) serializeForSignature() []byte {
 		fields++
 	}
 
-	out = appendWord(out, fields)
+	out = gotrax.AppendWord(out, fields)
 
-	out = appendShort(out, clientProfileTagInstanceTag)
-	out = appendWord(out, cp.instanceTag)
+	out = gotrax.AppendShort(out, clientProfileTagInstanceTag)
+	out = gotrax.AppendWord(out, cp.instanceTag)
 
-	out = appendShort(out, clientProfileTagPublicKey)
+	out = gotrax.AppendShort(out, clientProfileTagPublicKey)
 	out = append(out, cp.publicKey.serialize()...)
 
-	out = appendShort(out, clientProfileTagVersions)
+	out = gotrax.AppendShort(out, clientProfileTagVersions)
 	out = append(out, serializeVersions(cp.versions)...)
 
-	out = appendShort(out, clientProfileTagExpiry)
+	out = gotrax.AppendShort(out, clientProfileTagExpiry)
 	out = append(out, serializeExpiry(cp.expiration)...)
 
 	if cp.dsaKey != nil {
-		out = appendShort(out, clientProfileTagDSAKey)
+		out = gotrax.AppendShort(out, clientProfileTagDSAKey)
 		out = append(out, serializeDSAKey(cp.dsaKey)...)
 	}
 
 	if cp.transitionalSignature != nil {
-		out = appendShort(out, clientProfileTagTransitionalSignature)
+		out = gotrax.AppendShort(out, clientProfileTagTransitionalSignature)
 		out = append(out, cp.transitionalSignature...)
 	}
 
@@ -566,13 +567,13 @@ func (cp *clientProfile) deserializeField(buf []byte) ([]byte, bool) {
 	var tp uint16
 	var ok bool
 
-	if buf, tp, ok = extractShort(buf); !ok {
+	if buf, tp, ok = gotrax.ExtractShort(buf); !ok {
 		return nil, false
 	}
 
 	switch tp {
 	case clientProfileTagInstanceTag:
-		if buf, cp.instanceTag, ok = extractWord(buf); !ok {
+		if buf, cp.instanceTag, ok = gotrax.ExtractWord(buf); !ok {
 			return nil, false
 		}
 	case clientProfileTagPublicKey:
@@ -581,11 +582,11 @@ func (cp *clientProfile) deserializeField(buf []byte) ([]byte, bool) {
 			return nil, false
 		}
 	case clientProfileTagVersions:
-		if buf, cp.versions, ok = extractData(buf); !ok {
+		if buf, cp.versions, ok = gotrax.ExtractData(buf); !ok {
 			return nil, false
 		}
 	case clientProfileTagExpiry:
-		if buf, cp.expiration, ok = extractTime(buf); !ok {
+		if buf, cp.expiration, ok = gotrax.ExtractTime(buf); !ok {
 			return nil, false
 		}
 	case clientProfileTagDSAKey:
@@ -593,7 +594,7 @@ func (cp *clientProfile) deserializeField(buf []byte) ([]byte, bool) {
 			return nil, false
 		}
 	case clientProfileTagTransitionalSignature:
-		if buf, cp.transitionalSignature, ok = extractFixedData(buf, 40); !ok {
+		if buf, cp.transitionalSignature, ok = gotrax.ExtractFixedData(buf, 40); !ok {
 			return nil, false
 		}
 	default:
@@ -605,7 +606,7 @@ func (cp *clientProfile) deserializeField(buf []byte) ([]byte, bool) {
 func (cp *clientProfile) deserialize(buf []byte) ([]byte, bool) {
 	var fields uint32
 	var ok bool
-	if buf, fields, ok = extractWord(buf); !ok {
+	if buf, fields, ok = gotrax.ExtractWord(buf); !ok {
 		return nil, false
 	}
 
@@ -625,7 +626,7 @@ func (cp *clientProfile) deserialize(buf []byte) ([]byte, bool) {
 
 func (pp *prekeyProfile) serializeForSignature() []byte {
 	var out []byte
-	out = appendWord(out, pp.instanceTag)
+	out = gotrax.AppendWord(out, pp.instanceTag)
 	out = append(out, serializeExpiry(pp.expiration)...)
 	out = append(out, pp.sharedPrekey.serialize()...)
 	return out
@@ -638,11 +639,11 @@ func (pp *prekeyProfile) serialize() []byte {
 func (pp *prekeyProfile) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
 
-	if buf, pp.instanceTag, ok = extractWord(buf); !ok {
+	if buf, pp.instanceTag, ok = gotrax.ExtractWord(buf); !ok {
 		return nil, false
 	}
 
-	if buf, pp.expiration, ok = extractTime(buf); !ok {
+	if buf, pp.expiration, ok = gotrax.ExtractTime(buf); !ok {
 		return nil, false
 	}
 
@@ -660,12 +661,12 @@ func (pp *prekeyProfile) deserialize(buf []byte) ([]byte, bool) {
 }
 
 func (pm *prekeyMessage) serialize() []byte {
-	out := appendShort(nil, version)
+	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypePrekeyMessage)
-	out = appendWord(out, pm.identifier)
-	out = appendWord(out, pm.instanceTag)
+	out = gotrax.AppendWord(out, pm.identifier)
+	out = gotrax.AppendWord(out, pm.instanceTag)
 	out = append(out, serializePoint(pm.y)...)
-	out = appendData(out, pm.b)
+	out = gotrax.AppendData(out, pm.b)
 	return out
 }
 
@@ -673,7 +674,7 @@ func (pm *prekeyMessage) deserialize(buf []byte) ([]byte, bool) {
 	var ok1 bool
 	var v uint16
 
-	if buf, v, ok1 = extractShort(buf); !ok1 || v != version { // version
+	if buf, v, ok1 = gotrax.ExtractShort(buf); !ok1 || v != version { // version
 		return nil, false
 	}
 
@@ -682,11 +683,11 @@ func (pm *prekeyMessage) deserialize(buf []byte) ([]byte, bool) {
 	}
 	buf = buf[1:] // message type
 
-	if buf, pm.identifier, ok1 = extractWord(buf); !ok1 {
+	if buf, pm.identifier, ok1 = gotrax.ExtractWord(buf); !ok1 {
 		return nil, false
 	}
 
-	if buf, pm.instanceTag, ok1 = extractWord(buf); !ok1 {
+	if buf, pm.instanceTag, ok1 = gotrax.ExtractWord(buf); !ok1 {
 		return nil, false
 	}
 
@@ -694,7 +695,7 @@ func (pm *prekeyMessage) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	if buf, pm.b, ok1 = extractData(buf); !ok1 {
+	if buf, pm.b, ok1 = gotrax.ExtractData(buf); !ok1 {
 		return nil, false
 	}
 
@@ -770,7 +771,7 @@ func (p *publicKey) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
 	pubKeyType := uint16(0)
 
-	if buf, pubKeyType, ok = extractShort(buf); !ok {
+	if buf, pubKeyType, ok = gotrax.ExtractShort(buf); !ok {
 		return nil, false
 	}
 
@@ -793,7 +794,7 @@ func (p *publicKey) deserialize(buf []byte) ([]byte, bool) {
 func (s *eddsaSignature) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
 	var res []byte
-	if buf, res, ok = extractFixedData(buf, 114); !ok {
+	if buf, res, ok = gotrax.ExtractFixedData(buf, 114); !ok {
 		return nil, false
 	}
 	copy(s.s[:], res)

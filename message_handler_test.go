@@ -1,6 +1,7 @@
 package prekeyserver
 
 import (
+	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
 	. "gopkg.in/check.v1"
 )
@@ -69,7 +70,7 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnRest
 	d2 := dake2Message{}
 	d2.deserialize(r)
 
-	phi := appendData(appendData(nil, []byte("sita@example.org")), []byte(gs.identity))
+	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
 	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.serialize())...)

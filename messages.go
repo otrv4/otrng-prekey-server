@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+
+	"github.com/coyim/gotrax"
 )
 
 type publicationMessage struct {
@@ -56,7 +58,7 @@ type message interface {
 }
 
 func parseVersion(message []byte) uint16 {
-	_, v, _ := extractShort(message)
+	_, v, _ := gotrax.ExtractShort(message)
 	return v
 }
 
@@ -104,7 +106,7 @@ func (m *storageInformationRequestMessage) respond(from string, s *GenericServer
 	num := s.storage().numberStored(from, ses.instanceTag())
 	itag := ses.instanceTag()
 	prekeyMacK := ses.macKey()
-	statusMac := kdfx(usageStatusMAC, 64, prekeyMacK, []byte{messageTypeStorageStatusMessage}, serializeWord(itag), serializeWord(num))
+	statusMac := kdfx(usageStatusMAC, 64, prekeyMacK, []byte{messageTypeStorageStatusMessage}, gotrax.SerializeWord(itag), gotrax.SerializeWord(num))
 
 	ret := &storageStatusMessage{
 		instanceTag: itag,
@@ -204,7 +206,7 @@ func generateSuccessMessage(macKey []byte, tag uint32) *successMessage {
 		instanceTag: tag,
 	}
 
-	mac := kdfx(usageSuccessMAC, 64, appendWord(append(macKey, messageTypeSuccess), tag))
+	mac := kdfx(usageSuccessMAC, 64, gotrax.AppendWord(append(macKey, messageTypeSuccess), tag))
 	copy(m.mac[:], mac)
 
 	return m

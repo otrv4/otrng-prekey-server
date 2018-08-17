@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  branch = "master"
-  name = "github.com/coyim/gotrax"
-  packages = ["."]
-  revision = "28264998edad01b96574dc0dea61857993f132fe"
-
-[[projects]]
   name = "github.com/kr/pretty"
   packages = ["."]
   revision = "73f6ac0b30a98e433b289500d779f50c1a6f0712"
@@ -20,22 +14,6 @@
   version = "v0.1.0"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/otrv4/ed448"
-  packages = ["."]
-  revision = "75bc328cc212f0f8cb9823364339890df2c3f409"
-
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/crypto"
-  packages = [
-    "pbkdf2",
-    "scrypt",
-    "sha3"
-  ]
-  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
-
-[[projects]]
   branch = "v1"
   name = "gopkg.in/check.v1"
   packages = ["."]
@@ -44,6 +22,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "96c9b28c2f56f29e9dc292fc211187379910b8ffe6a4aff6efef8d21ac699718"
+  inputs-digest = "6fd39ad6060b19a151f3ed573a3192ec9a015c216805fc4cab44f40a4f76b498"
   solver-name = "gps-cdcl"
   solver-version = 1

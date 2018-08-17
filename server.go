@@ -4,6 +4,8 @@ import (
 	"errors"
 	"io"
 	"time"
+
+	"github.com/coyim/gotrax"
 )
 
 // GenericServer represents the main entry point for the prekey server functionality.
@@ -95,7 +97,7 @@ func (g *GenericServer) cleanupAfter() {
 }
 
 func (g *GenericServer) compositeIdentity() []byte {
-	return append(appendData(nil, []byte(g.identity)), g.key.pub.serialize()...)
+	return append(gotrax.AppendData(nil, []byte(g.identity)), g.key.pub.serialize()...)
 }
 
 func (g *GenericServer) session(from string) session {

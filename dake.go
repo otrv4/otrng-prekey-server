@@ -3,6 +3,7 @@ package prekeyserver
 import (
 	"errors"
 
+	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
 )
 
@@ -74,7 +75,7 @@ func (m *dake3Message) validate(from string, s *GenericServer) error {
 		return errors.New("incorrect message")
 	}
 
-	phi := appendData(appendData(nil, []byte(from)), []byte(s.identity))
+	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte(from)), []byte(s.identity))
 
 	t := append([]byte{}, 0x01)
 	t = append(t, kdfx(usageReceiverClientProfile, 64, sess.clientProfile().serialize())...)
@@ -94,7 +95,7 @@ func (m *dake1Message) respond(from string, s *GenericServer) (serializable, err
 	sk := generateKeypair(s)
 	s.session(from).save(sk, m.i, m.instanceTag, m.clientProfile)
 
-	phi := appendData(appendData(nil, []byte(from)), []byte(s.identity))
+	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte(from)), []byte(s.identity))
 
 	t := append([]byte{}, 0x00)
 	t = append(t, kdfx(usageInitiatorClientProfile, 64, m.clientProfile.serialize())...)

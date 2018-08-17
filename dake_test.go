@@ -1,6 +1,7 @@
 package prekeyserver
 
 import (
+	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
 	. "gopkg.in/check.v1"
 )
@@ -16,7 +17,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_acceptsAValidDake3Messag
 	}
 	gs.session("someone@example.org").(*realSession).tag = sita.instanceTag
 
-	phi := appendData(appendData(nil, []byte("someone@example.org")), []byte(gs.identity))
+	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("someone@example.org")), []byte(gs.identity))
 
 	spoint := generateKeypair(gs)
 	gs.session("someone@example.org").(*realSession).s = spoint
@@ -47,7 +48,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksInstanceTag(c *C) 
 	}
 	gs.session("someone@example.org").(*realSession).tag = sita.instanceTag
 
-	phi := appendData(appendData(nil, []byte("someone@example.org")), []byte(gs.identity))
+	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("someone@example.org")), []byte(gs.identity))
 
 	spoint := generateKeypair(gs)
 	gs.session("someone@example.org").(*realSession).s = spoint
@@ -78,7 +79,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksRingSignature(c *C
 	}
 	gs.session("someone@example.org").(*realSession).tag = sita.instanceTag
 
-	phi := appendData(appendData(nil, []byte("someone@example.org")), []byte(gs.identity))
+	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("someone@example.org")), []byte(gs.identity))
 
 	spoint := generateKeypair(gs)
 	gs.session("someone@example.org").(*realSession).s = spoint
@@ -110,7 +111,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksMessage(c *C) {
 	}
 	gs.session("someone@example.org").(*realSession).tag = sita.instanceTag
 
-	phi := appendData(appendData(nil, []byte("someone@example.org")), []byte(gs.identity))
+	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("someone@example.org")), []byte(gs.identity))
 
 	spoint := generateKeypair(gs)
 	gs.session("someone@example.org").(*realSession).s = spoint

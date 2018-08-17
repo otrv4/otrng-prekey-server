@@ -3,6 +3,8 @@ package prekeyserver
 import (
 	"crypto/rand"
 	"io"
+
+	"github.com/coyim/gotrax"
 )
 
 // WithRandom exposes randomness of a type
@@ -37,6 +39,6 @@ func (*realRandom) randReader() io.Reader {
 func randomUint32(w WithRandom) uint32 {
 	b := [4]byte{}
 	randomInto(w, b[:])
-	_, ww, _ := extractWord(b[:])
+	_, ww, _ := gotrax.ExtractWord(b[:])
 	return ww
 }

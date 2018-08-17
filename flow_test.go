@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
 	. "gopkg.in/check.v1"
 )
@@ -162,7 +163,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 		0x93, 0x4a, 0x86, 0x95, 0x4c, 0x7, 0x0, 0xda,
 		0xee, 0xd2, 0x8c, 0x4, 0xc0, 0x57, 0x71, 0x28})
 
-	phi := appendData(appendData(nil, []byte("sita@example.org")), []byte(gs.identity))
+	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
 	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.serialize())...)
@@ -296,7 +297,7 @@ func (s *GenericServerSuite) Test_flow_invalidDAKE3(c *C) {
 
 	c.Assert(ok, Equals, true)
 
-	phi := appendData(appendData(nil, []byte("sita@example.org")), []byte(gs.identity))
+	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
 	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.serialize())...)
@@ -341,7 +342,7 @@ func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
 
 	c.Assert(ok, Equals, true)
 
-	phi := appendData(appendData(nil, []byte("sita@example.org")), []byte(gs.identity))
+	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
 	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.serialize())...)
@@ -390,7 +391,7 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 
 	c.Assert(ok, Equals, true)
 
-	phi := appendData(appendData(nil, []byte("sita@example.org")), []byte(gs.identity))
+	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
 	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.serialize())...)
