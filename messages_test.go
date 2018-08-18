@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/coyim/gotrax"
 	. "gopkg.in/check.v1"
 )
 
@@ -61,7 +62,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_willValidateAValid
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand:     fixtureRand(),
+		rand:     gotrax.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
@@ -87,7 +88,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidMac(
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand:     fixtureRand(),
+		rand:     gotrax.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
@@ -121,7 +122,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidClie
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand:     fixtureRand(),
+		rand:     gotrax.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = 0xDDDDAAAA
@@ -150,7 +151,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidPrek
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand:     fixtureRand(),
+		rand:     gotrax.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
@@ -178,7 +179,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidPrek
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand:     fixtureRand(),
+		rand:     gotrax.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
@@ -216,7 +217,7 @@ func (s *GenericServerSuite) Test_publicationMessage_respond_willRemoveTheSessio
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		storageImpl: stor,
 		sessions:    newSessionManager(),
 	}

@@ -3,6 +3,7 @@ package prekeyserver
 import (
 	"errors"
 
+	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
 )
 
@@ -18,9 +19,9 @@ type ringSignature struct {
 	r3 ed448.Scalar
 }
 
-func generateZqKeypair(r WithRandom) (ed448.Scalar, ed448.Point) {
+func generateZqKeypair(r gotrax.WithRandom) (ed448.Scalar, ed448.Point) {
 	sym := [symKeyLength]byte{}
-	randomInto(r, sym[:])
+	gotrax.RandomInto(r, sym[:])
 	return deriveZqKeypair(sym)
 }
 
@@ -69,7 +70,7 @@ func calculateRI(secret, ri ed448.Scalar, isSecret uint32, ci, ti ed448.Scalar) 
 	return ed448.ConstantTimeSelectScalar(ri, ifSecret, isSecret)
 }
 
-func generateSignature(wr WithRandom, secret *privateKey, pub *publicKey, A1, A2, A3 *publicKey, m []byte) (*ringSignature, error) {
+func generateSignature(wr gotrax.WithRandom, secret *privateKey, pub *publicKey, A1, A2, A3 *publicKey, m []byte) (*ringSignature, error) {
 	r := &ringSignature{}
 
 	isA1 := pub.k.EqualsMask(A1.k)

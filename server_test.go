@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/coyim/gotrax"
 	. "gopkg.in/check.v1"
 )
 
@@ -135,7 +136,7 @@ func (s *GenericServerSuite) Test_Handle_PassesOnAFragmentationError(c *C) {
 func (s *GenericServerSuite) Test_Handle_WillPotentiallyFragmentReturnValues(c *C) {
 	gs := &GenericServer{
 		fragLen:        54,
-		rand:           fixtureRand(),
+		rand:           gotrax.FixtureRand(),
 		fragmentations: newFragmentations(),
 		storageImpl:    createInMemoryStorage(),
 		sessions:       newSessionManager(),
@@ -154,7 +155,7 @@ func (s *GenericServerSuite) Test_Handle_WillPotentiallyFragmentReturnValues(c *
 }
 
 func (s *GenericServerSuite) Test_handleMessage_panicsWhenNoMessageHandlerIsConfigured(c *C) {
-	gs := &GenericServer{fragLen: 7, rand: fixtureRand()}
+	gs := &GenericServer{fragLen: 7, rand: gotrax.FixtureRand()}
 	c.Assert(func() { gs.handleMessage("foo@example.org", nil) }, PanicMatches, "programmer error, missing message handler")
 }
 

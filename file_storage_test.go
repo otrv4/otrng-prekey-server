@@ -6,6 +6,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/coyim/gotrax"
 	. "gopkg.in/check.v1"
 )
 
@@ -48,7 +49,7 @@ func (s *GenericServerSuite) Test_fileStorage_numberStored_returnsNumberOfPrekey
 	fs := fsf.createStorage()
 
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand: gotrax.FixtureRand(),
 	}
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
@@ -102,7 +103,7 @@ func (s *GenericServerSuite) Test_fileStorage_cleanup_willRemoveExpiredPrekeyPro
 	defer os.RemoveAll(testDir)
 
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand: gotrax.FixtureRand(),
 	}
 
 	fsf, _ := createFileStorageFactoryFrom("dir:" + testDir)
@@ -132,7 +133,7 @@ func (s *GenericServerSuite) Test_fileStorage_cleanup_shouldNotRemoveUserIfThere
 	defer os.RemoveAll(testDir)
 
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand: gotrax.FixtureRand(),
 	}
 
 	fsf, _ := createFileStorageFactoryFrom("dir:" + testDir)
@@ -166,7 +167,7 @@ func (s *GenericServerSuite) Test_fileStorage_retrieveFor_willReturnAPrekeyEnsem
 	defer os.RemoveAll(testDir)
 
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand: gotrax.FixtureRand(),
 	}
 
 	fsf, _ := createFileStorageFactoryFrom("dir:" + testDir)
@@ -249,7 +250,7 @@ func (s *GenericServerSuite) Test_fileStorage_storePrekeyMessages_reportsErrorWh
 	defer os.RemoveAll(testDir)
 
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand: gotrax.FixtureRand(),
 	}
 
 	fsf, _ := createFileStorageFactoryFrom("dir:" + testDir)

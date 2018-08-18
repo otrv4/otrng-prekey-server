@@ -10,7 +10,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_acceptsAValidDake3Messag
 	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		sessions:    newSessionManager(),
@@ -41,7 +41,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksInstanceTag(c *C) 
 	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		sessions:    newSessionManager(),
@@ -72,7 +72,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksRingSignature(c *C
 	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		sessions:    newSessionManager(),
@@ -104,7 +104,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksMessage(c *C) {
 	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		sessions:    newSessionManager(),
@@ -136,7 +136,7 @@ func (s *GenericServerSuite) Test_dake3Message_respond_shouldFailOnInvalidRingSi
 	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		storageImpl: stor,

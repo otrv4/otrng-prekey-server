@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
 )
 
@@ -69,7 +70,7 @@ func (m *clientProfile) validate(tag uint32) error {
 	return nil
 }
 
-func generatePrekeyProfile(wr WithRandom, tag uint32, expiration time.Time, longTerm *keypair) (*prekeyProfile, *keypair) {
+func generatePrekeyProfile(wr gotrax.WithRandom, tag uint32, expiration time.Time, longTerm *keypair) (*prekeyProfile, *keypair) {
 	sharedKey := generateKeypair(wr)
 	sharedKey.pub.keyType = sharedPrekeyKey
 	pp := &prekeyProfile{
@@ -83,8 +84,8 @@ func generatePrekeyProfile(wr WithRandom, tag uint32, expiration time.Time, long
 	return pp, sharedKey
 }
 
-func generatePrekeyMessage(wr WithRandom, tag uint32) (*prekeyMessage, *keypair) {
-	ident := randomUint32(wr)
+func generatePrekeyMessage(wr gotrax.WithRandom, tag uint32) (*prekeyMessage, *keypair) {
+	ident := gotrax.RandomUint32(wr)
 	y := generateKeypair(wr)
 	b := []byte{0x04}
 

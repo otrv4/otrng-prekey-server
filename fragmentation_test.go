@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/coyim/gotrax"
 	. "gopkg.in/check.v1"
 )
 
@@ -182,7 +183,7 @@ func (s *GenericServerSuite) Test_newFragmentReceived_ErrorsOnImpossibleParsing(
 }
 
 func (s *GenericServerSuite) Test_potentiallyFragment_fragmentsCorrectly(c *C) {
-	wr := fixedRandBytes([]byte{
+	wr := gotrax.FixedRandBytes([]byte{
 		0xAB, 0xAB, 0xAB, 0xAB, 0xAB, 0xAB, 0xAB,
 		0xCD, 0xCD, 0xCD, 0xCD, 0xCD, 0xCD, 0xCD,
 		0xAB, 0xAB, 0xAB, 0xAB, 0xAB, 0xAB, 0xAB,

@@ -64,7 +64,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		storageImpl: stor,
@@ -213,7 +213,7 @@ func (s *GenericServerSuite) Test_flow_retrieveEnsemblesFromUnknownPerson(c *C) 
 	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		storageImpl: stor,
@@ -235,7 +235,7 @@ func (s *GenericServerSuite) Test_flow_invalidUserProfileInDAKE1(c *C) {
 	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		rest:        nullRestrictor,
@@ -257,7 +257,7 @@ func (s *GenericServerSuite) Test_flow_invalidPointI(c *C) {
 	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		rest:        nullRestrictor,
@@ -278,7 +278,7 @@ func (s *GenericServerSuite) Test_flow_invalidDAKE3(c *C) {
 	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		sessions:    newSessionManager(),
@@ -322,7 +322,7 @@ func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
 	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		sessions:    newSessionManager(),
@@ -370,7 +370,7 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		storageImpl: stor,
@@ -447,7 +447,7 @@ func (s *GenericServerSuite) Test_flow_retrieveEnsemblesFromKnownPerson(c *C) {
 
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		storageImpl: stor,

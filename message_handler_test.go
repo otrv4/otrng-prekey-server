@@ -16,7 +16,7 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnErro
 	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		storageImpl: stor,
@@ -33,7 +33,7 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnRest
 	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		storageImpl: stor,
@@ -54,7 +54,7 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnRest
 	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        fixtureRand(),
+		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.pub.fingerprint(),
 		storageImpl: stor,

@@ -7,22 +7,23 @@ import (
 	"os"
 	"time"
 
+	"github.com/coyim/gotrax"
 	. "gopkg.in/check.v1"
 )
 
-func (s *GenericServerSuite) Test_realFactory_randReader_returnsTheDefaultRandReader(c *C) {
+func (s *GenericServerSuite) Test_realFactory_RandReader_returnsTheDefaultRandReader(c *C) {
 	r := &realFactory{}
-	c.Assert(r.randReader(), Equals, rand.Reader)
+	c.Assert(r.RandReader(), Equals, rand.Reader)
 }
 
-func (s *GenericServerSuite) Test_realFactory_randReader_returnsTheGivenReader(c *C) {
-	f := fixtureRand()
+func (s *GenericServerSuite) Test_realFactory_RandReader_returnsTheGivenReader(c *C) {
+	f := gotrax.FixtureRand()
 	r := &realFactory{r: f}
-	c.Assert(r.randReader(), Equals, f)
+	c.Assert(r.RandReader(), Equals, f)
 }
 
 func (s *GenericServerSuite) Test_CreateFactory_returnsARealFactoryWithTheGivenRandomness(c *C) {
-	f := fixtureRand()
+	f := gotrax.FixtureRand()
 	fact := CreateFactory(f)
 	rf, ok := fact.(*realFactory)
 	c.Assert(ok, Equals, true)
@@ -62,7 +63,7 @@ func (s *GenericServerSuite) Test_realFactory_LoadStorageType_givesErrorForUnkno
 }
 
 func (s *GenericServerSuite) Test_realFactory_CreateKeypair_createsAKeypairFromTheGivenRandomness(c *C) {
-	r := fixtureRand()
+	r := gotrax.FixtureRand()
 	res := (&realFactory{r: r}).CreateKeypair()
 	c.Assert(res, Not(IsNil))
 	c.Assert(res, FitsTypeOf, &keypair{})
@@ -78,7 +79,7 @@ func (s *GenericServerSuite) Test_realFactory_CreateKeypair_createsAKeypairFromT
 }
 
 func (s *GenericServerSuite) Test_realFactory_NewServer_createsAServerWithTheGivenValues(c *C) {
-	f := &realFactory{r: fixtureRand()}
+	f := &realFactory{r: gotrax.FixtureRand()}
 	kp := f.CreateKeypair()
 	mockCalled := false
 	mockRestrictor := func(string) bool {
@@ -106,7 +107,7 @@ func (s *GenericServerSuite) Test_realFactory_NewServer_createsAServerWithTheGiv
 }
 
 func (s *GenericServerSuite) Test_realFactory_NewServer_setsANullRestrictorIfNoneIsGiven(c *C) {
-	f := &realFactory{r: fixtureRand()}
+	f := &realFactory{r: gotrax.FixtureRand()}
 	kp := f.CreateKeypair()
 	res := f.NewServer("foobar", kp, 42, &inMemoryStorageFactory{}, time.Duration(25), time.Duration(77), nil)
 	gs := res.(*GenericServer)

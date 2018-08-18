@@ -3,6 +3,7 @@ package prekeyserver
 import (
 	"errors"
 
+	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
 	"golang.org/x/crypto/sha3"
 )
@@ -33,9 +34,9 @@ type eddsaSignature struct {
 	s [114]byte
 }
 
-func generateKeypair(r WithRandom) *keypair {
+func generateKeypair(r gotrax.WithRandom) *keypair {
 	sym := [symKeyLength]byte{}
-	randomInto(r, sym[:])
+	gotrax.RandomInto(r, sym[:])
 	return deriveKeypair(sym)
 }
 

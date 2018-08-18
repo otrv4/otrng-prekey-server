@@ -45,7 +45,7 @@ type realFactory struct {
 	r io.Reader
 }
 
-func (f *realFactory) randReader() io.Reader {
+func (f *realFactory) RandReader() io.Reader {
 	if f.r == nil {
 		return rand.Reader
 	}

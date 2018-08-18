@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/coyim/gotrax"
 )
 
 // This code will sometimes fragment messages in smaller
@@ -155,9 +157,9 @@ func (fc *fragmentationContext) complete() string {
 	return strings.Join(fc.pieces, "")
 }
 
-func generateRandomID(r WithRandom) uint32 {
+func generateRandomID(r gotrax.WithRandom) uint32 {
 	var dst [4]byte
-	randomInto(r, dst[:])
+	gotrax.RandomInto(r, dst[:])
 	return binary.BigEndian.Uint32(dst[:])
 }
 
@@ -184,7 +186,7 @@ func fragmentData(data string, i, fraglen, l int) string {
 const maxPrefixLen = 4 + 1 + 10 + 1 + 8 + 1 + 8 + 1 + 5 + 1 + 5 + 1
 const totalEnvelopeLen = maxPrefixLen + 1
 
-func potentiallyFragment(msg string, fragLen int, r WithRandom) []string {
+func potentiallyFragment(msg string, fragLen int, r gotrax.WithRandom) []string {
 	l := len(msg)
 	if fragLen == 0 || l+totalEnvelopeLen <= fragLen {
 		return []string{msg}

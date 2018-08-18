@@ -3,6 +3,7 @@ package prekeyserver
 import (
 	"time"
 
+	"github.com/coyim/gotrax"
 	. "gopkg.in/check.v1"
 )
 
@@ -44,7 +45,7 @@ func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_willRemoveExpiredClien
 
 func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_willRemoveExpiredPrekeyProfiles(c *C) {
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand: gotrax.FixtureRand(),
 	}
 	is := createInMemoryStorage()
 
@@ -65,7 +66,7 @@ func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_willRemoveExpiredPreke
 }
 func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_shouldNotRemoveUserIfThereArePrekeyMessages(c *C) {
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand: gotrax.FixtureRand(),
 	}
 	is := createInMemoryStorage()
 

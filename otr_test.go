@@ -3,6 +3,7 @@ package prekeyserver
 import (
 	"time"
 
+	"github.com/coyim/gotrax"
 	. "gopkg.in/check.v1"
 )
 
@@ -40,7 +41,7 @@ func (s *GenericServerSuite) Test_clientProfile_validate_versionsInclude4(c *C) 
 
 func (s *GenericServerSuite) Test_prekeyProfile_validate_validatesACorrectPrekeyProfile(c *C) {
 	gs := &GenericServer{
-		rand:     fixtureRand(),
+		rand:     gotrax.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
@@ -50,7 +51,7 @@ func (s *GenericServerSuite) Test_prekeyProfile_validate_validatesACorrectPrekey
 
 func (s *GenericServerSuite) Test_prekeyProfile_validate_checksForCorrectInstanceTag(c *C) {
 	gs := &GenericServer{
-		rand:     fixtureRand(),
+		rand:     gotrax.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
@@ -62,7 +63,7 @@ func (s *GenericServerSuite) Test_prekeyProfile_validate_checksForCorrectInstanc
 
 func (s *GenericServerSuite) Test_prekeyProfile_validate_checksValidSignature(c *C) {
 	gs := &GenericServer{
-		rand:     fixtureRand(),
+		rand:     gotrax.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
@@ -73,7 +74,7 @@ func (s *GenericServerSuite) Test_prekeyProfile_validate_checksValidSignature(c 
 
 func (s *GenericServerSuite) Test_prekeyProfile_validate_checksForExpiry(c *C) {
 	gs := &GenericServer{
-		rand:     fixtureRand(),
+		rand:     gotrax.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
@@ -85,7 +86,7 @@ func (s *GenericServerSuite) Test_prekeyProfile_validate_checksForExpiry(c *C) {
 
 func (s *GenericServerSuite) Test_prekeyProfile_validate_checksValidSharedPrekeyPoint(c *C) {
 	gs := &GenericServer{
-		rand:     fixtureRand(),
+		rand:     gotrax.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
@@ -97,7 +98,7 @@ func (s *GenericServerSuite) Test_prekeyProfile_validate_checksValidSharedPrekey
 
 func (s *GenericServerSuite) Test_prekeyMessage_validate_validatesACorrectPrekeyMessage(c *C) {
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand: gotrax.FixtureRand(),
 	}
 	pm, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	c.Assert(pm.validate(sita.instanceTag), IsNil)
@@ -105,7 +106,7 @@ func (s *GenericServerSuite) Test_prekeyMessage_validate_validatesACorrectPrekey
 
 func (s *GenericServerSuite) Test_prekeyMessage_validate_checksInvalidInstanceTag(c *C) {
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand: gotrax.FixtureRand(),
 	}
 	pm, _ := generatePrekeyMessage(gs, 0xBADBADBA)
 	c.Assert(pm.validate(sita.instanceTag), ErrorMatches, "invalid instance tag in prekey message")
@@ -113,7 +114,7 @@ func (s *GenericServerSuite) Test_prekeyMessage_validate_checksInvalidInstanceTa
 
 func (s *GenericServerSuite) Test_prekeyMessage_validate_checksInvalidYPoint(c *C) {
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand: gotrax.FixtureRand(),
 	}
 	pm, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm.y = identityPoint
@@ -122,7 +123,7 @@ func (s *GenericServerSuite) Test_prekeyMessage_validate_checksInvalidYPoint(c *
 
 func (s *GenericServerSuite) Test_prekeyMessage_validate_checksInvalidBValue(c *C) {
 	gs := &GenericServer{
-		rand: fixtureRand(),
+		rand: gotrax.FixtureRand(),
 	}
 	pm, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm.b = []byte{0x00}
