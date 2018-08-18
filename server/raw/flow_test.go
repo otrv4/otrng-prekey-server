@@ -5,6 +5,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/coyim/gotrax"
 	pks "github.com/otrv4/otrng-prekey-server"
 	. "gopkg.in/check.v1"
 )
@@ -14,7 +15,7 @@ func (s *RawServerSuite) Test_flowTest_success(c *C) {
 	defer capture.restore()
 
 	rs := &rawServer{}
-	e := rs.load(pks.CreateFactory(fixtureRand()))
+	e := rs.load(pks.CreateFactory(gotrax.FixtureRand()))
 	c.Assert(e, IsNil)
 
 	*listenIP = "localhost"
