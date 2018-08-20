@@ -13,9 +13,9 @@ type GenericServer struct {
 	// The identity, for example prekey.example.org
 	identity string
 	// The fingerprint of the long term key for the server
-	fingerprint fingerprint
+	fingerprint gotrax.Fingerprint
 
-	key *keypair
+	key *gotrax.Keypair
 
 	// Should be minimum 48, since the max envelope size is 47
 	fragLen        int
@@ -97,7 +97,7 @@ func (g *GenericServer) cleanupAfter() {
 }
 
 func (g *GenericServer) compositeIdentity() []byte {
-	return append(gotrax.AppendData(nil, []byte(g.identity)), g.key.pub.serialize()...)
+	return append(gotrax.AppendData(nil, []byte(g.identity)), g.key.Pub.Serialize()...)
 }
 
 func (g *GenericServer) session(from string) session {

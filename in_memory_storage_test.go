@@ -23,12 +23,12 @@ func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_willRemoveExpiredClien
 	is := createInMemoryStorage()
 
 	cp := generateSitaTestData().clientProfile
-	cp.expiration = time.Date(2017, 11, 5, 13, 46, 00, 13, time.UTC)
-	cp.sig = &eddsaSignature{s: cp.generateSignature(sita.longTerm)}
+	cp.Expiration = time.Date(2017, 11, 5, 13, 46, 00, 13, time.UTC)
+	cp.Sig = gotrax.CreateEddsaSignature(cp.GenerateSignature(sita.longTerm))
 
 	cp2 := generateSitaTestData().clientProfile
-	cp2.instanceTag = 0x42424242
-	cp2.sig = &eddsaSignature{s: cp2.generateSignature(sita.longTerm)}
+	cp2.InstanceTag = 0x42424242
+	cp2.Sig = gotrax.CreateEddsaSignature(cp2.GenerateSignature(sita.longTerm))
 
 	is.storeClientProfile("someone@example.org", cp)
 	is.storeClientProfile("someone@example.org", cp2)

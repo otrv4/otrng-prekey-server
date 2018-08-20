@@ -1,47 +1,9 @@
 package prekeyserver
 
 import (
-	"github.com/otrv4/ed448"
+	"github.com/coyim/gotrax"
 	. "gopkg.in/check.v1"
 )
-
-func (s *GenericServerSuite) Test_deriveKeypair_derivesTheCorrectData(c *C) {
-	sym1 := [57]byte{
-		0x2A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00,
-	}
-	expectedPrivateKey := []byte{
-		0XDD, 0X86, 0X6D, 0X00, 0X25, 0XDE, 0XF2, 0XE5,
-		0X3C, 0XB0, 0X2C, 0X62, 0XF7, 0X8E, 0X6F, 0X75,
-		0X2F, 0X90, 0XA6, 0X26, 0X1D, 0X3F, 0X7B, 0X53,
-		0X5E, 0X79, 0X65, 0X7A, 0XBA, 0X8B, 0X43, 0XE8,
-		0XEA, 0XFF, 0XF6, 0X70, 0XF4, 0XF6, 0X85, 0X8A,
-		0X22, 0X58, 0XD7, 0X06, 0X26, 0XB4, 0X3F, 0X69,
-		0X81, 0X8E, 0XC5, 0X72, 0X7E, 0XEF, 0XFB, 0X37,
-	}
-	expectedPublicKey := []byte{
-		0X61, 0XFA, 0X1F, 0X15, 0X35, 0X82, 0XF5, 0XF6,
-		0X42, 0XF2, 0X72, 0X02, 0XE9, 0XC2, 0X57, 0X06,
-		0X1A, 0X7C, 0XB8, 0XC4, 0X79, 0X91, 0X74, 0XB3,
-		0XA9, 0XBD, 0X87, 0XA4, 0XF3, 0XB1, 0X87, 0X0F,
-		0X8C, 0XEE, 0X9C, 0X09, 0XDC, 0X8E, 0X8B, 0X74,
-		0X31, 0X0E, 0X80, 0X55, 0X73, 0X9D, 0X63, 0X43,
-		0X30, 0XDB, 0XB9, 0X72, 0X6D, 0X48, 0X4E, 0X27,
-		0X80,
-	}
-
-	kp := deriveKeypair(sym1)
-
-	c.Assert(kp.sym[:], DeepEquals, sym1[:])
-	c.Assert(kp.priv.k.Encode(), DeepEquals, expectedPrivateKey)
-	c.Assert(kp.pub.k.DSAEncode(), DeepEquals, expectedPublicKey)
-}
 
 func (s *GenericServerSuite) Test_fingerprint_returnsCorrectFingerprint(c *C) {
 	sym := [57]byte{
@@ -55,7 +17,7 @@ func (s *GenericServerSuite) Test_fingerprint_returnsCorrectFingerprint(c *C) {
 		0x00,
 	}
 
-	expectedFpr := fingerprint{
+	expectedFpr := gotrax.Fingerprint{
 		0x4, 0x31, 0x67, 0xb9, 0x76, 0x1e, 0x86, 0x29,
 		0x69, 0x85, 0xdd, 0xb, 0x95, 0xba, 0x46, 0xdc,
 		0xaf, 0xb5, 0x68, 0x4f, 0x1a, 0x27, 0x62, 0x31,
@@ -65,60 +27,9 @@ func (s *GenericServerSuite) Test_fingerprint_returnsCorrectFingerprint(c *C) {
 		0x5b, 0xe, 0xba, 0x10, 0x9a, 0x87, 0x8c, 0xeb,
 	}
 
-	kp := deriveKeypair(sym)
-	fpr := kp.fingerprint()
+	kp := gotrax.DeriveKeypair(sym)
+	fpr := kp.Fingerprint()
 	c.Assert(fpr, DeepEquals, expectedFpr)
-}
-
-func (s *GenericServerSuite) Test_validatePoint_checksThatThePointIsNotIdentity(c *C) {
-	c.Assert(validatePoint(identityPoint), ErrorMatches, "given point is the identity point")
-}
-
-func (s *GenericServerSuite) Test_validatePoint_checksThatThePointIsOnTheCurve(c *C) {
-	p := ed448.NewPoint([16]uint32{
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-	}, [16]uint32{
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-	}, [16]uint32{
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-	}, [16]uint32{
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-	})
-
-	c.Assert(validatePoint(p), ErrorMatches, "given point is not on the curve")
-}
-
-func (s *GenericServerSuite) Test_validatePoint_checksThatThePointIsFine(c *C) {
-	p := ed448.NewPoint([16]uint32{}, [16]uint32{}, [16]uint32{}, [16]uint32{})
-	p.DSADecode([]byte{
-		0xd9, 0xe9, 0xed, 0x15, 0xf1, 0x57, 0x6f, 0x39,
-		0x80, 0xa4, 0x57, 0xa0, 0x3c, 0xc5, 0x9, 0xec,
-		0xa0, 0x13, 0x90, 0x57, 0xfc, 0xb, 0x33, 0x36,
-		0x55, 0x17, 0xf, 0x7f, 0x34, 0x8e, 0xe1, 0x15,
-		0x19, 0xdc, 0x86, 0x2f, 0x82, 0xb, 0x3a, 0xe,
-		0x42, 0x9, 0xc3, 0xdb, 0xd0, 0x5b, 0x93, 0x19,
-		0x2c, 0x39, 0x96, 0x2a, 0x51, 0xfe, 0x58, 0xf9,
-		0x0,
-	})
-	c.Assert(validatePoint(p), IsNil)
-}
-
-func (s *GenericServerSuite) Test_keypair_realKeys_returnsTheRealKeys(c *C) {
-	t1 := &keypair{}
-	var kp Keypair = t1
-	c.Assert(kp.realKeys(), Equals, t1)
 }
 
 func (s *GenericServerSuite) Test_keypair_Fingerprint_returnsTheFingerprint(c *C) {
@@ -133,7 +44,7 @@ func (s *GenericServerSuite) Test_keypair_Fingerprint_returnsTheFingerprint(c *C
 		0x00,
 	}
 
-	expectedFpr := []byte{
+	expectedFpr := gotrax.Fingerprint{
 		0x4, 0x31, 0x67, 0xb9, 0x76, 0x1e, 0x86, 0x29,
 		0x69, 0x85, 0xdd, 0xb, 0x95, 0xba, 0x46, 0xdc,
 		0xaf, 0xb5, 0x68, 0x4f, 0x1a, 0x27, 0x62, 0x31,
@@ -143,7 +54,7 @@ func (s *GenericServerSuite) Test_keypair_Fingerprint_returnsTheFingerprint(c *C
 		0x5b, 0xe, 0xba, 0x10, 0x9a, 0x87, 0x8c, 0xeb,
 	}
 
-	kp := deriveKeypair(sym)
+	kp := gotrax.DeriveKeypair(sym)
 	fpr := kp.Fingerprint()
 	c.Assert(fpr, DeepEquals, expectedFpr)
 }

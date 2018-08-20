@@ -130,8 +130,8 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidClie
 	gs.session("somewhere@example.org").(*realSession).cp = sita.clientProfile
 
 	cp := generateSitaTestData().clientProfile
-	cp.expiration = time.Date(2017, 11, 5, 13, 46, 00, 13, time.UTC)
-	cp.sig = &eddsaSignature{s: cp.generateSignature(sita.longTerm)}
+	cp.Expiration = time.Date(2017, 11, 5, 13, 46, 00, 13, time.UTC)
+	cp.Sig = gotrax.CreateEddsaSignature(cp.GenerateSignature(sita.longTerm))
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
@@ -160,7 +160,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidPrek
 
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pp1.instanceTag = 0xAADDAADD
-	pp1.sig = &eddsaSignature{s: pp1.generateSignature(sita.longTerm)}
+	pp1.sig = gotrax.CreateEddsaSignature(pp1.generateSignature(sita.longTerm))
 	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	msg := generatePublicationMessage(sita.clientProfile, pp1, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)

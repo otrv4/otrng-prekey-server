@@ -26,8 +26,8 @@ func generateZqKeypair(r gotrax.WithRandom) (ed448.Scalar, ed448.Point) {
 }
 
 func deriveZqKeypair(sym [symKeyLength]byte) (ed448.Scalar, ed448.Point) {
-	kp := deriveKeypair(sym)
-	return kp.priv.k, kp.pub.k
+	kp := gotrax.DeriveKeypair(sym)
+	return kp.Priv.K(), kp.Pub.K()
 }
 
 func chooseT(Ai ed448.Point, isSecret uint32, Ri ed448.Point, Ti ed448.Point, ci ed448.Scalar) ed448.Point {
@@ -70,12 +70,12 @@ func calculateRI(secret, ri ed448.Scalar, isSecret uint32, ci, ti ed448.Scalar) 
 	return ed448.ConstantTimeSelectScalar(ri, ifSecret, isSecret)
 }
 
-func generateSignature(wr gotrax.WithRandom, secret *privateKey, pub *publicKey, A1, A2, A3 *publicKey, m []byte) (*ringSignature, error) {
+func generateSignature(wr gotrax.WithRandom, secret *gotrax.PrivateKey, pub *gotrax.PublicKey, A1, A2, A3 *gotrax.PublicKey, m []byte) (*ringSignature, error) {
 	r := &ringSignature{}
 
-	isA1 := pub.k.EqualsMask(A1.k)
-	isA2 := pub.k.EqualsMask(A2.k)
-	isA3 := pub.k.EqualsMask(A3.k)
+	isA1 := pub.K().EqualsMask(A1.K())
+	isA2 := pub.K().EqualsMask(A2.K())
+	isA3 := pub.K().EqualsMask(A3.K())
 
 	if (isA1 ^ isA2 ^ isA3) == uint32(0) {
 		return nil, errors.New("more than one public key match the secret key")
@@ -93,19 +93,19 @@ func generateSignature(wr gotrax.WithRandom, secret *privateKey, pub *publicKey,
 	c2, _ := generateZqKeypair(wr)
 	c3, _ := generateZqKeypair(wr)
 
-	chosenT1 := chooseT(A1.k, isA1, R1, T1, c1)
-	chosenT2 := chooseT(A2.k, isA2, R2, T2, c2)
-	chosenT3 := chooseT(A3.k, isA3, R3, T3, c3)
+	chosenT1 := chooseT(A1.K(), isA1, R1, T1, c1)
+	chosenT2 := chooseT(A2.K(), isA2, R2, T2, c2)
+	chosenT3 := chooseT(A3.K(), isA3, R3, T3, c3)
 
-	c := calculateC(A1.k, A2.k, A3.k, chosenT1, chosenT2, chosenT3, m)
+	c := calculateC(A1.K(), A2.K(), A3.K(), chosenT1, chosenT2, chosenT3, m)
 
 	r.c1 = calculateCI(c, c1, isA1, c2, c3)
 	r.c2 = calculateCI(c, c2, isA2, c1, c3)
 	r.c3 = calculateCI(c, c3, isA3, c1, c2)
 
-	r.r1 = calculateRI(secret.k, r1, isA1, r.c1, t1)
-	r.r2 = calculateRI(secret.k, r2, isA2, r.c2, t2)
-	r.r3 = calculateRI(secret.k, r3, isA3, r.c3, t3)
+	r.r1 = calculateRI(secret.K(), r1, isA1, r.c1, t1)
+	r.r2 = calculateRI(secret.K(), r2, isA2, r.c2, t2)
+	r.r3 = calculateRI(secret.K(), r3, isA3, r.c3, t3)
 
 	return r, nil
 }
@@ -127,8 +127,8 @@ func (r *ringSignature) calculateCFromSigma(A1, A2, A3 ed448.Point, msg []byte) 
 }
 
 // verify will do the actual cryptographic validation of the ring signature
-func (r *ringSignature) verify(A1, A2, A3 *publicKey, m []byte) bool {
-	c := r.calculateCFromSigma(A1.k, A2.k, A3.k, m)
+func (r *ringSignature) verify(A1, A2, A3 *gotrax.PublicKey, m []byte) bool {
+	c := r.calculateCFromSigma(A1.K(), A2.K(), A3.K(), m)
 	c1c2c3 := ed448.NewScalar()
 	c1c2c3.Add(r.c1, r.c2)
 	c1c2c3.Add(c1c2c3, r.c3)

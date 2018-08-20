@@ -13,29 +13,29 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnMess
 
 func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnErrorsFromResponse(c *C) {
 	stor := createInMemoryStorage()
-	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
-		fingerprint: serverKey.pub.fingerprint(),
+		fingerprint: serverKey.Pub.Fingerprint(),
 		storageImpl: stor,
 		sessions:    newSessionManager(),
 		rest:        nullRestrictor,
 	}
-	d1 := generateDake1(sita.instanceTag, sita.clientProfile, gs.key.pub.k)
+	d1 := generateDake1(sita.instanceTag, sita.clientProfile, gs.key.Pub.K())
 	_, e := (&otrngMessageHandler{s: gs}).handleMessage("someone@somewhere.org", d1.serialize())
 	c.Assert(e, ErrorMatches, "invalid ring signature generation")
 }
 
 func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnRestrictedDake1(c *C) {
 	stor := createInMemoryStorage()
-	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
-		fingerprint: serverKey.pub.fingerprint(),
+		fingerprint: serverKey.Pub.Fingerprint(),
 		storageImpl: stor,
 		sessions:    newSessionManager(),
 		rest:        func(string) bool { return true },
@@ -43,7 +43,7 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnRest
 	mh := &otrngMessageHandler{s: gs}
 	gs.messageHandler = mh
 
-	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.pub.k)
+	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.Pub.K())
 
 	_, e := (&otrngMessageHandler{s: gs}).handleMessage("someone@somewhere.org", d1.serialize())
 	c.Assert(e, ErrorMatches, "this from-string is restricted for these kinds of messages")
@@ -51,12 +51,12 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnRest
 
 func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnRestrictedDake3(c *C) {
 	stor := createInMemoryStorage()
-	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
-		fingerprint: serverKey.pub.fingerprint(),
+		fingerprint: serverKey.Pub.Fingerprint(),
 		storageImpl: stor,
 		sessions:    newSessionManager(),
 		rest:        nullRestrictor,
@@ -64,7 +64,7 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnRest
 	mh := &otrngMessageHandler{s: gs}
 	gs.messageHandler = mh
 
-	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.pub.k)
+	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.Pub.K())
 	r, _ := mh.handleMessage("sita@example.org", d1.serialize())
 	gs.rest = func(string) bool { return true }
 	d2 := dake2Message{}
@@ -73,14 +73,14 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnRest
 	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.serialize())...)
+	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
 	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
-	t = append(t, serializePoint(sita.i.pub.k)...)
-	t = append(t, serializePoint(d2.s)...)
+	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
+	t = append(t, gotrax.SerializePoint(d2.s)...)
 	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{k: d2.s}, t)
-	sk := kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
+	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t)
+	sk := kdfx(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
 	sitaPrekeyMac := kdfx(usagePreMACKey, 64, sk)
 	msg := generateStorageInformationRequestMessage(sitaPrekeyMac)
 

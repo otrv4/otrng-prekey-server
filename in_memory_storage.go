@@ -2,6 +2,8 @@ package prekeyserver
 
 import (
 	"sync"
+
+	"github.com/coyim/gotrax"
 )
 
 func isInMemoryStorageDescriptor(desc string) bool {
@@ -15,7 +17,7 @@ func (*inMemoryStorageFactory) createStorage() storage {
 }
 
 type inMemoryStorageEntry struct {
-	clientProfiles map[uint32]*clientProfile
+	clientProfiles map[uint32]*gotrax.ClientProfile
 	prekeyProfiles map[uint32]*prekeyProfile
 	prekeyMessages map[uint32][]*prekeyMessage
 	sync.Mutex
@@ -58,7 +60,7 @@ func (s *inMemoryStorage) storageEntryFor(from string) *inMemoryStorageEntry {
 	s.RUnlock()
 	if !ok {
 		se = &inMemoryStorageEntry{
-			clientProfiles: make(map[uint32]*clientProfile),
+			clientProfiles: make(map[uint32]*gotrax.ClientProfile),
 			prekeyProfiles: make(map[uint32]*prekeyProfile),
 			prekeyMessages: make(map[uint32][]*prekeyMessage),
 		}
@@ -69,11 +71,11 @@ func (s *inMemoryStorage) storageEntryFor(from string) *inMemoryStorageEntry {
 	return se
 }
 
-func (s *inMemoryStorage) storeClientProfile(from string, cp *clientProfile) error {
+func (s *inMemoryStorage) storeClientProfile(from string, cp *gotrax.ClientProfile) error {
 	se := s.storageEntryFor(from)
 	se.Lock()
 	defer se.Unlock()
-	se.clientProfiles[cp.instanceTag] = cp
+	se.clientProfiles[cp.InstanceTag] = cp
 	return nil
 }
 
@@ -125,7 +127,7 @@ func (s *inMemoryStorage) retrieveFor(from string) []*prekeyEnsemble {
 func (s *inMemoryStorageEntry) cleanupClientProfiles() {
 	toRemove := []uint32{}
 	for itag, cp := range s.clientProfiles {
-		if cp.hasExpired() {
+		if cp.HasExpired() {
 			toRemove = append(toRemove, itag)
 		}
 	}

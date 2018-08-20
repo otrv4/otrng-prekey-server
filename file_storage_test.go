@@ -75,12 +75,12 @@ func (s *GenericServerSuite) Test_fileStorage_cleanup_willRemoveExpiredClientPro
 	fs := fsf.createStorage()
 
 	cp := generateSitaTestData().clientProfile
-	cp.expiration = time.Date(2017, 11, 5, 13, 46, 00, 13, time.UTC)
-	cp.sig = &eddsaSignature{s: cp.generateSignature(sita.longTerm)}
+	cp.Expiration = time.Date(2017, 11, 5, 13, 46, 00, 13, time.UTC)
+	cp.Sig = gotrax.CreateEddsaSignature(cp.GenerateSignature(sita.longTerm))
 
 	cp2 := generateSitaTestData().clientProfile
-	cp2.instanceTag = 0x42424242
-	cp2.sig = &eddsaSignature{s: cp2.generateSignature(sita.longTerm)}
+	cp2.InstanceTag = 0x42424242
+	cp2.Sig = gotrax.CreateEddsaSignature(cp2.GenerateSignature(sita.longTerm))
 
 	fs.storeClientProfile("someone@example.org", cp)
 	fs.storeClientProfile("someone@example.org", cp2)
@@ -175,8 +175,8 @@ func (s *GenericServerSuite) Test_fileStorage_retrieveFor_willReturnAPrekeyEnsem
 
 	cp := generateSitaTestData().clientProfile
 	cp2 := generateSitaTestData().clientProfile
-	cp2.instanceTag = 0x42424242
-	cp2.sig = &eddsaSignature{s: cp2.generateSignature(sita.longTerm)}
+	cp2.InstanceTag = 0x42424242
+	cp2.Sig = gotrax.CreateEddsaSignature(cp2.GenerateSignature(sita.longTerm))
 
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2029, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pp2, _ := generatePrekeyProfile(gs, 0x42424242, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
@@ -209,8 +209,8 @@ func (s *GenericServerSuite) Test_fileStorage_retrieveFor_willReturnAPrekeyEnsem
 
 	pes := fs.retrieveFor("someone@example.org")
 	c.Assert(pes, HasLen, 2)
-	c.Assert(pes[0].cp.sig, DeepEquals, cp.sig)
-	c.Assert(pes[1].cp.sig, DeepEquals, cp2.sig)
+	c.Assert(pes[0].cp.Sig, DeepEquals, cp.Sig)
+	c.Assert(pes[1].cp.Sig, DeepEquals, cp2.Sig)
 	c.Assert(pes[0].pp.sig, DeepEquals, pp1.sig)
 	c.Assert(pes[1].pp.sig, DeepEquals, pp2.sig)
 	c.Assert(pes[0].pm.identifier, DeepEquals, pm3.identifier)

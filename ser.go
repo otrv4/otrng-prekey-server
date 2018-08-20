@@ -30,13 +30,13 @@ func (m *dake1Message) deserialize(buf []byte) ([]byte, bool) {
 		return buf, false
 	}
 
-	m.clientProfile = &clientProfile{}
-	buf, ok = m.clientProfile.deserialize(buf)
+	m.clientProfile = &gotrax.ClientProfile{}
+	buf, ok = m.clientProfile.Deserialize(buf)
 	if !ok {
 		return buf, false
 	}
 
-	buf, m.i, ok = deserializePoint(buf)
+	buf, m.i, ok = gotrax.DeserializePoint(buf)
 	if !ok {
 		return buf, false
 	}
@@ -48,8 +48,8 @@ func (m *dake1Message) serialize() []byte {
 	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypeDAKE1)
 	out = gotrax.AppendWord(out, m.instanceTag)
-	out = append(out, m.clientProfile.serialize()...)
-	out = append(out, serializePoint(m.i)...)
+	out = append(out, m.clientProfile.Serialize()...)
+	out = append(out, gotrax.SerializePoint(m.i)...)
 	return out
 }
 
@@ -58,9 +58,9 @@ func (m *dake2Message) serialize() []byte {
 	out = append(out, messageTypeDAKE2)
 	out = gotrax.AppendWord(out, m.instanceTag)
 	out = gotrax.AppendData(out, m.serverIdentity)
-	sk := &publicKey{k: m.serverKey, keyType: ed448Key}
-	out = append(out, sk.serialize()...)
-	out = append(out, serializePoint(m.s)...)
+	sk := gotrax.CreatePublicKey(m.serverKey, gotrax.Ed448Key)
+	out = append(out, sk.Serialize()...)
+	out = append(out, gotrax.SerializePoint(m.s)...)
 	out = append(out, m.sigma.serialize()...)
 	return out
 }
@@ -85,13 +85,13 @@ func (m *dake2Message) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	sk := &publicKey{keyType: ed448Key}
-	if buf, ok = sk.deserialize(buf); !ok {
+	sk := gotrax.CreatePublicKey(nil, gotrax.Ed448Key)
+	if buf, ok = sk.Deserialize(buf); !ok {
 		return nil, false
 	}
-	m.serverKey = sk.k
+	m.serverKey = sk.K()
 
-	if buf, m.s, ok = deserializePoint(buf); !ok {
+	if buf, m.s, ok = gotrax.DeserializePoint(buf); !ok {
 		return nil, false
 	}
 
@@ -156,7 +156,7 @@ func (m *publicationMessage) serialize() []byte {
 
 	if m.clientProfile != nil {
 		out = append(out, uint8(1))
-		out = append(out, m.clientProfile.serialize()...)
+		out = append(out, m.clientProfile.Serialize()...)
 	} else {
 		out = append(out, uint8(0))
 	}
@@ -202,8 +202,8 @@ func (m *publicationMessage) deserialize(buf []byte) ([]byte, bool) {
 	}
 
 	if tmp == 1 {
-		m.clientProfile = &clientProfile{}
-		if buf, ok = m.clientProfile.deserialize(buf); !ok {
+		m.clientProfile = &gotrax.ClientProfile{}
+		if buf, ok = m.clientProfile.Deserialize(buf); !ok {
 			return nil, false
 		}
 	}
@@ -493,147 +493,16 @@ func serializeDSAKey(k *dsa.PublicKey) []byte {
 	return result
 }
 
-func deserializeDSAKey(buf []byte) ([]byte, *dsa.PublicKey, bool) {
-	res := &dsa.PublicKey{}
-	var ok bool
-	var keyType uint16
-	if buf, keyType, ok = gotrax.ExtractShort(buf); !ok || keyType != uint16(0x0000) { // key type
-		return nil, nil, false
-	}
-
-	if buf, res.P, ok = gotrax.ExtractMPI(buf); !ok {
-		return nil, nil, false
-	}
-
-	if buf, res.Q, ok = gotrax.ExtractMPI(buf); !ok {
-		return nil, nil, false
-	}
-
-	if buf, res.G, ok = gotrax.ExtractMPI(buf); !ok {
-		return nil, nil, false
-	}
-
-	if buf, res.Y, ok = gotrax.ExtractMPI(buf); !ok {
-		return nil, nil, false
-	}
-
-	return buf, res, true
-}
-
-func (cp *clientProfile) serializeForSignature() []byte {
-	out := []byte{}
-	fields := uint32(4)
-
-	if cp.dsaKey != nil {
-		fields++
-	}
-
-	if cp.transitionalSignature != nil {
-		fields++
-	}
-
-	out = gotrax.AppendWord(out, fields)
-
-	out = gotrax.AppendShort(out, clientProfileTagInstanceTag)
-	out = gotrax.AppendWord(out, cp.instanceTag)
-
-	out = gotrax.AppendShort(out, clientProfileTagPublicKey)
-	out = append(out, cp.publicKey.serialize()...)
-
-	out = gotrax.AppendShort(out, clientProfileTagVersions)
-	out = append(out, serializeVersions(cp.versions)...)
-
-	out = gotrax.AppendShort(out, clientProfileTagExpiry)
-	out = append(out, serializeExpiry(cp.expiration)...)
-
-	if cp.dsaKey != nil {
-		out = gotrax.AppendShort(out, clientProfileTagDSAKey)
-		out = append(out, serializeDSAKey(cp.dsaKey)...)
-	}
-
-	if cp.transitionalSignature != nil {
-		out = gotrax.AppendShort(out, clientProfileTagTransitionalSignature)
-		out = append(out, cp.transitionalSignature...)
-	}
-
-	return out
-}
-
-func (cp *clientProfile) serialize() []byte {
-	return append(cp.serializeForSignature(), cp.sig.serialize()...)
-}
-
-func (cp *clientProfile) deserializeField(buf []byte) ([]byte, bool) {
-	var tp uint16
-	var ok bool
-
-	if buf, tp, ok = gotrax.ExtractShort(buf); !ok {
-		return nil, false
-	}
-
-	switch tp {
-	case clientProfileTagInstanceTag:
-		if buf, cp.instanceTag, ok = gotrax.ExtractWord(buf); !ok {
-			return nil, false
-		}
-	case clientProfileTagPublicKey:
-		cp.publicKey = &publicKey{keyType: ed448Key}
-		if buf, ok = cp.publicKey.deserialize(buf); !ok {
-			return nil, false
-		}
-	case clientProfileTagVersions:
-		if buf, cp.versions, ok = gotrax.ExtractData(buf); !ok {
-			return nil, false
-		}
-	case clientProfileTagExpiry:
-		if buf, cp.expiration, ok = gotrax.ExtractTime(buf); !ok {
-			return nil, false
-		}
-	case clientProfileTagDSAKey:
-		if buf, cp.dsaKey, ok = deserializeDSAKey(buf); !ok {
-			return nil, false
-		}
-	case clientProfileTagTransitionalSignature:
-		if buf, cp.transitionalSignature, ok = gotrax.ExtractFixedData(buf, 40); !ok {
-			return nil, false
-		}
-	default:
-		return nil, false
-	}
-	return buf, true
-}
-
-func (cp *clientProfile) deserialize(buf []byte) ([]byte, bool) {
-	var fields uint32
-	var ok bool
-	if buf, fields, ok = gotrax.ExtractWord(buf); !ok {
-		return nil, false
-	}
-
-	for i := uint32(0); i < fields; i++ {
-		if buf, ok = cp.deserializeField(buf); !ok {
-			return nil, false
-		}
-	}
-
-	cp.sig = &eddsaSignature{}
-	if buf, ok = cp.sig.deserialize(buf); !ok {
-		return nil, false
-	}
-
-	return buf, true
-}
-
 func (pp *prekeyProfile) serializeForSignature() []byte {
 	var out []byte
 	out = gotrax.AppendWord(out, pp.instanceTag)
 	out = append(out, serializeExpiry(pp.expiration)...)
-	out = append(out, pp.sharedPrekey.serialize()...)
+	out = append(out, pp.sharedPrekey.Serialize()...)
 	return out
 }
 
 func (pp *prekeyProfile) serialize() []byte {
-	return append(pp.serializeForSignature(), pp.sig.serialize()...)
+	return append(pp.serializeForSignature(), pp.sig.Serialize()...)
 }
 
 func (pp *prekeyProfile) deserialize(buf []byte) ([]byte, bool) {
@@ -647,13 +516,13 @@ func (pp *prekeyProfile) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	pp.sharedPrekey = &publicKey{keyType: sharedPrekeyKey}
-	if buf, ok = pp.sharedPrekey.deserialize(buf); !ok {
+	pp.sharedPrekey = gotrax.CreatePublicKey(nil, gotrax.SharedPrekeyKey)
+	if buf, ok = pp.sharedPrekey.Deserialize(buf); !ok {
 		return nil, false
 	}
 
-	pp.sig = &eddsaSignature{}
-	if buf, ok = pp.sig.deserialize(buf); !ok {
+	pp.sig = &gotrax.EddsaSignature{}
+	if buf, ok = pp.sig.Deserialize(buf); !ok {
 		return nil, false
 	}
 
@@ -665,7 +534,7 @@ func (pm *prekeyMessage) serialize() []byte {
 	out = append(out, messageTypePrekeyMessage)
 	out = gotrax.AppendWord(out, pm.identifier)
 	out = gotrax.AppendWord(out, pm.instanceTag)
-	out = append(out, serializePoint(pm.y)...)
+	out = append(out, gotrax.SerializePoint(pm.y)...)
 	out = gotrax.AppendData(out, pm.b)
 	return out
 }
@@ -691,7 +560,7 @@ func (pm *prekeyMessage) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	if buf, pm.y, ok1 = deserializePoint(buf); !ok1 {
+	if buf, pm.y, ok1 = gotrax.DeserializePoint(buf); !ok1 {
 		return nil, false
 	}
 
@@ -704,7 +573,7 @@ func (pm *prekeyMessage) deserialize(buf []byte) ([]byte, bool) {
 
 func (pe *prekeyEnsemble) serialize() []byte {
 	var out []byte
-	out = append(out, pe.cp.serialize()...)
+	out = append(out, pe.cp.Serialize()...)
 	out = append(out, pe.pp.serialize()...)
 	out = append(out, pe.pm.serialize()...)
 	return out
@@ -713,8 +582,8 @@ func (pe *prekeyEnsemble) serialize() []byte {
 func (pe *prekeyEnsemble) deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
 
-	pe.cp = &clientProfile{}
-	if buf, ok = pe.cp.deserialize(buf); !ok {
+	pe.cp = &gotrax.ClientProfile{}
+	if buf, ok = pe.cp.Deserialize(buf); !ok {
 		return nil, false
 	}
 
@@ -728,76 +597,6 @@ func (pe *prekeyEnsemble) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	return buf, true
-}
-
-func (p *publicKey) serialize() []byte {
-	keyType := []byte{0xBA, 0xD0}
-	switch p.keyType {
-	case ed448Key:
-		keyType = ed448KeyType
-	case sharedPrekeyKey:
-		keyType = sharedPrekeyKeyType
-	}
-	return append(keyType, p.k.DSAEncode()...)
-}
-
-func (s *eddsaSignature) serialize() []byte {
-	return s.s[:]
-}
-
-func serializePoint(p ed448.Point) []byte {
-	return p.DSAEncode()
-}
-
-func deserializePoint(buf []byte) ([]byte, ed448.Point, bool) {
-	if len(buf) < 57 {
-		return buf, nil, false
-	}
-	tp := ed448.NewPointFromBytes([]byte{
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	})
-	tp.DSADecode(buf[0:57])
-	return buf[57:], tp, true
-}
-
-func (p *publicKey) deserialize(buf []byte) ([]byte, bool) {
-	var ok bool
-	pubKeyType := uint16(0)
-
-	if buf, pubKeyType, ok = gotrax.ExtractShort(buf); !ok {
-		return nil, false
-	}
-
-	keyType := uint16(0xBAD0)
-	switch p.keyType {
-	case ed448Key:
-		keyType = ed448KeyTypeInt
-	case sharedPrekeyKey:
-		keyType = sharedPrekeyKeyTypeInt
-	}
-
-	if pubKeyType != keyType {
-		return nil, false
-	}
-
-	buf, p.k, ok = deserializePoint(buf)
-	return buf, ok
-}
-
-func (s *eddsaSignature) deserialize(buf []byte) ([]byte, bool) {
-	var ok bool
-	var res []byte
-	if buf, res, ok = gotrax.ExtractFixedData(buf, 114); !ok {
-		return nil, false
-	}
-	copy(s.s[:], res)
 	return buf, true
 }
 

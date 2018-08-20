@@ -6,6 +6,8 @@ import (
 	"errors"
 	"io"
 	"time"
+
+	"github.com/coyim/gotrax"
 )
 
 // Factory is the main entry point for the otrng prekey server functionality.
@@ -19,8 +21,7 @@ type Factory interface {
 
 // Keypair represents the minimum key functionality a server implementation will need
 type Keypair interface {
-	Fingerprint() []byte
-	realKeys() *keypair
+	Fingerprint() gotrax.Fingerprint
 }
 
 // Storage has the responsibility of creating new storage implementations
@@ -68,7 +69,7 @@ type keypairInStorage struct {
 	Public    string
 }
 
-func (kis *keypairInStorage) intoKeypair() (*keypair, error) {
+func (kis *keypairInStorage) intoKeypair() (*gotrax.Keypair, error) {
 	sym, ok := decodeMessage(kis.Symmetric)
 	if !ok {
 		return nil, errors.New("couldn't decode symmetric key")
@@ -85,24 +86,24 @@ func (kis *keypairInStorage) intoKeypair() (*keypair, error) {
 	if !ok {
 		return nil, errors.New("couldn't decode scalar for private key")
 	}
-	_, pub, ok := deserializePoint(pubb)
+	_, pub, ok := gotrax.DeserializePoint(pubb)
 	if !ok {
 		return nil, errors.New("couldn't decode point for public key")
 	}
-	res := &keypair{}
-	copy(res.sym[:], sym)
-	res.pub = &publicKey{k: pub, keyType: ed448Key}
-	res.priv = &privateKey{k: priv}
+	res := &gotrax.Keypair{}
+	copy(res.Sym[:], sym)
+	res.Pub = gotrax.CreatePublicKey(pub, gotrax.Ed448Key)
+	res.Priv = gotrax.CreatePrivateKey(priv)
 	return res, nil
 }
 
 func (f *realFactory) StoreKeysInto(kpp Keypair, w io.Writer) error {
-	kp := kpp.realKeys()
+	kp := kpp.(*gotrax.Keypair)
 	enc := json.NewEncoder(w)
 	kis := &keypairInStorage{
-		Symmetric: encodeMessage(kp.sym[:]),
-		Private:   encodeMessage(serializeScalar(kp.priv.k)),
-		Public:    encodeMessage(serializePoint(kp.pub.k)),
+		Symmetric: encodeMessage(kp.Sym[:]),
+		Private:   encodeMessage(serializeScalar(kp.Priv.K())),
+		Public:    encodeMessage(gotrax.SerializePoint(kp.Pub.K())),
 	}
 	return enc.Encode(kis)
 }
@@ -117,17 +118,17 @@ func (*realFactory) LoadKeypairFrom(r io.Reader) (Keypair, error) {
 }
 
 func (f *realFactory) CreateKeypair() Keypair {
-	return generateKeypair(f)
+	return gotrax.GenerateKeypair(f)
 }
 
 func (*realFactory) NewServer(identity string, keys Keypair, fragLen int, st Storage, sessionTimeout, fragmentTimeout time.Duration, r Restrictor) Server {
-	kp := keys.realKeys()
+	kp := keys.(*gotrax.Keypair)
 	if r == nil {
 		r = nullRestrictor
 	}
 	gs := &GenericServer{
 		identity:             identity,
-		fingerprint:          kp.fingerprint(),
+		fingerprint:          kp.Fingerprint(),
 		key:                  kp,
 		fragLen:              fragLen,
 		fragmentations:       newFragmentations(),

@@ -10,7 +10,7 @@ import (
 
 type publicationMessage struct {
 	prekeyMessages []*prekeyMessage
-	clientProfile  *clientProfile
+	clientProfile  *gotrax.ClientProfile
 	prekeyProfile  *prekeyProfile
 	mac            [macLength]byte
 }
@@ -146,14 +146,14 @@ func (m *ensembleRetrievalQueryMessage) respond(from string, s *GenericServer) (
 	}, nil
 }
 
-func generateMACForPublicationMessage(cp *clientProfile, pp *prekeyProfile, pms []*prekeyMessage, macKey []byte) []byte {
+func generateMACForPublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, macKey []byte) []byte {
 	kpms := kdfx(usagePrekeyMessage, 64, serializePrekeyMessages(pms))
 	kpps := kdfx(usagePrekeyProfile, 64, pp.serialize())
 	k := []byte{byte(0)}
 	kcp := []byte{}
 	if cp != nil {
 		k = []byte{1}
-		kcp = kdfx(usageClientProfile, 64, cp.serialize())
+		kcp = kdfx(usageClientProfile, 64, cp.Serialize())
 	}
 
 	ppLen := 0
@@ -164,7 +164,7 @@ func generateMACForPublicationMessage(cp *clientProfile, pp *prekeyProfile, pms 
 	return kdfx(usagePreMAC, 64, concat(macKey, []byte{messageTypePublication, byte(len(pms))}, kpms, k, kcp, []byte{byte(ppLen)}, kpps))
 }
 
-func generatePublicationMessage(cp *clientProfile, pp *prekeyProfile, pms []*prekeyMessage, macKey []byte) *publicationMessage {
+func generatePublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, macKey []byte) *publicationMessage {
 	mac := generateMACForPublicationMessage(cp, pp, pms, macKey)
 	pm := &publicationMessage{
 		prekeyMessages: pms,
@@ -184,11 +184,11 @@ func (m *publicationMessage) validate(from string, s *GenericServer) error {
 	}
 
 	tag := s.session(from).instanceTag()
-	if m.clientProfile != nil && m.clientProfile.validate(tag) != nil {
+	if m.clientProfile != nil && m.clientProfile.Validate(tag) != nil {
 		return errors.New("invalid client profile in publication message")
 	}
 
-	if m.prekeyProfile != nil && m.prekeyProfile.validate(tag, clientProfile.publicKey) != nil {
+	if m.prekeyProfile != nil && m.prekeyProfile.validate(tag, clientProfile.PublicKey) != nil {
 		return errors.New("invalid prekey profile in publication message")
 	}
 

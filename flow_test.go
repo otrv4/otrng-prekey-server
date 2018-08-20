@@ -9,15 +9,15 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func generateSitaClientProfile(longTerm *keypair) *clientProfile {
-	sita := &clientProfile{}
-	sita.instanceTag = 0x1245ABCD
-	sita.publicKey = longTerm.pub
-	sita.versions = []byte{'4'}
-	sita.expiration = time.Date(2028, 11, 5, 13, 46, 00, 13, time.UTC)
-	sita.dsaKey = nil
-	sita.transitionalSignature = nil
-	sita.sig = &eddsaSignature{s: [114]byte{
+func generateSitaClientProfile(longTerm *gotrax.Keypair) *gotrax.ClientProfile {
+	sita := &gotrax.ClientProfile{}
+	sita.InstanceTag = 0x1245ABCD
+	sita.PublicKey = longTerm.Pub
+	sita.Versions = []byte{'4'}
+	sita.Expiration = time.Date(2028, 11, 5, 13, 46, 00, 13, time.UTC)
+	sita.DsaKey = nil
+	sita.TransitionalSignature = nil
+	sita.Sig = gotrax.CreateEddsaSignature([114]byte{
 		0x2c, 0xb1, 0x20, 0x40, 0x18, 0xfa, 0xe4, 0xb5,
 		0xfc, 0x9e, 0xf, 0xee, 0xf4, 0x87, 0xc6, 0x9f,
 		0x24, 0x28, 0x6d, 0x60, 0x68, 0xca, 0x51, 0x3a,
@@ -33,25 +33,25 @@ func generateSitaClientProfile(longTerm *keypair) *clientProfile {
 		0x34, 0x28, 0x7, 0x7e, 0xe0, 0x49, 0xbd, 0xb1,
 		0xea, 0x1f, 0x31, 0x1e, 0x26, 0x44, 0xee, 0x91,
 		0x13, 0x0,
-	}}
+	})
 	return sita
 }
 
-func generateSitaIPoint() *keypair {
-	return deriveKeypair([symKeyLength]byte{0x42, 0x11, 0xCC, 0x22, 0xDD, 0x11, 0xFF})
+func generateSitaIPoint() *gotrax.Keypair {
+	return gotrax.DeriveKeypair([symKeyLength]byte{0x42, 0x11, 0xCC, 0x22, 0xDD, 0x11, 0xFF})
 }
 
 type testData struct {
 	instanceTag   uint32
-	longTerm      *keypair
-	clientProfile *clientProfile
-	i             *keypair
+	longTerm      *gotrax.Keypair
+	clientProfile *gotrax.ClientProfile
+	i             *gotrax.Keypair
 }
 
 func generateSitaTestData() *testData {
 	t := &testData{}
 	t.instanceTag = 0x1245ABCD
-	t.longTerm = deriveKeypair([symKeyLength]byte{0x42, 0x00, 0x00, 0x55, 0x55, 0x00, 0x00, 0x55})
+	t.longTerm = gotrax.DeriveKeypair([symKeyLength]byte{0x42, 0x00, 0x00, 0x55, 0x55, 0x00, 0x00, 0x55})
 	t.clientProfile = generateSitaClientProfile(t.longTerm)
 	t.i = generateSitaIPoint()
 	return t
@@ -61,12 +61,12 @@ var sita = generateSitaTestData()
 
 func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 	stor := createInMemoryStorage()
-	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
-		fingerprint: serverKey.pub.fingerprint(),
+		fingerprint: serverKey.Pub.Fingerprint(),
 		storageImpl: stor,
 		sessions:    newSessionManager(),
 		rest:        nullRestrictor,
@@ -74,7 +74,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 	mh := &otrngMessageHandler{s: gs}
 	gs.messageHandler = mh
 
-	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.pub.k)
+	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.Pub.K())
 
 	r, e := mh.handleMessage("sita@example.org", d1.serialize())
 
@@ -86,7 +86,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 	c.Assert(ok, Equals, true)
 	c.Assert(d2.instanceTag, Equals, uint32(0x1245ABCD))
 	c.Assert(d2.serverIdentity, DeepEquals, []byte("masterOfKeys.example.org"))
-	c.Assert(serializePoint(d2.serverKey), DeepEquals, []byte{
+	c.Assert(gotrax.SerializePoint(d2.serverKey), DeepEquals, []byte{
 		0xaf, 0xde, 0x43, 0x7d, 0x1e, 0x80, 0xf8, 0x1a,
 		0xb7, 0xfe, 0x5b, 0x21, 0x8c, 0x59, 0xa5, 0xff,
 		0x5d, 0x7, 0xbb, 0xe1, 0xab, 0xe9, 0xc7, 0xaf,
@@ -166,15 +166,15 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.serialize())...)
+	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
 	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
-	t = append(t, serializePoint(sita.i.pub.k)...)
-	t = append(t, serializePoint(d2.s)...)
+	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
+	t = append(t, gotrax.SerializePoint(d2.s)...)
 	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{k: d2.s}, t)
+	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t)
 
-	sk := kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
+	sk := kdfx(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
 	sitaPrekeyMac := kdfx(usagePreMACKey, 64, sk)
 	msg := generateStorageInformationRequestMessage(sitaPrekeyMac)
 
@@ -210,12 +210,12 @@ func (s *GenericServerSuite) Test_flow_retrieveEnsemblesFromUnknownPerson(c *C) 
 		versions:    []byte{0x04},
 	}
 
-	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
-		fingerprint: serverKey.pub.fingerprint(),
+		fingerprint: serverKey.Pub.Fingerprint(),
 		storageImpl: stor,
 	}
 	mh := &otrngMessageHandler{s: gs}
@@ -232,20 +232,20 @@ func (s *GenericServerSuite) Test_flow_retrieveEnsemblesFromUnknownPerson(c *C) 
 }
 
 func (s *GenericServerSuite) Test_flow_invalidUserProfileInDAKE1(c *C) {
-	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
-		fingerprint: serverKey.pub.fingerprint(),
+		fingerprint: serverKey.Pub.Fingerprint(),
 		rest:        nullRestrictor,
 	}
 	mh := &otrngMessageHandler{s: gs}
 
 	badcp := generateSitaClientProfile(sita.longTerm)
-	badcp.instanceTag = 0x42424242
+	badcp.InstanceTag = 0x42424242
 
-	d1 := generateDake1(sita.instanceTag, badcp, sita.i.pub.k)
+	d1 := generateDake1(sita.instanceTag, badcp, sita.i.Pub.K())
 
 	_, e := mh.handleMessage("sita@example.org", d1.serialize())
 
@@ -254,12 +254,12 @@ func (s *GenericServerSuite) Test_flow_invalidUserProfileInDAKE1(c *C) {
 }
 
 func (s *GenericServerSuite) Test_flow_invalidPointI(c *C) {
-	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
-		fingerprint: serverKey.pub.fingerprint(),
+		fingerprint: serverKey.Pub.Fingerprint(),
 		rest:        nullRestrictor,
 	}
 	mh := &otrngMessageHandler{s: gs}
@@ -275,18 +275,18 @@ func (s *GenericServerSuite) Test_flow_invalidPointI(c *C) {
 }
 
 func (s *GenericServerSuite) Test_flow_invalidDAKE3(c *C) {
-	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
-		fingerprint: serverKey.pub.fingerprint(),
+		fingerprint: serverKey.Pub.Fingerprint(),
 		sessions:    newSessionManager(),
 		rest:        nullRestrictor,
 	}
 	mh := &otrngMessageHandler{s: gs}
 
-	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.pub.k)
+	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.Pub.K())
 
 	r, e := mh.handleMessage("sita@example.org", d1.serialize())
 
@@ -300,15 +300,15 @@ func (s *GenericServerSuite) Test_flow_invalidDAKE3(c *C) {
 	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.serialize())...)
+	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
 	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
-	t = append(t, serializePoint(sita.i.pub.k)...)
-	t = append(t, serializePoint(d2.s)...)
+	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
+	t = append(t, gotrax.SerializePoint(d2.s)...)
 	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{k: d2.s}, t)
+	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t)
 
-	sk := kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
+	sk := kdfx(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
 	sitaPrekeyMac := kdfx(usagePreMACKey, 64, sk)
 	msg := generateStorageInformationRequestMessage(sitaPrekeyMac)
 
@@ -319,19 +319,19 @@ func (s *GenericServerSuite) Test_flow_invalidDAKE3(c *C) {
 }
 
 func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
-	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
-		fingerprint: serverKey.pub.fingerprint(),
+		fingerprint: serverKey.Pub.Fingerprint(),
 		sessions:    newSessionManager(),
 		rest:        nullRestrictor,
 	}
 	mh := &otrngMessageHandler{s: gs}
 	gs.messageHandler = mh
 
-	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.pub.k)
+	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.Pub.K())
 
 	r, e := mh.handleMessage("sita@example.org", d1.serialize())
 
@@ -345,15 +345,15 @@ func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
 	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.serialize())...)
+	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
 	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
-	t = append(t, serializePoint(sita.i.pub.k)...)
-	t = append(t, serializePoint(d2.s)...)
+	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
+	t = append(t, gotrax.SerializePoint(d2.s)...)
 	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{k: d2.s}, t)
+	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t)
 
-	sk := kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
+	sk := kdfx(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
 	sitaBadPrekeyMacK := kdfx(usagePreMACKey, 64, sk)
 	sitaBadPrekeyMacK[0] = 0xBA
 	sitaBadPrekeyMacK[1] = 0xDB
@@ -367,12 +367,12 @@ func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
 
 func (s *GenericServerSuite) Test_flow_publication(c *C) {
 	stor := createInMemoryStorage()
-	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
-		fingerprint: serverKey.pub.fingerprint(),
+		fingerprint: serverKey.Pub.Fingerprint(),
 		storageImpl: stor,
 		sessions:    newSessionManager(),
 		rest:        nullRestrictor,
@@ -380,7 +380,7 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 	mh := &otrngMessageHandler{s: gs}
 	gs.messageHandler = mh
 
-	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.pub.k)
+	d1 := generateDake1(sita.instanceTag, sita.clientProfile, sita.i.Pub.K())
 
 	r, e := mh.handleMessage("sita@example.org", d1.serialize())
 
@@ -394,15 +394,15 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.serialize())...)
+	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
 	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
-	t = append(t, serializePoint(sita.i.pub.k)...)
-	t = append(t, serializePoint(d2.s)...)
+	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
+	t = append(t, gotrax.SerializePoint(d2.s)...)
 	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.priv, sita.longTerm.pub, sita.longTerm.pub, gs.key.pub, &publicKey{k: d2.s}, t)
+	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t)
 
-	sk := kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(d2.s, sita.i.priv.k)))
+	sk := kdfx(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
 	sitaPrekeyMacK := kdfx(usagePreMACKey, 64, sk)
 
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
@@ -442,14 +442,14 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 }
 
 func (s *GenericServerSuite) Test_flow_retrieveEnsemblesFromKnownPerson(c *C) {
-	serverKey := deriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	stor := createInMemoryStorage()
 
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
 		rand:        gotrax.FixtureRand(),
 		key:         serverKey,
-		fingerprint: serverKey.pub.fingerprint(),
+		fingerprint: serverKey.Pub.Fingerprint(),
 		storageImpl: stor,
 	}
 	mh := &otrngMessageHandler{s: gs}

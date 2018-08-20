@@ -2,7 +2,6 @@ package prekeyserver
 
 import (
 	"bytes"
-	"crypto/dsa"
 	"errors"
 	"time"
 
@@ -10,21 +9,11 @@ import (
 	"github.com/otrv4/ed448"
 )
 
-type clientProfile struct {
-	instanceTag           uint32
-	publicKey             *publicKey
-	versions              []byte
-	expiration            time.Time
-	dsaKey                *dsa.PublicKey
-	transitionalSignature []byte
-	sig                   *eddsaSignature
-}
-
 type prekeyProfile struct {
 	instanceTag  uint32
 	expiration   time.Time
-	sharedPrekey *publicKey
-	sig          *eddsaSignature
+	sharedPrekey *gotrax.PublicKey
+	sig          *gotrax.EddsaSignature
 }
 
 type prekeyMessage struct {
@@ -35,70 +24,36 @@ type prekeyMessage struct {
 }
 
 type prekeyEnsemble struct {
-	cp *clientProfile
+	cp *gotrax.ClientProfile
 	pp *prekeyProfile
 	pm *prekeyMessage
 }
 
-func (m *clientProfile) validate(tag uint32) error {
-	if m.instanceTag != tag {
-		return errors.New("invalid instance tag in client profile")
-	}
-
-	if !ed448.DSAVerify(m.sig.s, m.publicKey.k, m.serializeForSignature()) {
-		return errors.New("invalid signature in client profile")
-	}
-
-	if m.expiration.Before(time.Now()) {
-		return errors.New("client profile has expired")
-	}
-
-	if !bytes.Contains(m.versions, []byte{'4'}) {
-		return errors.New("client profile doesn't support version 4")
-	}
-
-	// This branch will be untested for now, since I have NO idea how to generate
-	// a valid private key AND eddsa signature that matches an invalid point...
-	if validatePoint(m.publicKey.k) != nil {
-		return errors.New("client profile public key is not a valid point")
-	}
-
-	// The spec says to verify the DSA transitional signature here
-	// For now, I'll avoid doing that, since the purpose of the transitional
-	// signature has nothing to do with the prekey server
-
-	return nil
-}
-
-func generatePrekeyProfile(wr gotrax.WithRandom, tag uint32, expiration time.Time, longTerm *keypair) (*prekeyProfile, *keypair) {
-	sharedKey := generateKeypair(wr)
-	sharedKey.pub.keyType = sharedPrekeyKey
+func generatePrekeyProfile(wr gotrax.WithRandom, tag uint32, expiration time.Time, longTerm *gotrax.Keypair) (*prekeyProfile, *gotrax.Keypair) {
+	sharedKey := gotrax.GenerateKeypair(wr)
+	sharedKey.Pub = gotrax.CreatePublicKey(sharedKey.Pub.K(), gotrax.SharedPrekeyKey)
 	pp := &prekeyProfile{
 		instanceTag:  tag,
 		expiration:   expiration,
-		sharedPrekey: sharedKey.pub,
+		sharedPrekey: sharedKey.Pub,
 	}
 
-	pp.sig = &eddsaSignature{s: pp.generateSignature(longTerm)}
+	pp.sig = gotrax.CreateEddsaSignature(pp.generateSignature(longTerm))
 
 	return pp, sharedKey
 }
 
-func generatePrekeyMessage(wr gotrax.WithRandom, tag uint32) (*prekeyMessage, *keypair) {
+func generatePrekeyMessage(wr gotrax.WithRandom, tag uint32) (*prekeyMessage, *gotrax.Keypair) {
 	ident := gotrax.RandomUint32(wr)
-	y := generateKeypair(wr)
+	y := gotrax.GenerateKeypair(wr)
 	b := []byte{0x04}
 
 	return &prekeyMessage{
 		identifier:  ident,
 		instanceTag: tag,
-		y:           y.pub.k,
+		y:           y.Pub.K(),
 		b:           b,
 	}, y
-}
-
-func (m *clientProfile) Equals(other *clientProfile) bool {
-	return bytes.Equal(m.serialize(), other.serialize())
 }
 
 func (pp *prekeyProfile) Equals(other *prekeyProfile) bool {
@@ -109,22 +64,17 @@ func (pm *prekeyMessage) Equals(other *prekeyMessage) bool {
 	return bytes.Equal(pm.serialize(), other.serialize())
 }
 
-func (pp *prekeyProfile) generateSignature(kp *keypair) [114]byte {
+func (pp *prekeyProfile) generateSignature(kp *gotrax.Keypair) [114]byte {
 	msg := pp.serializeForSignature()
-	return ed448.DSASign(kp.sym, kp.pub.k, msg)
+	return ed448.DSASign(kp.Sym, kp.Pub.K(), msg)
 }
 
-func (m *clientProfile) generateSignature(kp *keypair) [114]byte {
-	msg := m.serializeForSignature()
-	return ed448.DSASign(kp.sym, kp.pub.k, msg)
-}
-
-func (pp *prekeyProfile) validate(tag uint32, pub *publicKey) error {
+func (pp *prekeyProfile) validate(tag uint32, pub *gotrax.PublicKey) error {
 	if pp.instanceTag != tag {
 		return errors.New("invalid instance tag in prekey profile")
 	}
 
-	if !ed448.DSAVerify(pp.sig.s, pub.k, pp.serializeForSignature()) {
+	if !ed448.DSAVerify(pp.sig.S(), pub.K(), pp.serializeForSignature()) {
 		return errors.New("invalid signature in prekey profile")
 	}
 
@@ -132,7 +82,7 @@ func (pp *prekeyProfile) validate(tag uint32, pub *publicKey) error {
 		return errors.New("prekey profile has expired")
 	}
 
-	if validatePoint(pp.sharedPrekey.k) != nil {
+	if gotrax.ValidatePoint(pp.sharedPrekey.K()) != nil {
 		return errors.New("prekey profile shared prekey is not a valid point")
 	}
 
@@ -144,7 +94,7 @@ func (pm *prekeyMessage) validate(tag uint32) error {
 		return errors.New("invalid instance tag in prekey message")
 	}
 
-	if validatePoint(pm.y) != nil {
+	if gotrax.ValidatePoint(pm.y) != nil {
 		return errors.New("prekey profile Y point is not a valid point")
 	}
 
@@ -153,10 +103,6 @@ func (pm *prekeyMessage) validate(tag uint32) error {
 	}
 
 	return nil
-}
-
-func (m *clientProfile) hasExpired() bool {
-	return m.expiration.Before(time.Now())
 }
 
 func (pp *prekeyProfile) hasExpired() bool {

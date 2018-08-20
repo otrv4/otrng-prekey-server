@@ -9,6 +9,8 @@ import (
 	"path"
 	"regexp"
 	"strings"
+
+	"github.com/coyim/gotrax"
 )
 
 // Design:
@@ -73,8 +75,8 @@ func (fs *fileStorage) writeData(user, file string, itag uint32, data []byte) er
 	return ioutil.WriteFile(path.Join(itagDir, file), data, 0600)
 }
 
-func (fs *fileStorage) storeClientProfile(user string, cp *clientProfile) error {
-	return fs.writeData(user, "cp.bin", cp.instanceTag, cp.serialize())
+func (fs *fileStorage) storeClientProfile(user string, cp *gotrax.ClientProfile) error {
+	return fs.writeData(user, "cp.bin", cp.InstanceTag, cp.Serialize())
 }
 
 func (fs *fileStorage) storePrekeyProfile(user string, pp *prekeyProfile) error {
@@ -220,10 +222,10 @@ func (fs *fileStorage) retrieveFor(user string) []*prekeyEnsemble {
 					pp, e3 := ioutil.ReadFile(ppFile)
 					if e1 == nil && e2 == nil && e3 == nil {
 						pmR := &prekeyMessage{}
-						cpR := &clientProfile{}
+						cpR := &gotrax.ClientProfile{}
 						ppR := &prekeyProfile{}
 						_, ok1 := pmR.deserialize(pm)
-						_, ok2 := cpR.deserialize(cp)
+						_, ok2 := cpR.Deserialize(cp)
 						_, ok3 := ppR.deserialize(pp)
 						if ok1 && ok2 && ok3 {
 							defer os.Remove(pmFile)
@@ -244,13 +246,13 @@ func (fs *fileStorage) retrieveFor(user string) []*prekeyEnsemble {
 
 func cleanupClientProfile(p string) error {
 	cpFile := path.Join(p, "cp.bin")
-	cp := &clientProfile{}
+	cp := &gotrax.ClientProfile{}
 	cpd, e := ioutil.ReadFile(cpFile)
 	if e != nil {
 		return e
 	}
-	_, ok := cp.deserialize(cpd)
-	if !ok || cp.hasExpired() {
+	_, ok := cp.Deserialize(cpd)
+	if !ok || cp.HasExpired() {
 		os.Remove(cpFile)
 	}
 	return nil

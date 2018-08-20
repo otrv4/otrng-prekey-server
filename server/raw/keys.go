@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/coyim/gotrax"
 	pks "github.com/otrv4/otrng-prekey-server"
 )
 
@@ -38,7 +39,7 @@ func loadOrCreateKeypair(f pks.Factory) (pks.Keypair, error) {
 	return ret, nil
 }
 
-func formatFingerprint(fp []byte) string {
+func formatFingerprint(fp gotrax.Fingerprint) string {
 	result := ""
 	sep := ""
 

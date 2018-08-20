@@ -8,9 +8,9 @@ import (
 
 func (s *GenericServerSuite) Test_generateSignature_generatesACorrectSignature(c *C) {
 	msg := []byte("hi")
-	p1 := deriveKeypair([symKeyLength]byte{0x0A})
-	p2 := deriveKeypair([symKeyLength]byte{0x19})
-	p3 := deriveKeypair([symKeyLength]byte{0x2A})
+	p1 := gotrax.DeriveKeypair([symKeyLength]byte{0x0A})
+	p2 := gotrax.DeriveKeypair([symKeyLength]byte{0x19})
+	p3 := gotrax.DeriveKeypair([symKeyLength]byte{0x2A})
 	wr := gotrax.FixedRandBytes(
 		// for t1
 		[]byte{
@@ -113,7 +113,7 @@ func (s *GenericServerSuite) Test_generateSignature_generatesACorrectSignature(c
 		},
 	)
 
-	rsig, _ := generateSignature(wr, p1.priv, p1.pub, p1.pub, p2.pub, p3.pub, msg)
+	rsig, _ := generateSignature(wr, p1.Priv, p1.Pub, p1.Pub, p2.Pub, p3.Pub, msg)
 
 	c.Assert(rsig.c1.Encode(), DeepEquals, []byte{
 		0x9c, 0x18, 0x80, 0x76, 0xec, 0xe0, 0x2c, 0x9d,
@@ -173,70 +173,70 @@ func (s *GenericServerSuite) Test_generateSignature_generatesACorrectSignature(c
 
 func (s *GenericServerSuite) Test_verify_canVerifyASignature(c *C) {
 	msg := []byte("hi")
-	p1 := deriveKeypair([symKeyLength]byte{0x0A})
-	p2 := deriveKeypair([symKeyLength]byte{0x19})
-	p3 := deriveKeypair([symKeyLength]byte{0x2A})
-	rsig, _ := generateSignature(gotrax.DefaultRandom(), p1.priv, p1.pub, p1.pub, p2.pub, p3.pub, msg)
-	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, true)
+	p1 := gotrax.DeriveKeypair([symKeyLength]byte{0x0A})
+	p2 := gotrax.DeriveKeypair([symKeyLength]byte{0x19})
+	p3 := gotrax.DeriveKeypair([symKeyLength]byte{0x2A})
+	rsig, _ := generateSignature(gotrax.DefaultRandom(), p1.Priv, p1.Pub, p1.Pub, p2.Pub, p3.Pub, msg)
+	c.Assert(rsig.verify(p1.Pub, p2.Pub, p3.Pub, msg), Equals, true)
 }
 
 func (s *GenericServerSuite) Test_verify_failsIfGivenAnotherKey(c *C) {
 	msg := []byte("hi")
-	p1 := deriveKeypair([symKeyLength]byte{0x0A})
-	p2 := deriveKeypair([symKeyLength]byte{0x19})
-	p3 := deriveKeypair([symKeyLength]byte{0x2A})
-	p4 := deriveKeypair([symKeyLength]byte{0x2B})
-	rsig, _ := generateSignature(gotrax.DefaultRandom(), p1.priv, p1.pub, p1.pub, p2.pub, p3.pub, msg)
-	c.Assert(rsig.verify(p1.pub, p2.pub, p4.pub, msg), Equals, false)
-	c.Assert(rsig.verify(p1.pub, p4.pub, p3.pub, msg), Equals, false)
-	c.Assert(rsig.verify(p4.pub, p2.pub, p3.pub, msg), Equals, false)
+	p1 := gotrax.DeriveKeypair([symKeyLength]byte{0x0A})
+	p2 := gotrax.DeriveKeypair([symKeyLength]byte{0x19})
+	p3 := gotrax.DeriveKeypair([symKeyLength]byte{0x2A})
+	p4 := gotrax.DeriveKeypair([symKeyLength]byte{0x2B})
+	rsig, _ := generateSignature(gotrax.DefaultRandom(), p1.Priv, p1.Pub, p1.Pub, p2.Pub, p3.Pub, msg)
+	c.Assert(rsig.verify(p1.Pub, p2.Pub, p4.Pub, msg), Equals, false)
+	c.Assert(rsig.verify(p1.Pub, p4.Pub, p3.Pub, msg), Equals, false)
+	c.Assert(rsig.verify(p4.Pub, p2.Pub, p3.Pub, msg), Equals, false)
 }
 
 func (s *GenericServerSuite) Test_verify_failsIfGivenTheWrongMessage(c *C) {
 	msg := []byte("hi")
 	msg2 := []byte("hi2")
-	p1 := deriveKeypair([symKeyLength]byte{0x0A})
-	p2 := deriveKeypair([symKeyLength]byte{0x19})
-	p3 := deriveKeypair([symKeyLength]byte{0x2A})
-	rsig, _ := generateSignature(gotrax.DefaultRandom(), p1.priv, p1.pub, p1.pub, p2.pub, p3.pub, msg)
-	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg2), Equals, false)
+	p1 := gotrax.DeriveKeypair([symKeyLength]byte{0x0A})
+	p2 := gotrax.DeriveKeypair([symKeyLength]byte{0x19})
+	p3 := gotrax.DeriveKeypair([symKeyLength]byte{0x2A})
+	rsig, _ := generateSignature(gotrax.DefaultRandom(), p1.Priv, p1.Pub, p1.Pub, p2.Pub, p3.Pub, msg)
+	c.Assert(rsig.verify(p1.Pub, p2.Pub, p3.Pub, msg2), Equals, false)
 }
 
 func (s *GenericServerSuite) Test_verify_failsIfTheRsigIsModified(c *C) {
 	msg := []byte("hi")
-	p1 := deriveKeypair([symKeyLength]byte{0x0A})
-	p2 := deriveKeypair([symKeyLength]byte{0x19})
-	p3 := deriveKeypair([symKeyLength]byte{0x2A})
-	rsig, _ := generateSignature(gotrax.DefaultRandom(), p1.priv, p1.pub, p1.pub, p2.pub, p3.pub, msg)
+	p1 := gotrax.DeriveKeypair([symKeyLength]byte{0x0A})
+	p2 := gotrax.DeriveKeypair([symKeyLength]byte{0x19})
+	p3 := gotrax.DeriveKeypair([symKeyLength]byte{0x2A})
+	rsig, _ := generateSignature(gotrax.DefaultRandom(), p1.Priv, p1.Pub, p1.Pub, p2.Pub, p3.Pub, msg)
 
 	org := rsig.c1.Copy()
 	rsig.c1.Halve(rsig.c1)
-	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, false)
+	c.Assert(rsig.verify(p1.Pub, p2.Pub, p3.Pub, msg), Equals, false)
 	rsig.c1 = org
 
 	org = rsig.c2.Copy()
 	rsig.c2.Halve(rsig.c2)
-	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, false)
+	c.Assert(rsig.verify(p1.Pub, p2.Pub, p3.Pub, msg), Equals, false)
 	rsig.c2 = org
 
 	org = rsig.c3.Copy()
 	rsig.c3.Halve(rsig.c3)
-	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, false)
+	c.Assert(rsig.verify(p1.Pub, p2.Pub, p3.Pub, msg), Equals, false)
 	rsig.c3 = org
 
 	org = rsig.r1.Copy()
 	rsig.r1.Halve(rsig.r1)
-	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, false)
+	c.Assert(rsig.verify(p1.Pub, p2.Pub, p3.Pub, msg), Equals, false)
 	rsig.r1 = org
 
 	org = rsig.r2.Copy()
 	rsig.r2.Halve(rsig.r2)
-	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, false)
+	c.Assert(rsig.verify(p1.Pub, p2.Pub, p3.Pub, msg), Equals, false)
 	rsig.r2 = org
 
 	org = rsig.r3.Copy()
 	rsig.r3.Halve(rsig.r3)
-	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, false)
+	c.Assert(rsig.verify(p1.Pub, p2.Pub, p3.Pub, msg), Equals, false)
 	rsig.r3 = org
 }
 
@@ -288,36 +288,42 @@ func (s *GenericServerSuite) Test_verify_Compatibility(c *C) {
 	}
 
 	var ok bool
-	p1 := &keypair{
-		priv: &privateKey{},
-		pub:  &publicKey{},
+	p1 := &gotrax.Keypair{
+		Priv: gotrax.CreatePrivateKey(nil),
+		Pub:  gotrax.CreatePublicKey(nil, gotrax.Ed448Key),
 	}
-	p2 := &keypair{
-		priv: &privateKey{},
-		pub:  &publicKey{},
+	p2 := &gotrax.Keypair{
+		Priv: gotrax.CreatePrivateKey(nil),
+		Pub:  gotrax.CreatePublicKey(nil, gotrax.Ed448Key),
 	}
-	p3 := &keypair{
-		priv: &privateKey{},
-		pub:  &publicKey{},
+	p3 := &gotrax.Keypair{
+		Priv: gotrax.CreatePrivateKey(nil),
+		Pub:  gotrax.CreatePublicKey(nil, gotrax.Ed448Key),
 	}
 
-	_, p1.priv.k, ok = deserializeScalar(p1Priv)
+	_, k1, ok := deserializeScalar(p1Priv)
 	c.Assert(ok, Equals, true)
+	p1.Priv = gotrax.CreatePrivateKey(k1)
 
-	_, p1.pub.k, ok = deserializePoint(p1Pub)
+	_, k2, ok := gotrax.DeserializePoint(p1Pub)
 	c.Assert(ok, Equals, true)
+	p1.Pub = gotrax.CreatePublicKey(k2, gotrax.Ed448Key)
 
-	_, p2.priv.k, ok = deserializeScalar(p2Priv)
+	_, k3, ok := deserializeScalar(p2Priv)
 	c.Assert(ok, Equals, true)
+	p2.Priv = gotrax.CreatePrivateKey(k3)
 
-	_, p2.pub.k, ok = deserializePoint(p2Pub)
+	_, k4, ok := gotrax.DeserializePoint(p2Pub)
 	c.Assert(ok, Equals, true)
+	p2.Pub = gotrax.CreatePublicKey(k4, gotrax.Ed448Key)
 
-	_, p3.priv.k, ok = deserializeScalar(p3Priv)
+	_, k5, ok := deserializeScalar(p3Priv)
 	c.Assert(ok, Equals, true)
+	p3.Priv = gotrax.CreatePrivateKey(k5)
 
-	_, p3.pub.k, ok = deserializePoint(p3Pub)
+	_, k6, ok := gotrax.DeserializePoint(p3Pub)
 	c.Assert(ok, Equals, true)
+	p3.Pub = gotrax.CreatePublicKey(k6, gotrax.Ed448Key)
 
 	rsig := &ringSignature{
 		c1: ed448.NewScalar(),
@@ -383,5 +389,5 @@ func (s *GenericServerSuite) Test_verify_Compatibility(c *C) {
 	})
 
 	msg := []byte("hi")
-	c.Assert(rsig.verify(p1.pub, p2.pub, p3.pub, msg), Equals, true)
+	c.Assert(rsig.verify(p1.Pub, p2.Pub, p3.Pub, msg), Equals, true)
 }

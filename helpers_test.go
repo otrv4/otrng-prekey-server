@@ -3,6 +3,7 @@ package prekeyserver
 import (
 	"math/big"
 
+	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
 )
 
@@ -13,11 +14,11 @@ func bnFromHex(s string) *big.Int {
 }
 
 func generatePointFrom(data [symKeyLength]byte) ed448.Point {
-	return generatePublicKeyFrom(data).k
+	return generatePublicKeyFrom(data).K()
 }
 
-func generatePublicKeyFrom(data [symKeyLength]byte) *publicKey {
-	return deriveKeypair(data).pub
+func generatePublicKeyFrom(data [symKeyLength]byte) *gotrax.PublicKey {
+	return gotrax.DeriveKeypair(data).Pub
 }
 
 func generateScalarFrom(data ...byte) ed448.Scalar {

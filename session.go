@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
 )
 
@@ -13,20 +14,20 @@ type sessionManager struct {
 }
 
 type session interface {
-	save(*keypair, ed448.Point, uint32, *clientProfile)
+	save(*gotrax.Keypair, ed448.Point, uint32, *gotrax.ClientProfile)
 	instanceTag() uint32
 	macKey() []byte
-	clientProfile() *clientProfile
+	clientProfile() *gotrax.ClientProfile
 	pointI() ed448.Point
-	keypairS() *keypair
+	keypairS() *gotrax.Keypair
 	hasExpired(time.Duration) bool
 }
 
 type realSession struct {
 	tag         uint32
-	s           *keypair
+	s           *gotrax.Keypair
 	i           ed448.Point
-	cp          *clientProfile
+	cp          *gotrax.ClientProfile
 	storedMac   []byte
 	lastTouched time.Time
 	sync.Mutex
@@ -37,7 +38,7 @@ func (s *realSession) touch() {
 	s.lastTouched = time.Now()
 }
 
-func (s *realSession) save(kp *keypair, i ed448.Point, tag uint32, cp *clientProfile) {
+func (s *realSession) save(kp *gotrax.Keypair, i ed448.Point, tag uint32, cp *gotrax.ClientProfile) {
 	s.Lock()
 	defer s.Unlock()
 
@@ -56,7 +57,7 @@ func (s *realSession) instanceTag() uint32 {
 	return s.tag
 }
 
-func (s *realSession) clientProfile() *clientProfile {
+func (s *realSession) clientProfile() *gotrax.ClientProfile {
 	s.Lock()
 	defer s.Unlock()
 
@@ -72,7 +73,7 @@ func (s *realSession) pointI() ed448.Point {
 	return s.i
 }
 
-func (s *realSession) keypairS() *keypair {
+func (s *realSession) keypairS() *gotrax.Keypair {
 	s.Lock()
 	defer s.Unlock()
 
@@ -88,7 +89,7 @@ func (s *realSession) macKey() []byte {
 	if s.storedMac != nil {
 		return s.storedMac
 	}
-	return kdfx(usagePreMACKey, 64, kdfx(usageSK, skLength, serializePoint(ed448.PointScalarMul(s.i, s.s.priv.k))))
+	return kdfx(usagePreMACKey, 64, kdfx(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(s.i, s.s.Priv.K()))))
 }
 
 func (s *realSession) hasExpired(timeout time.Duration) bool {
