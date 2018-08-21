@@ -166,16 +166,16 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
 	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
 	t = append(t, gotrax.SerializePoint(d2.s)...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
 	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t)
 
-	sk := kdfx(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
-	sitaPrekeyMac := kdfx(usagePreMACKey, 64, sk)
+	sk := gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
+	sitaPrekeyMac := gotrax.KdfPrekeyServer(usagePreMACKey, 64, sk)
 	msg := generateStorageInformationRequestMessage(sitaPrekeyMac)
 
 	d3 := generateDake3(sita.instanceTag, sigma, msg.serialize())
@@ -300,16 +300,16 @@ func (s *GenericServerSuite) Test_flow_invalidDAKE3(c *C) {
 	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
 	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
 	t = append(t, gotrax.SerializePoint(d2.s)...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
 	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t)
 
-	sk := kdfx(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
-	sitaPrekeyMac := kdfx(usagePreMACKey, 64, sk)
+	sk := gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
+	sitaPrekeyMac := gotrax.KdfPrekeyServer(usagePreMACKey, 64, sk)
 	msg := generateStorageInformationRequestMessage(sitaPrekeyMac)
 
 	d3 := generateDake3(0xBADBADBA, sigma, msg.serialize())
@@ -345,16 +345,16 @@ func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
 	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
 	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
 	t = append(t, gotrax.SerializePoint(d2.s)...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
 	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t)
 
-	sk := kdfx(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
-	sitaBadPrekeyMacK := kdfx(usagePreMACKey, 64, sk)
+	sk := gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
+	sitaBadPrekeyMacK := gotrax.KdfPrekeyServer(usagePreMACKey, 64, sk)
 	sitaBadPrekeyMacK[0] = 0xBA
 	sitaBadPrekeyMacK[1] = 0xDB
 	msg := generateStorageInformationRequestMessage(sitaBadPrekeyMacK)
@@ -394,16 +394,16 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
 	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
 	t = append(t, gotrax.SerializePoint(d2.s)...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
 	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t)
 
-	sk := kdfx(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
-	sitaPrekeyMacK := kdfx(usagePreMACKey, 64, sk)
+	sk := gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
+	sitaPrekeyMacK := gotrax.KdfPrekeyServer(usagePreMACKey, 64, sk)
 
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 

@@ -28,5 +28,6 @@ var kdfPrekeyServerPrefix = []byte("OTR-Prekey-Server")
 var kdfPrefix = []byte("OTRv4")
 
 const (
-	usageFingerprint = 0x00
+	usageFingerprint = byte(0x00)
+	usageBraceKey    = byte(0x02)
 )

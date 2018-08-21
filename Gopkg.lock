@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/coyim/gotrax"
   packages = ["."]
-  revision = "09fe6e772ba071fcdb86f4247244a3f9707db5ee"
+  revision = "eaeb9f722b3c90bde555b80bd4b772d6dc06a7d6"
 
 [[projects]]
   name = "github.com/kr/pretty"

@@ -78,11 +78,11 @@ func (m *dake3Message) validate(from string, s *GenericServer) error {
 	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte(from)), []byte(s.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, kdfx(usageReceiverClientProfile, 64, sess.clientProfile().Serialize())...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, s.compositeIdentity())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverClientProfile, 64, sess.clientProfile().Serialize())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, s.compositeIdentity())...)
 	t = append(t, gotrax.SerializePoint(sess.pointI())...)
 	t = append(t, gotrax.SerializePoint(sess.keypairS().Pub.K())...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
 	if !m.sigma.verify(sess.clientProfile().PublicKey, s.key.Pub, sess.keypairS().Pub, t) {
 		return errors.New("incorrect ring signature")
@@ -98,11 +98,11 @@ func (m *dake1Message) respond(from string, s *GenericServer) (serializable, err
 	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte(from)), []byte(s.identity))
 
 	t := append([]byte{}, 0x00)
-	t = append(t, kdfx(usageInitiatorClientProfile, 64, m.clientProfile.Serialize())...)
-	t = append(t, kdfx(usageInitiatorPrekeyCompositeIdentity, 64, s.compositeIdentity())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageInitiatorClientProfile, 64, m.clientProfile.Serialize())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageInitiatorPrekeyCompositeIdentity, 64, s.compositeIdentity())...)
 	t = append(t, gotrax.SerializePoint(m.i)...)
 	t = append(t, gotrax.SerializePoint(sk.Pub.K())...)
-	t = append(t, kdfx(usageInitiatorPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrax.KdfPrekeyServer(usageInitiatorPrekeyCompositePHI, 64, phi)...)
 
 	sigma, e := generateSignature(s, s.key.Priv, s.key.Pub, m.clientProfile.PublicKey, s.key.Pub, gotrax.CreatePublicKey(m.i, gotrax.Ed448Key), t)
 	if e != nil {

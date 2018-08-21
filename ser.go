@@ -1,7 +1,6 @@
 package prekeyserver
 
 import (
-	"crypto/dsa"
 	"time"
 
 	"github.com/coyim/gotrax"
@@ -482,15 +481,6 @@ func serializeVersions(v []byte) []byte {
 func serializeExpiry(t time.Time) []byte {
 	val := t.Unix()
 	return gotrax.AppendLong(nil, uint64(val))
-}
-
-func serializeDSAKey(k *dsa.PublicKey) []byte {
-	result := dsaKeyType
-	result = gotrax.AppendMPI(result, k.P)
-	result = gotrax.AppendMPI(result, k.Q)
-	result = gotrax.AppendMPI(result, k.G)
-	result = gotrax.AppendMPI(result, k.Y)
-	return result
 }
 
 func (pp *prekeyProfile) serializeForSignature() []byte {

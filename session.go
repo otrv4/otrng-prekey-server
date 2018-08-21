@@ -89,7 +89,7 @@ func (s *realSession) macKey() []byte {
 	if s.storedMac != nil {
 		return s.storedMac
 	}
-	return kdfx(usagePreMACKey, 64, kdfx(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(s.i, s.s.Priv.K()))))
+	return gotrax.KdfPrekeyServer(usagePreMACKey, 64, gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(s.i, s.s.Priv.K()))))
 }
 
 func (s *realSession) hasExpired(timeout time.Duration) bool {

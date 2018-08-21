@@ -95,7 +95,7 @@ func parseMessage(msg []byte) (message, uint8, error) {
 }
 
 func generateStorageInformationRequestMessage(macKey []byte) *storageInformationRequestMessage {
-	mac := kdfx(usageStorageInfoMAC, 64, macKey, []byte{messageTypeStorageInformationRequest})
+	mac := gotrax.KdfPrekeyServer(usageStorageInfoMAC, 64, macKey, []byte{messageTypeStorageInformationRequest})
 	res := &storageInformationRequestMessage{}
 	copy(res.mac[:], mac)
 	return res
@@ -106,7 +106,7 @@ func (m *storageInformationRequestMessage) respond(from string, s *GenericServer
 	num := s.storage().numberStored(from, ses.instanceTag())
 	itag := ses.instanceTag()
 	prekeyMacK := ses.macKey()
-	statusMac := kdfx(usageStatusMAC, 64, prekeyMacK, []byte{messageTypeStorageStatusMessage}, gotrax.SerializeWord(itag), gotrax.SerializeWord(num))
+	statusMac := gotrax.KdfPrekeyServer(usageStatusMAC, 64, prekeyMacK, []byte{messageTypeStorageStatusMessage}, gotrax.SerializeWord(itag), gotrax.SerializeWord(num))
 
 	ret := &storageStatusMessage{
 		instanceTag: itag,
@@ -119,7 +119,7 @@ func (m *storageInformationRequestMessage) respond(from string, s *GenericServer
 
 func (m *storageInformationRequestMessage) validate(from string, s *GenericServer) error {
 	prekeyMacK := s.session(from).macKey()
-	tag := kdfx(usageStorageInfoMAC, 64, prekeyMacK, []byte{messageTypeStorageInformationRequest})
+	tag := gotrax.KdfPrekeyServer(usageStorageInfoMAC, 64, prekeyMacK, []byte{messageTypeStorageInformationRequest})
 	if !bytes.Equal(tag, m.mac[:]) {
 		return errors.New("incorrect MAC")
 	}
@@ -147,13 +147,13 @@ func (m *ensembleRetrievalQueryMessage) respond(from string, s *GenericServer) (
 }
 
 func generateMACForPublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, macKey []byte) []byte {
-	kpms := kdfx(usagePrekeyMessage, 64, serializePrekeyMessages(pms))
-	kpps := kdfx(usagePrekeyProfile, 64, pp.serialize())
+	kpms := gotrax.KdfPrekeyServer(usagePrekeyMessage, 64, serializePrekeyMessages(pms))
+	kpps := gotrax.KdfPrekeyServer(usagePrekeyProfile, 64, pp.serialize())
 	k := []byte{byte(0)}
 	kcp := []byte{}
 	if cp != nil {
 		k = []byte{1}
-		kcp = kdfx(usageClientProfile, 64, cp.Serialize())
+		kcp = gotrax.KdfPrekeyServer(usageClientProfile, 64, cp.Serialize())
 	}
 
 	ppLen := 0
@@ -161,7 +161,14 @@ func generateMACForPublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfil
 		ppLen = 1
 	}
 
-	return kdfx(usagePreMAC, 64, concat(macKey, []byte{messageTypePublication, byte(len(pms))}, kpms, k, kcp, []byte{byte(ppLen)}, kpps))
+	d := append(macKey, messageTypePublication)
+	d = append(d, byte(len(pms)))
+	d = append(d, kpms...)
+	d = append(d, k...)
+	d = append(d, kcp...)
+	d = append(d, byte(ppLen))
+	d = append(d, kpps...)
+	return gotrax.KdfPrekeyServer(usagePreMAC, 64, d)
 }
 
 func generatePublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, macKey []byte) *publicationMessage {
@@ -206,7 +213,7 @@ func generateSuccessMessage(macKey []byte, tag uint32) *successMessage {
 		instanceTag: tag,
 	}
 
-	mac := kdfx(usageSuccessMAC, 64, gotrax.AppendWord(append(macKey, messageTypeSuccess), tag))
+	mac := gotrax.KdfPrekeyServer(usageSuccessMAC, 64, gotrax.AppendWord(append(macKey, messageTypeSuccess), tag))
 	copy(m.mac[:], mac)
 
 	return m

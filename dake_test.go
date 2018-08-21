@@ -25,11 +25,11 @@ func (s *GenericServerSuite) Test_dake3Message_validate_acceptsAValidDake3Messag
 	gs.session("someone@example.org").(*realSession).cp = sita.clientProfile
 
 	t := append([]byte{}, 0x01)
-	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
 	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
 	t = append(t, gotrax.SerializePoint(spoint.Pub.K())...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
 	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, spoint.Pub, t)
 
@@ -56,11 +56,11 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksInstanceTag(c *C) 
 	gs.session("someone@example.org").(*realSession).cp = sita.clientProfile
 
 	t := append([]byte{}, 0x01)
-	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
 	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
 	t = append(t, gotrax.SerializePoint(spoint.Pub.K())...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
 	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, spoint.Pub, t)
 
@@ -87,11 +87,11 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksRingSignature(c *C
 	gs.session("someone@example.org").(*realSession).cp = sita.clientProfile
 
 	t := append([]byte{}, 0x01)
-	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
 	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
 	t = append(t, gotrax.SerializePoint(spoint.Pub.K())...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
 	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, spoint.Pub, t)
 
@@ -119,11 +119,11 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksMessage(c *C) {
 	gs.session("someone@example.org").(*realSession).cp = sita.clientProfile
 
 	t := append([]byte{}, 0x01)
-	t = append(t, kdfx(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
 	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
 	t = append(t, gotrax.SerializePoint(spoint.Pub.K())...)
-	t = append(t, kdfx(usageReceiverPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
 	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, spoint.Pub, t)
 
