@@ -7,9 +7,6 @@ import (
 	"github.com/otrv4/ed448"
 )
 
-// This ring signature implementation is a duplicate of the libotr-ng one for now. It should be changed to be compliant
-// with the Prekey server spec - but it's easier to get everything working by having something to compare with
-
 type ringSignature struct {
 	c1 ed448.Scalar
 	r1 ed448.Scalar
