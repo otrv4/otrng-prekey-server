@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/coyim/gotrax"
   packages = ["."]
-  revision = "eaeb9f722b3c90bde555b80bd4b772d6dc06a7d6"
+  revision = "7640de52fb10ce697aa9cc1fcbfb83f909af293b"
 
 [[projects]]
   name = "github.com/kr/pretty"
@@ -44,6 +44,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2733f6ccc4b6cdb094013d96cb9f9d31b21fd42d20b6f00cfc05e51a904e7b4c"
+  inputs-digest = "0b035b4cdc0015aa3ed87ec92e6916140754b00e0202421f4e3f593b19658f92"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -82,7 +82,7 @@ func (kis *keypairInStorage) intoKeypair() (*gotrax.Keypair, error) {
 	if !ok {
 		return nil, errors.New("couldn't decode public key")
 	}
-	_, priv, ok := deserializeScalar(privb)
+	_, priv, ok := gotrax.DeserializeScalar(privb)
 	if !ok {
 		return nil, errors.New("couldn't decode scalar for private key")
 	}
@@ -102,7 +102,7 @@ func (f *realFactory) StoreKeysInto(kpp Keypair, w io.Writer) error {
 	enc := json.NewEncoder(w)
 	kis := &keypairInStorage{
 		Symmetric: encodeMessage(kp.Sym[:]),
-		Private:   encodeMessage(serializeScalar(kp.Priv.K())),
+		Private:   encodeMessage(gotrax.SerializeScalar(kp.Priv.K())),
 		Public:    encodeMessage(gotrax.SerializePoint(kp.Pub.K())),
 	}
 	return enc.Encode(kis)

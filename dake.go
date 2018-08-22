@@ -18,12 +18,12 @@ type dake2Message struct {
 	serverIdentity []byte
 	serverKey      ed448.Point
 	s              ed448.Point
-	sigma          *ringSignature
+	sigma          *gotrax.RingSignature
 }
 
 type dake3Message struct {
 	instanceTag uint32
-	sigma       *ringSignature
+	sigma       *gotrax.RingSignature
 	message     []byte // can be either publication or storage information request
 }
 
@@ -35,7 +35,7 @@ func generateDake1(it uint32, cp *gotrax.ClientProfile, i ed448.Point) *dake1Mes
 	}
 }
 
-func generateDake2(it uint32, si []byte, sk ed448.Point, s ed448.Point, sigma *ringSignature) *dake2Message {
+func generateDake2(it uint32, si []byte, sk ed448.Point, s ed448.Point, sigma *gotrax.RingSignature) *dake2Message {
 	return &dake2Message{
 		instanceTag:    it,
 		serverIdentity: si,
@@ -45,7 +45,7 @@ func generateDake2(it uint32, si []byte, sk ed448.Point, s ed448.Point, sigma *r
 	}
 }
 
-func generateDake3(it uint32, sigma *ringSignature, m []byte) *dake3Message {
+func generateDake3(it uint32, sigma *gotrax.RingSignature, m []byte) *dake3Message {
 	return &dake3Message{
 		instanceTag: it,
 		sigma:       sigma,
@@ -84,7 +84,7 @@ func (m *dake3Message) validate(from string, s *GenericServer) error {
 	t = append(t, gotrax.SerializePoint(sess.keypairS().Pub.K())...)
 	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	if !m.sigma.verify(sess.clientProfile().PublicKey, s.key.Pub, sess.keypairS().Pub, t) {
+	if !m.sigma.Verify(sess.clientProfile().PublicKey, s.key.Pub, sess.keypairS().Pub, t, gotrax.KdfPrekeyServer, usageAuth) {
 		return errors.New("incorrect ring signature")
 	}
 
@@ -104,7 +104,7 @@ func (m *dake1Message) respond(from string, s *GenericServer) (serializable, err
 	t = append(t, gotrax.SerializePoint(sk.Pub.K())...)
 	t = append(t, gotrax.KdfPrekeyServer(usageInitiatorPrekeyCompositePHI, 64, phi)...)
 
-	sigma, e := generateSignature(s, s.key.Priv, s.key.Pub, m.clientProfile.PublicKey, s.key.Pub, gotrax.CreatePublicKey(m.i, gotrax.Ed448Key), t)
+	sigma, e := gotrax.GenerateSignature(s, s.key.Priv, s.key.Pub, m.clientProfile.PublicKey, s.key.Pub, gotrax.CreatePublicKey(m.i, gotrax.Ed448Key), t, gotrax.KdfPrekeyServer, usageAuth)
 	if e != nil {
 		return nil, errors.New("invalid ring signature generation")
 	}

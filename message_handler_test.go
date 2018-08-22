@@ -79,7 +79,7 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnRest
 	t = append(t, gotrax.SerializePoint(d2.s)...)
 	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t)
+	sigma, _ := gotrax.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t, gotrax.KdfPrekeyServer, usageAuth)
 	sk := gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
 	sitaPrekeyMac := gotrax.KdfPrekeyServer(usagePreMACKey, 64, sk)
 	msg := generateStorageInformationRequestMessage(sitaPrekeyMac)

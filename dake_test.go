@@ -31,7 +31,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_acceptsAValidDake3Messag
 	t = append(t, gotrax.SerializePoint(spoint.Pub.K())...)
 	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, spoint.Pub, t)
+	sigma, _ := gotrax.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, spoint.Pub, t, gotrax.KdfPrekeyServer, usageAuth)
 
 	d3 := generateDake3(sita.instanceTag, sigma, []byte{0x01})
 	c.Assert(d3.validate("someone@example.org", gs), IsNil)
@@ -62,7 +62,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksInstanceTag(c *C) 
 	t = append(t, gotrax.SerializePoint(spoint.Pub.K())...)
 	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, spoint.Pub, t)
+	sigma, _ := gotrax.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, spoint.Pub, t, gotrax.KdfPrekeyServer, usageAuth)
 
 	d3 := generateDake3(0xBADBADBA, sigma, []byte{0x01})
 	c.Assert(d3.validate("someone@example.org", gs), ErrorMatches, "incorrect instance tag")
@@ -93,9 +93,9 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksRingSignature(c *C
 	t = append(t, gotrax.SerializePoint(spoint.Pub.K())...)
 	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, spoint.Pub, t)
+	sigma, _ := gotrax.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, spoint.Pub, t, gotrax.KdfPrekeyServer, usageAuth)
 
-	sigma.c1.Add(sigma.c1, ed448.NewScalar([]byte{0x01}))
+	sigma.C1.Add(sigma.C1, ed448.NewScalar([]byte{0x01}))
 	d3 := generateDake3(sita.instanceTag, sigma, []byte{0x01})
 	c.Assert(d3.validate("someone@example.org", gs), ErrorMatches, "incorrect ring signature")
 }
@@ -125,7 +125,7 @@ func (s *GenericServerSuite) Test_dake3Message_validate_checksMessage(c *C) {
 	t = append(t, gotrax.SerializePoint(spoint.Pub.K())...)
 	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, spoint.Pub, t)
+	sigma, _ := gotrax.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, spoint.Pub, t, gotrax.KdfPrekeyServer, usageAuth)
 
 	d3 := generateDake3(sita.instanceTag, sigma, []byte{})
 	c.Assert(d3.validate("someone@example.org", gs), ErrorMatches, "incorrect message")

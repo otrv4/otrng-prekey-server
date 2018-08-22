@@ -107,7 +107,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 		0x0,
 	})
 
-	c.Assert(d2.sigma.c1.Encode(), DeepEquals, []byte{
+	c.Assert(d2.sigma.C1.Encode(), DeepEquals, []byte{
 		0x3e, 0x4f, 0x9a, 0xe1, 0x98, 0x28, 0x67, 0x86,
 		0xf1, 0xba, 0x33, 0x60, 0x31, 0x54, 0x50, 0x49,
 		0x5, 0xfa, 0xc0, 0x93, 0xf5, 0x5d, 0x64, 0xca,
@@ -116,7 +116,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 		0x17, 0xba, 0x5f, 0x91, 0xdd, 0x31, 0xb5, 0x9,
 		0x83, 0x1, 0x51, 0x7c, 0x8, 0x2e, 0x1c, 0x33})
 
-	c.Assert(d2.sigma.r1.Encode(), DeepEquals, []byte{
+	c.Assert(d2.sigma.R1.Encode(), DeepEquals, []byte{
 		0x47, 0x71, 0x5b, 0x81, 0xa8, 0x56, 0x47, 0x16,
 		0x5, 0x8f, 0x9a, 0x2e, 0x9b, 0x2c, 0x55, 0xc3,
 		0xd7, 0x0, 0xd3, 0x26, 0x13, 0xf5, 0x93, 0xe4,
@@ -125,7 +125,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 		0x20, 0x5c, 0x1, 0x3b, 0x79, 0x70, 0x35, 0x33,
 		0xfa, 0x1f, 0x38, 0xe3, 0x81, 0x96, 0x78, 0x2e})
 
-	c.Assert(d2.sigma.c2.Encode(), DeepEquals, []byte{
+	c.Assert(d2.sigma.C2.Encode(), DeepEquals, []byte{
 		0xd2, 0x7d, 0xdc, 0x7e, 0xc3, 0x15, 0x6b, 0xc5,
 		0xb, 0x4e, 0x34, 0x82, 0xc1, 0x2e, 0xda, 0x92,
 		0x86, 0xf, 0x5b, 0xcd, 0x7e, 0x83, 0x73, 0x2d,
@@ -135,7 +135,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 		0x47, 0x94, 0x41, 0x56, 0xec, 0xc1, 0x59, 0x27,
 	})
 
-	c.Assert(d2.sigma.r2.Encode(), DeepEquals, []byte{
+	c.Assert(d2.sigma.R2.Encode(), DeepEquals, []byte{
 		0x39, 0xa5, 0x76, 0x1f, 0x97, 0xe8, 0xa9, 0x10,
 		0xba, 0xe3, 0xc8, 0xf9, 0x3c, 0x7d, 0x60, 0x31,
 		0xce, 0x9b, 0xac, 0x49, 0x80, 0xa4, 0x76, 0xdb,
@@ -145,7 +145,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 		0x23, 0x72, 0x3a, 0x1d, 0x19, 0x82, 0x91, 0x2f,
 	})
 
-	c.Assert(d2.sigma.c3.Encode(), DeepEquals, []byte{
+	c.Assert(d2.sigma.C3.Encode(), DeepEquals, []byte{
 		0x31, 0xb3, 0xc2, 0xa1, 0x10, 0x46, 0x2d, 0xd2,
 		0x4a, 0x3c, 0x4d, 0x8c, 0x2c, 0xba, 0xd4, 0xe3,
 		0x6e, 0x73, 0xfb, 0x8, 0x1f, 0x92, 0xb4, 0x88,
@@ -154,7 +154,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 		0x54, 0x6c, 0x14, 0xde, 0x51, 0x97, 0x14, 0x86,
 		0x1f, 0xb0, 0x27, 0xdf, 0x57, 0x48, 0x7c, 0x3f})
 
-	c.Assert(d2.sigma.r3.Encode(), DeepEquals, []byte{
+	c.Assert(d2.sigma.R3.Encode(), DeepEquals, []byte{
 		0x75, 0x8f, 0x53, 0x1c, 0x7b, 0x2f, 0x4, 0xbf,
 		0x34, 0x16, 0xf0, 0x8e, 0x7, 0x19, 0x53, 0x9f,
 		0x9c, 0xab, 0xcd, 0xab, 0xfa, 0x5f, 0x3a, 0xe3,
@@ -172,7 +172,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 	t = append(t, gotrax.SerializePoint(d2.s)...)
 	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t)
+	sigma, _ := gotrax.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t, gotrax.KdfPrekeyServer, usageAuth)
 
 	sk := gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
 	sitaPrekeyMac := gotrax.KdfPrekeyServer(usagePreMACKey, 64, sk)
@@ -306,7 +306,7 @@ func (s *GenericServerSuite) Test_flow_invalidDAKE3(c *C) {
 	t = append(t, gotrax.SerializePoint(d2.s)...)
 	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t)
+	sigma, _ := gotrax.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t, gotrax.KdfPrekeyServer, usageAuth)
 
 	sk := gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
 	sitaPrekeyMac := gotrax.KdfPrekeyServer(usagePreMACKey, 64, sk)
@@ -351,7 +351,7 @@ func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
 	t = append(t, gotrax.SerializePoint(d2.s)...)
 	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t)
+	sigma, _ := gotrax.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t, gotrax.KdfPrekeyServer, usageAuth)
 
 	sk := gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
 	sitaBadPrekeyMacK := gotrax.KdfPrekeyServer(usagePreMACKey, 64, sk)
@@ -400,7 +400,7 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 	t = append(t, gotrax.SerializePoint(d2.s)...)
 	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := generateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t)
+	sigma, _ := gotrax.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t, gotrax.KdfPrekeyServer, usageAuth)
 
 	sk := gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
 	sitaPrekeyMacK := gotrax.KdfPrekeyServer(usagePreMACKey, 64, sk)

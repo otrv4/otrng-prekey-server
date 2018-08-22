@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/coyim/gotrax"
-	"github.com/otrv4/ed448"
 )
 
 type serializable interface {
@@ -60,7 +59,7 @@ func (m *dake2Message) serialize() []byte {
 	sk := gotrax.CreatePublicKey(m.serverKey, gotrax.Ed448Key)
 	out = append(out, sk.Serialize()...)
 	out = append(out, gotrax.SerializePoint(m.s)...)
-	out = append(out, m.sigma.serialize()...)
+	out = append(out, m.sigma.Serialize()...)
 	return out
 }
 
@@ -94,8 +93,8 @@ func (m *dake2Message) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	m.sigma = &ringSignature{}
-	if buf, ok = m.sigma.deserialize(buf); !ok {
+	m.sigma = &gotrax.RingSignature{}
+	if buf, ok = m.sigma.Deserialize(buf); !ok {
 		return nil, false
 	}
 
@@ -106,7 +105,7 @@ func (m *dake3Message) serialize() []byte {
 	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypeDAKE3)
 	out = gotrax.AppendWord(out, m.instanceTag)
-	out = append(out, m.sigma.serialize()...)
+	out = append(out, m.sigma.Serialize()...)
 	out = gotrax.AppendData(out, m.message)
 	return out
 }
@@ -127,8 +126,8 @@ func (m *dake3Message) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	m.sigma = &ringSignature{}
-	if buf, ok = m.sigma.deserialize(buf); !ok {
+	m.sigma = &gotrax.RingSignature{}
+	if buf, ok = m.sigma.Deserialize(buf); !ok {
 		return nil, false
 	}
 
@@ -588,58 +587,4 @@ func (pe *prekeyEnsemble) deserialize(buf []byte) ([]byte, bool) {
 	}
 
 	return buf, true
-}
-
-func serializeScalar(s ed448.Scalar) []byte {
-	return s.Encode()
-}
-
-func deserializeScalar(buf []byte) ([]byte, ed448.Scalar, bool) {
-	if len(buf) < 56 {
-		return nil, nil, false
-	}
-	ts := ed448.NewScalar()
-	ts.Decode(buf[0:56])
-	return buf[56:], ts, true
-
-}
-
-func (r *ringSignature) deserialize(buf []byte) ([]byte, bool) {
-	var ok bool
-	if buf, r.c1, ok = deserializeScalar(buf); !ok {
-		return nil, false
-	}
-
-	if buf, r.r1, ok = deserializeScalar(buf); !ok {
-		return nil, false
-	}
-
-	if buf, r.c2, ok = deserializeScalar(buf); !ok {
-		return nil, false
-	}
-
-	if buf, r.r2, ok = deserializeScalar(buf); !ok {
-		return nil, false
-	}
-
-	if buf, r.c3, ok = deserializeScalar(buf); !ok {
-		return nil, false
-	}
-
-	if buf, r.r3, ok = deserializeScalar(buf); !ok {
-		return nil, false
-	}
-
-	return buf, true
-}
-
-func (r *ringSignature) serialize() []byte {
-	var out []byte
-	out = append(out, serializeScalar(r.c1)...)
-	out = append(out, serializeScalar(r.r1)...)
-	out = append(out, serializeScalar(r.c2)...)
-	out = append(out, serializeScalar(r.r2)...)
-	out = append(out, serializeScalar(r.c3)...)
-	out = append(out, serializeScalar(r.r3)...)
-	return out
 }

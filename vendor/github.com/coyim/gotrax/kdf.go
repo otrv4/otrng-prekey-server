@@ -2,6 +2,8 @@ package gotrax
 
 import "golang.org/x/crypto/sha3"
 
+type KdfFunc func(uint8, uint16, ...[]byte) []byte
+
 func KdfPrekeyServer(usageID uint8, size uint16, values ...[]byte) []byte {
 	buf := make([]byte, size)
 	KdfxPrekeyServer(usageID, buf, values...)
