@@ -131,7 +131,7 @@ func (*realFactory) NewServer(identity string, keys Keypair, fragLen int, st Sto
 		fingerprint:          kp.Fingerprint(),
 		key:                  kp,
 		fragLen:              fragLen,
-		fragmentations:       newFragmentations(),
+		fragmentations:       gotrax.NewFragmentor(fragmentationPrefix),
 		sessions:             newSessionManager(),
 		storageImpl:          st.createStorage(),
 		sessionTimeout:       sessionTimeout,

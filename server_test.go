@@ -41,7 +41,7 @@ func (m *mockMessageHandler) handleInnerMessage(from string, message []byte) (se
 
 func (s *GenericServerSuite) Test_Handle_WillPassOnTheIdentityToTheMessageHandler(c *C) {
 	gs := &GenericServer{
-		fragmentations: newFragmentations(),
+		fragmentations: gotrax.NewFragmentor(fragmentationPrefix),
 		storageImpl:    createInMemoryStorage(),
 		sessions:       newSessionManager(),
 	}
@@ -53,7 +53,7 @@ func (s *GenericServerSuite) Test_Handle_WillPassOnTheIdentityToTheMessageHandle
 
 func (s *GenericServerSuite) Test_Handle_WillDecodeBase64EncodedMessage(c *C) {
 	gs := &GenericServer{
-		fragmentations: newFragmentations(),
+		fragmentations: gotrax.NewFragmentor(fragmentationPrefix),
 		storageImpl:    createInMemoryStorage(),
 		sessions:       newSessionManager(),
 	}
@@ -64,7 +64,7 @@ func (s *GenericServerSuite) Test_Handle_WillDecodeBase64EncodedMessage(c *C) {
 }
 
 func (s *GenericServerSuite) Test_Handle_AMessageWithoutProperFormatSHhouldGenerateAnError(c *C) {
-	gs := &GenericServer{}
+	gs := &GenericServer{fragmentations: gotrax.NewFragmentor(fragmentationPrefix)}
 	m := &mockMessageHandler{}
 	gs.messageHandler = m
 	_, e := gs.Handle("myname", "aGksIHRoaXMgaXMgbm90IGEgdmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4=")
@@ -72,7 +72,7 @@ func (s *GenericServerSuite) Test_Handle_AMessageWithoutProperFormatSHhouldGener
 }
 
 func (s *GenericServerSuite) Test_Handle_ACorruptedBase64MessageGeneratesAnError(c *C) {
-	gs := &GenericServer{}
+	gs := &GenericServer{fragmentations: gotrax.NewFragmentor(fragmentationPrefix)}
 	m := &mockMessageHandler{}
 	gs.messageHandler = m
 	_, e := gs.Handle("myname", "aGksIHRoaXMgaXMgbm90IGEgdmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4.")
@@ -81,7 +81,7 @@ func (s *GenericServerSuite) Test_Handle_ACorruptedBase64MessageGeneratesAnError
 
 func (s *GenericServerSuite) Test_Handle_WillBase64EncodeAndFormatReturnValues(c *C) {
 	gs := &GenericServer{
-		fragmentations: newFragmentations(),
+		fragmentations: gotrax.NewFragmentor(fragmentationPrefix),
 		storageImpl:    createInMemoryStorage(),
 		sessions:       newSessionManager(),
 	}
@@ -95,7 +95,7 @@ func (s *GenericServerSuite) Test_Handle_WillBase64EncodeAndFormatReturnValues(c
 }
 
 func (s *GenericServerSuite) Test_Handle_ReturnsAnErrorFromMessageHandler(c *C) {
-	gs := &GenericServer{}
+	gs := &GenericServer{fragmentations: gotrax.NewFragmentor(fragmentationPrefix)}
 	m := &mockMessageHandler{
 		toReturnError: errors.New("yipii"),
 	}
@@ -106,7 +106,7 @@ func (s *GenericServerSuite) Test_Handle_ReturnsAnErrorFromMessageHandler(c *C) 
 }
 
 func (s *GenericServerSuite) Test_Handle_HandlesAFragmentedMessage(c *C) {
-	gs := &GenericServer{fragmentations: newFragmentations(), storageImpl: createInMemoryStorage(), sessions: newSessionManager()}
+	gs := &GenericServer{fragmentations: gotrax.NewFragmentor(fragmentationPrefix), storageImpl: createInMemoryStorage(), sessions: newSessionManager()}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
 	}
@@ -123,7 +123,7 @@ func (s *GenericServerSuite) Test_Handle_HandlesAFragmentedMessage(c *C) {
 }
 
 func (s *GenericServerSuite) Test_Handle_PassesOnAFragmentationError(c *C) {
-	gs := &GenericServer{fragmentations: newFragmentations()}
+	gs := &GenericServer{fragmentations: gotrax.NewFragmentor(fragmentationPrefix)}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
 	}
@@ -137,7 +137,7 @@ func (s *GenericServerSuite) Test_Handle_WillPotentiallyFragmentReturnValues(c *
 	gs := &GenericServer{
 		fragLen:        54,
 		rand:           gotrax.FixtureRand(),
-		fragmentations: newFragmentations(),
+		fragmentations: gotrax.NewFragmentor(fragmentationPrefix),
 		storageImpl:    createInMemoryStorage(),
 		sessions:       newSessionManager(),
 	}
@@ -146,12 +146,13 @@ func (s *GenericServerSuite) Test_Handle_WillPotentiallyFragmentReturnValues(c *
 	}
 	gs.messageHandler = m
 	msgs, _ := gs.Handle("myname", "aGksIHRoaXMgaXMgbm90IGEgdmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4=.")
-	c.Assert(msgs, HasLen, 5)
-	c.Assert(msgs[0], Equals, "?OTRP|2882382797|BEEF|CADE,1,5,dGhpcyB,")
-	c.Assert(msgs[1], Equals, "?OTRP|2882382797|BEEF|CADE,2,5,pcyBvdX,")
-	c.Assert(msgs[2], Equals, "?OTRP|2882382797|BEEF|CADE,3,5,IgZmFuY,")
-	c.Assert(msgs[3], Equals, "?OTRP|2882382797|BEEF|CADE,4,5,3kgcmV0,")
-	c.Assert(msgs[4], Equals, "?OTRP|2882382797|BEEF|CADE,5,5,dXJu.,")
+	c.Assert(msgs, HasLen, 6)
+	c.Assert(msgs[0], Equals, "?OTRP|2882382797|0000DEAD|0000BEEF,1,6,dGhpcy,")
+	c.Assert(msgs[1], Equals, "?OTRP|2882382797|0000DEAD|0000BEEF,2,6,BpcyBv,")
+	c.Assert(msgs[2], Equals, "?OTRP|2882382797|0000DEAD|0000BEEF,3,6,dXIgZm,")
+	c.Assert(msgs[3], Equals, "?OTRP|2882382797|0000DEAD|0000BEEF,4,6,FuY3kg,")
+	c.Assert(msgs[4], Equals, "?OTRP|2882382797|0000DEAD|0000BEEF,5,6,cmV0dX,")
+	c.Assert(msgs[5], Equals, "?OTRP|2882382797|0000DEAD|0000BEEF,6,6,Ju.,")
 }
 
 func (s *GenericServerSuite) Test_handleMessage_panicsWhenNoMessageHandlerIsConfigured(c *C) {
@@ -176,7 +177,7 @@ func (s *GenericServerSuite) Test_hasSession_returnsFalseWhenNoSessionsExist(c *
 func (s *GenericServerSuite) Test_cleanupAfter_removesOldSessions(c *C) {
 	gs := &GenericServer{
 		sessionTimeout: time.Duration(30) * time.Minute,
-		fragmentations: newFragmentations(),
+		fragmentations: gotrax.NewFragmentor(fragmentationPrefix),
 		storageImpl:    createInMemoryStorage(),
 		sessions:       newSessionManager(),
 	}
@@ -193,31 +194,10 @@ func (s *GenericServerSuite) Test_cleanupAfter_removesOldSessions(c *C) {
 func (s *GenericServerSuite) Test_cleanupAfter_doesntDoAnythingWithEmptySessions(c *C) {
 	gs := &GenericServer{
 		sessionTimeout: time.Duration(30) * time.Minute,
-		fragmentations: newFragmentations(),
+		fragmentations: gotrax.NewFragmentor(fragmentationPrefix),
 		storageImpl:    createInMemoryStorage(),
 		sessions:       newSessionManager(),
 	}
 
 	gs.cleanupAfter()
-}
-
-func (s *GenericServerSuite) Test_cleanupAfter_cleansUpOldFragments(c *C) {
-	gs := &GenericServer{
-		fragmentationTimeout: time.Duration(6) * time.Minute,
-		fragmentations:       newFragmentations(),
-		storageImpl:          createInMemoryStorage(),
-		sessions:             newSessionManager(),
-	}
-
-	gs.fragmentations.newFragmentReceived("me@example.org", "?OTRP|45243|AF1FDEAD|BEEF,1,2,hello,")
-	gs.fragmentations.newFragmentReceived("another@example.org", "?OTRP|12345|AF1FDEAD|BEEF,1,2,hello,")
-	gs.fragmentations.newFragmentReceived("me@example.org", "?OTRP|45244|AF1FDEAD|BEEF,1,2,hello,")
-
-	gs.fragmentations.contexts["me@example.org/45243"].lastTouched = time.Now().Add(time.Duration(-11) * time.Minute)
-	gs.fragmentations.contexts["another@example.org/12345"].lastTouched = time.Now().Add(time.Duration(-7) * time.Minute)
-	gs.fragmentations.contexts["me@example.org/45244"].lastTouched = time.Now().Add(time.Duration(-4) * time.Minute)
-
-	gs.cleanupAfter()
-
-	c.Assert(gs.fragmentations.contexts, HasLen, 1)
 }

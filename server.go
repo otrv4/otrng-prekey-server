@@ -19,7 +19,7 @@ type GenericServer struct {
 
 	// Should be minimum 48, since the max envelope size is 47
 	fragLen        int
-	fragmentations *fragmentations
+	fragmentations *gotrax.Fragmentor
 
 	messageHandler messageHandler
 
@@ -56,8 +56,8 @@ func (g *GenericServer) Handle(from, message string) (returns []string, err erro
 		return nil, errors.New("empty message")
 	}
 
-	if isFragment(message) {
-		m, c, e := g.fragmentations.newFragmentReceived(from, message)
+	if g.fragmentations.IsFragment(message) {
+		m, c, e := g.fragmentations.NewFragmentReceived(from, message)
 		if e != nil {
 			return nil, e
 		}
@@ -83,7 +83,7 @@ func (g *GenericServer) Handle(from, message string) (returns []string, err erro
 
 	encoded := encodeMessage(msg) + "."
 
-	msgs := potentiallyFragment(encoded, g.fragLen, g)
+	msgs := g.fragmentations.PotentiallyFragment(encoded, g.fragLen, 0xDEAD, 0xBEEF, g)
 
 	g.cleanupAfter()
 
@@ -92,7 +92,7 @@ func (g *GenericServer) Handle(from, message string) (returns []string, err erro
 
 func (g *GenericServer) cleanupAfter() {
 	g.sessions.cleanup(g.sessionTimeout)
-	g.fragmentations.cleanup(g.fragmentationTimeout)
+	g.fragmentations.Cleanup(g.fragmentationTimeout)
 	g.storageImpl.cleanup()
 }
 

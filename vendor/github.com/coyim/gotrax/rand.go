@@ -82,13 +82,13 @@ func BytesFromHex(s string) []byte {
 }
 
 func (frr *fixedRandBytesReader) Read(p []byte) (n int, err error) {
-	if frr.at < len(frr.data) {
-		plainBytes := frr.data[frr.at]
-		frr.at++
-		n = copy(p, plainBytes)
-		return
+	if frr.at >= len(frr.data) {
+		frr.at = 0
 	}
-	return 0, io.EOF
+	plainBytes := frr.data[frr.at]
+	frr.at++
+	n = copy(p, plainBytes)
+	return
 }
 
 func (frr *fixedRandBytesReader) RandReader() io.Reader {
