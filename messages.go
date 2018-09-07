@@ -191,6 +191,8 @@ func (m *publicationMessage) validate(from string, s *GenericServer) error {
 	macKey := s.session(from).macKey()
 	clientProfile := s.session(from).clientProfile()
 	mac := generateMACForPublicationMessage(m.clientProfile, m.prekeyProfile, m.prekeyMessages, macKey)
+
+	// fmt.Printf("\n%02x\n", macKey)
 	if !bytes.Equal(mac[:], m.mac[:]) {
 		return errors.New("invalid mac for publication message")
 	}
