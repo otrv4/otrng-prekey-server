@@ -163,7 +163,6 @@ func generateMACForPublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfil
 	}
 
 	d := append(macKey, messageTypePublication)
-	//fmt.Printf("\n%02x\n", macKey)
 	d = append(d, byte(len(pms)))
 	d = append(d, kpms...)
 	d = append(d, k)
@@ -175,8 +174,6 @@ func generateMACForPublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfil
 
 func generatePublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, macKey []byte) *publicationMessage {
 	mac := generateMACForPublicationMessage(cp, pp, pms, macKey)
-
-	// fmt.Printf("\n%02x\n", mac)
 
 	pm := &publicationMessage{
 		prekeyMessages: pms,
@@ -192,7 +189,6 @@ func (m *publicationMessage) validate(from string, s *GenericServer) error {
 	clientProfile := s.session(from).clientProfile()
 	mac := generateMACForPublicationMessage(m.clientProfile, m.prekeyProfile, m.prekeyMessages, macKey)
 
-	// fmt.Printf("\n%02x\n", mac)
 	if !bytes.Equal(mac[:], m.mac[:]) {
 		return errors.New("invalid mac for publication message")
 	}
