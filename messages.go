@@ -148,31 +148,27 @@ func (m *ensembleRetrievalQueryMessage) respond(from string, s *GenericServer) (
 
 func generateMACForPublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, macKey []byte) []byte {
 	kpms := gotrax.KdfPrekeyServer(usagePrekeyMessage, 64, serializePrekeyMessages(pms))
-	k := []byte{byte(0)}
+	k := byte(0)
 	kcp := []byte{}
 	if cp != nil {
-		k = []byte{1}
+		k = 1
 		kcp = gotrax.KdfPrekeyServer(usageClientProfile, 64, cp.Serialize())
 	}
 
-	j := []byte{byte(0)}
+	j := byte(0)
 	kpps := []byte{}
 	if pp != nil {
-		j = []byte{1}
+		j = 1
 		kpps = gotrax.KdfPrekeyServer(usagePrekeyProfile, 64, pp.serialize())
 	}
 
 	d := append(macKey, messageTypePublication)
-	//fmt.Println()
-	//for i := 0; i < 64; i++ {
-	//	fmt.Printf("%x", macKey[i])
-	//}
-	//fmt.Println()
+	// fmt.Printf("\n%02x\n", macKey)
 	d = append(d, byte(len(pms)))
 	d = append(d, kpms...)
-	d = append(d, k...)
+	d = append(d, k)
 	d = append(d, kcp...)
-	d = append(d, j...)
+	d = append(d, j)
 	d = append(d, kpps...)
 	return gotrax.KdfPrekeyServer(usagePreMAC, 64, d)
 }
@@ -180,11 +176,7 @@ func generateMACForPublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfil
 func generatePublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, macKey []byte) *publicationMessage {
 	mac := generateMACForPublicationMessage(cp, pp, pms, macKey)
 
-	//fmt.Println()
-	//for i := 0; i < 64; i++ {
-	//	fmt.Printf("%x", mac[i])
-	//}
-	//fmt.Println()
+	// fmt.Printf("\n%02x\n", macKey)
 
 	pm := &publicationMessage{
 		prekeyMessages: pms,
