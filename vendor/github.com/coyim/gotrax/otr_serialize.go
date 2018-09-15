@@ -7,7 +7,7 @@ import (
 
 func (cp *ClientProfile) SerializeForSignature() []byte {
 	out := []byte{}
-	fields := uint32(4)
+	fields := uint32(5)
 
 	if cp.DsaKey != nil {
 		fields++
@@ -24,6 +24,9 @@ func (cp *ClientProfile) SerializeForSignature() []byte {
 
 	out = AppendShort(out, ClientProfileTagPublicKey)
 	out = append(out, cp.PublicKey.Serialize()...)
+
+	out = AppendShort(out, ClientProfileTagForgingKey)
+	out = append(out, cp.ForgingKey.Serialize()...)
 
 	out = AppendShort(out, ClientProfileTagVersions)
 	out = append(out, SerializeVersions(cp.Versions)...)
@@ -109,6 +112,11 @@ func (cp *ClientProfile) DeserializeField(buf []byte) ([]byte, bool) {
 	case ClientProfileTagPublicKey:
 		cp.PublicKey = &PublicKey{keyType: Ed448Key}
 		if buf, ok = cp.PublicKey.Deserialize(buf); !ok {
+			return nil, false
+		}
+	case ClientProfileTagForgingKey:
+		cp.ForgingKey = &PublicKey{keyType: ForgingKey}
+		if buf, ok = cp.ForgingKey.Deserialize(buf); !ok {
 			return nil, false
 		}
 	case ClientProfileTagVersions:

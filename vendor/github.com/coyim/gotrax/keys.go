@@ -12,6 +12,7 @@ type KeyType uint8
 const (
 	Ed448Key KeyType = iota
 	SharedPrekeyKey
+	ForgingKey
 )
 
 type Keypair struct {

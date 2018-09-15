@@ -9,6 +9,8 @@ func (p *PublicKey) Serialize() []byte {
 		keyType = Ed448KeyType
 	case SharedPrekeyKey:
 		keyType = SharedPrekeyKeyType
+	case ForgingKey:
+		keyType = ForgingKeyType
 	}
 	return append(keyType, p.k.DSAEncode()...)
 }
@@ -76,6 +78,8 @@ func (p *PublicKey) Deserialize(buf []byte) ([]byte, bool) {
 		keyType = Ed448KeyTypeInt
 	case SharedPrekeyKey:
 		keyType = SharedPrekeyKeyTypeInt
+	case ForgingKey:
+		keyType = ForgingKeyTypeInt
 	}
 
 	if pubKeyType != keyType {

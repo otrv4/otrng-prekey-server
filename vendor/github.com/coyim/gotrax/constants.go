@@ -7,6 +7,8 @@ var Ed448KeyType = []byte{0x00, 0x10}
 var Ed448KeyTypeInt = uint16(0x0010)
 var SharedPrekeyKeyType = []byte{0x00, 0x11}
 var SharedPrekeyKeyTypeInt = uint16(0x0011)
+var ForgingKeyType = []byte{0x00, 0x12}
+var ForgingKeyTypeInt = uint16(0x0012)
 
 const SymKeyLength = 57
 const PrivKeyLength = 57
@@ -18,10 +20,11 @@ var IdentityPoint = ed448.NewPoint([16]uint32{0x00}, [16]uint32{0x01}, [16]uint3
 const (
 	ClientProfileTagInstanceTag           = uint16(0x0001)
 	ClientProfileTagPublicKey             = uint16(0x0002)
+	ClientProfileTagForgingKey            = uint16(0x0003)
 	ClientProfileTagVersions              = uint16(0x0004)
 	ClientProfileTagExpiry                = uint16(0x0005)
 	ClientProfileTagDSAKey                = uint16(0x0006)
-	ClientProfileTagTransitionalSignature = uint16(0x0008)
+	ClientProfileTagTransitionalSignature = uint16(0x0007)
 )
 
 var kdfPrekeyServerPrefix = []byte("OTR-Prekey-Server")

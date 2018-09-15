@@ -12,6 +12,7 @@ import (
 type ClientProfile struct {
 	InstanceTag           uint32
 	PublicKey             *PublicKey
+	ForgingKey            *PublicKey
 	Versions              []byte
 	Expiration            time.Time
 	DsaKey                *dsa.PublicKey
@@ -22,6 +23,18 @@ type ClientProfile struct {
 func (m *ClientProfile) Validate(tag uint32) error {
 	if m.InstanceTag != tag {
 		return errors.New("invalid instance tag in client profile")
+	}
+
+	if m.PublicKey == nil {
+		return errors.New("missing public key in client profile")
+	}
+
+	if m.ForgingKey == nil {
+		return errors.New("missing forging key in client profile")
+	}
+
+	if m.Sig == nil {
+		return errors.New("missing signature in client profile")
 	}
 
 	if !ed448.DSAVerify(m.Sig.s, m.PublicKey.k, m.SerializeForSignature()) {
@@ -40,6 +53,11 @@ func (m *ClientProfile) Validate(tag uint32) error {
 	// a valid private key AND eddsa signature that matches an invalid point...
 	if ValidatePoint(m.PublicKey.k) != nil {
 		return errors.New("client profile public key is not a valid point")
+	}
+
+	// See comment above about validating the point
+	if ValidatePoint(m.ForgingKey.k) != nil {
+		return errors.New("client profile forging key is not a valid point")
 	}
 
 	// The spec says to verify the DSA transitional signature here
