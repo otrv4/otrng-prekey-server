@@ -152,15 +152,11 @@ func (px *dhProof) verify(values []*big.Int, m []byte, usageID uint8) bool {
 	t := splitBufferIntoN(p, uint(len(values)))
 	a := new(big.Int).Exp(g3, px.v, dhQ)
 
-	var curr *big.Int = nil
+	curr := big.NewInt(1)
 	for ix, tn := range t {
 		tnv := new(big.Int).SetBytes(tn)
 		tnv.Exp(values[ix], tnv, dhQ)
-		if curr == nil {
-			curr = tnv
-		} else {
-			curr = mulMod(curr, tnv, dhQ)
-		}
+		curr = mulMod(curr, tnv, dhQ)
 	}
 
 	curr = curr.Exp(curr, big.NewInt(-1), dhQ)
