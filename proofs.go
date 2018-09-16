@@ -2,6 +2,7 @@ package prekeyserver
 
 import (
 	"bytes"
+	"math/big"
 
 	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
@@ -14,7 +15,7 @@ type ecdhProof struct {
 
 type dhProof struct {
 	c []byte
-	v []byte //(mpi)
+	v *big.Int
 }
 
 const lambda = uint32(352)
@@ -85,6 +86,8 @@ func (px *ecdhProof) verify(values []*gotrax.PublicKey, m []byte, usageID uint8)
 	t := splitBufferIntoN(p, uint(len(values)))
 	a := ed448.PrecomputedScalarMul(px.v)
 	var curr ed448.Point = nil
+	// TODO: we should be able to do PointDoubleScalarMul here instead
+	// in order to improve performance significantly
 	for ix, tn := range t {
 		tnv := ed448.NewScalar(tn)
 		res := ed448.PointScalarMul(values[ix].K(), tnv)
@@ -94,7 +97,7 @@ func (px *ecdhProof) verify(values []*gotrax.PublicKey, m []byte, usageID uint8)
 			curr.Add(curr, res)
 		}
 	}
-
+	// TODO: subtract instead of this thing
 	a.Add(a, ed448.PointScalarMul(curr, scalarMinusOne))
 
 	c2buf := gotrax.SerializePoint(a)
@@ -107,10 +110,67 @@ func (px *ecdhProof) verify(values []*gotrax.PublicKey, m []byte, usageID uint8)
 	return bytes.Equal(px.c, c2)
 }
 
-func generateDhProof(wr gotrax.WithRandom) (*dhProof, error) {
-	return nil, nil
+func mul(l, r *big.Int) *big.Int {
+	return new(big.Int).Mul(l, r)
 }
 
-func (px *dhProof) verify() bool {
-	return false
+func mulMod(l, r, m *big.Int) *big.Int {
+	res := mul(l, r)
+	res.Mod(res, m)
+	return res
+}
+
+func generateDhProof(wr gotrax.WithRandom, valuesPrivate []*big.Int, valuesPublic []*big.Int, m []byte, usageID uint8) (*dhProof, error) {
+	rbuf := generateRandomGroupValue(80, wr)
+	r := new(big.Int).SetBytes(rbuf)
+	a := new(big.Int).Exp(g3, r, dhQ)
+
+	cbuf := gotrax.AppendMPI([]byte{}, a)
+	for _, v := range valuesPublic {
+		cbuf = gotrax.AppendMPI(cbuf, v)
+	}
+	cbuf = append(cbuf, m...)
+	c := gotrax.KdfPrekeyServer(usageID, 64, cbuf)
+	p := gotrax.KdfPrekeyServer(usageProofCLambda, uint32(len(valuesPrivate))*lambda, c)
+	t := splitBufferIntoN(p, uint(len(valuesPrivate)))
+
+	result := new(big.Int).Set(r)
+	for ix, tn := range t {
+		tnv := new(big.Int).SetBytes(tn)
+		result.Add(result, mulMod(tnv, valuesPrivate[ix], dhQ))
+	}
+
+	return &dhProof{
+		c: c,
+		v: result,
+	}, nil
+}
+
+func (px *dhProof) verify(values []*big.Int, m []byte, usageID uint8) bool {
+	p := gotrax.KdfPrekeyServer(usageProofCLambda, uint32(len(values))*lambda, px.c)
+	t := splitBufferIntoN(p, uint(len(values)))
+	a := new(big.Int).Exp(g3, px.v, dhQ)
+
+	var curr *big.Int = nil
+	for ix, tn := range t {
+		tnv := new(big.Int).SetBytes(tn)
+		tnv.Exp(values[ix], tnv, dhQ)
+		if curr == nil {
+			curr = tnv
+		} else {
+			curr = mulMod(curr, tnv, dhQ)
+		}
+	}
+
+	curr = curr.Exp(curr, big.NewInt(-1), dhQ)
+	a = mulMod(a, curr, dhQ)
+
+	c2buf := gotrax.AppendMPI([]byte{}, a)
+	for _, v := range values {
+		c2buf = gotrax.AppendMPI(c2buf, v)
+	}
+	c2buf = append(c2buf, m...)
+	c2 := gotrax.KdfPrekeyServer(usageID, 64, c2buf)
+
+	return bytes.Equal(px.c, c2)
 }
