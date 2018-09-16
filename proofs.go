@@ -138,6 +138,7 @@ func generateDhProof(wr gotrax.WithRandom, valuesPrivate []*big.Int, valuesPubli
 	for ix, tn := range t {
 		tnv := new(big.Int).SetBytes(tn)
 		result.Add(result, mulMod(tnv, valuesPrivate[ix], dhQ))
+		result.Mod(result, dhQ)
 	}
 
 	return &dhProof{
