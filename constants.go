@@ -36,6 +36,12 @@ const (
 	usageClientProfile                    = 0x0F
 	usagePrekeyProfile                    = 0x10
 	usageAuth                             = 0x11
+	usageProofContext                     = 0x12
+	usageProofMessageEcdh                 = 0x13
+	usageProofMessageDh                   = 0x14
+	usageProofSharedEcdh                  = 0x15
+	usageMacProofs                        = 0x16
+	usageProofCLambda                     = 0x17
 )
 
 const macLength = 64
@@ -77,4 +83,19 @@ var primeOrderBytesDup = []byte{
 	0xff, 0xff, 0xff, 0xff, 0x7c, 0xca, 0x23, 0xe9, 0xc4, 0x4e, 0xdb, 0x49,
 	0xae, 0xd6, 0x36, 0x90, 0x21, 0x6c, 0xc2, 0x72, 0x8d, 0xc5, 0x8f, 0x55,
 	0x23, 0x78, 0xc2, 0x92, 0xab, 0x58, 0x44, 0xf3,
+}
+
+var (
+	scalarZero     ed448.Scalar
+	scalarOne      ed448.Scalar
+	scalarMinusOne ed448.Scalar
+)
+
+func init() {
+	zeroBuf := [56]byte{0x00}
+	oneBuf := [56]byte{0x01}
+	scalarZero = ed448.NewScalar(zeroBuf[:])
+	scalarOne = ed448.NewScalar(oneBuf[:])
+	scalarMinusOne = scalarZero.Copy()
+	scalarMinusOne.Sub(scalarZero, scalarOne)
 }
