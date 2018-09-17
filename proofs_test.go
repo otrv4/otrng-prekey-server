@@ -1,5 +1,8 @@
 package prekeyserver
 
+// TODO: add more negative tests
+// TODO: add exact tests of expected values
+
 import (
 	"math/big"
 
