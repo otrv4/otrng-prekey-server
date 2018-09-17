@@ -1,7 +1,5 @@
 package prekeyserver
 
-// TODO: add the dual scalar multiplication etc
-
 import (
 	"bytes"
 	"crypto/rand"
@@ -79,11 +77,20 @@ func generateEcdhProof(wr gotrax.WithRandom, values []*gotrax.Keypair, m []byte,
 
 func mulAndAddPoints(values []*gotrax.PublicKey, t [][]byte) ed448.Point {
 	curr := ed448.NewPoint([16]uint32{0x00}, [16]uint32{0x01}, [16]uint32{0x01}, [16]uint32{0x00})
-	// TODO: we should be able to do PointDoubleScalarMul here instead
-	// in order to improve performance significantly
-	for ix, tn := range t {
-		tnv := ed448.NewScalar(tn)
-		res := ed448.PointScalarMul(values[ix].K(), tnv)
+
+	// It would be awesome to have true n-multiexponentiation here, but using PointDoubleScalarMul at least cuts performance roughly in
+	// half, so better than nothing
+	l := len(values)
+	ix := 0
+	for ; ix+1 < l; ix += 2 {
+		tn1 := ed448.NewScalar(t[ix])
+		tn2 := ed448.NewScalar(t[ix+1])
+		res := ed448.PointDoubleScalarMul(values[ix].K(), values[ix+1].K(), tn1, tn2)
+		curr.Add(curr, res)
+	}
+	if ix < l {
+		tn := ed448.NewScalar(t[ix])
+		res := ed448.PointScalarMul(values[ix].K(), tn)
 		curr.Add(curr, res)
 	}
 	return curr
