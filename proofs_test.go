@@ -44,9 +44,9 @@ func (s *GenericServerSuite) Test_generateDhProof_and_verify_generatesProofsThat
 	valuesPriv[2] = randomDhSecretValue(wr)
 
 	valuesPub := make([]*big.Int, 3)
-	valuesPub[0] = new(big.Int).Exp(g3, valuesPriv[0], dhQ)
-	valuesPub[1] = new(big.Int).Exp(g3, valuesPriv[1], dhQ)
-	valuesPub[2] = new(big.Int).Exp(g3, valuesPriv[2], dhQ)
+	valuesPub[0] = new(big.Int).Exp(g3, valuesPriv[0], dhP)
+	valuesPub[1] = new(big.Int).Exp(g3, valuesPriv[1], dhP)
+	valuesPub[2] = new(big.Int).Exp(g3, valuesPriv[2], dhP)
 
 	m := [64]byte{0x01, 0x02, 0x03}
 

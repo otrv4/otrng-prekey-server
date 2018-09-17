@@ -2,6 +2,7 @@ package prekeyserver
 
 import (
 	"bytes"
+	"crypto/rand"
 	"math/big"
 
 	"github.com/coyim/gotrax"
@@ -27,6 +28,18 @@ func bufferIsZero(b []byte) bool {
 		}
 	}
 	return true
+}
+
+func generateRandomExponent(order *big.Int, wr gotrax.WithRandom) *big.Int {
+	for {
+		n, err := rand.Int(wr.RandReader(), order)
+		if err != nil {
+			return nil
+		}
+		if n.Cmp(one) > 0 {
+			return n
+		}
+	}
 }
 
 func generateRandomGroupValue(len uint, wr gotrax.WithRandom) []byte {
@@ -121,9 +134,8 @@ func mulMod(l, r, m *big.Int) *big.Int {
 }
 
 func generateDhProof(wr gotrax.WithRandom, valuesPrivate []*big.Int, valuesPublic []*big.Int, m []byte, usageID uint8) (*dhProof, error) {
-	rbuf := generateRandomGroupValue(80, wr)
-	r := new(big.Int).SetBytes(rbuf)
-	a := new(big.Int).Exp(g3, r, dhQ)
+	r := generateRandomExponent(dhQ, wr)
+	a := new(big.Int).Exp(g3, r, dhP)
 
 	cbuf := gotrax.AppendMPI([]byte{}, a)
 	for _, v := range valuesPublic {
@@ -156,14 +168,13 @@ func (px *dhProof) verify(values []*big.Int, m []byte, usageID uint8) bool {
 	curr := big.NewInt(1)
 	for ix, tn := range t {
 		tnv := new(big.Int).SetBytes(tn)
-		tnv.Exp(values[ix], tnv, dhQ)
-		curr = mulMod(curr, tnv, dhQ)
+		tnv.Exp(values[ix], tnv, dhP)
+		curr = mulMod(curr, tnv, dhP)
 	}
 
-	curr.Exp(curr, big.NewInt(-1), dhQ)
-	a := new(big.Int).Exp(g3, px.v, dhQ)
-	a = mulMod(a, curr, dhQ)
-	a.Mod(a, dhQ)
+	a := new(big.Int).Exp(g3, px.v, dhP)
+	curr.ModInverse(curr, dhP)
+	a = mulMod(a, curr, dhP)
 
 	c2buf := gotrax.AppendMPI([]byte{}, a)
 	for _, v := range values {
