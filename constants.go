@@ -2,6 +2,7 @@ package prekeyserver
 
 import (
 	"errors"
+	"math/big"
 
 	"github.com/otrv4/ed448"
 )
@@ -89,6 +90,7 @@ var (
 	scalarZero     ed448.Scalar
 	scalarOne      ed448.Scalar
 	scalarMinusOne ed448.Scalar
+	bigOne         *big.Int
 )
 
 func init() {
@@ -98,4 +100,5 @@ func init() {
 	scalarOne = ed448.NewScalar(oneBuf[:])
 	scalarMinusOne = scalarZero.Copy()
 	scalarMinusOne.Sub(scalarZero, scalarOne)
+	bigOne = big.NewInt(1)
 }

@@ -22,15 +22,11 @@ type dhProof struct {
 const lambda = uint32(352 / 8) // 44 bytes
 
 func generateRandomExponent(order *big.Int, wr gotrax.WithRandom) *big.Int {
-	for {
-		n, err := rand.Int(wr.RandReader(), order)
-		if err != nil {
-			return nil
-		}
-		if n.Cmp(one) > 0 {
-			return n
-		}
+	n, err := rand.Int(wr.RandReader(), new(big.Int).Sub(order, bigOne))
+	if err != nil {
+		return nil
 	}
+	return n.Add(n, bigOne)
 }
 
 // splitBufferIntoN will split b into n even sized units
