@@ -85,7 +85,7 @@ func (px *ecdhProof) verify(values []*gotrax.PublicKey, m []byte, usageID uint8)
 	p := gotrax.KdfPrekeyServer(usageProofCLambda, uint32(len(values))*lambda, px.c)
 	t := splitBufferIntoN(p, uint(len(values)))
 	a := ed448.PrecomputedScalarMul(px.v)
-	var curr ed448.Point = nil
+	var curr ed448.Point
 	// TODO: we should be able to do PointDoubleScalarMul here instead
 	// in order to improve performance significantly
 	for ix, tn := range t {
@@ -141,16 +141,17 @@ func generateDhProof(wr gotrax.WithRandom, valuesPrivate []*big.Int, valuesPubli
 		result.Mod(result, dhQ)
 	}
 
+	result.Mod(result, dhQ)
 	return &dhProof{
 		c: c,
 		v: result,
 	}, nil
+
 }
 
 func (px *dhProof) verify(values []*big.Int, m []byte, usageID uint8) bool {
 	p := gotrax.KdfPrekeyServer(usageProofCLambda, uint32(len(values))*lambda, px.c)
 	t := splitBufferIntoN(p, uint(len(values)))
-	a := new(big.Int).Exp(g3, px.v, dhQ)
 
 	curr := big.NewInt(1)
 	for ix, tn := range t {
@@ -159,8 +160,10 @@ func (px *dhProof) verify(values []*big.Int, m []byte, usageID uint8) bool {
 		curr = mulMod(curr, tnv, dhQ)
 	}
 
-	curr = curr.Exp(curr, big.NewInt(-1), dhQ)
+	curr.Exp(curr, big.NewInt(-1), dhQ)
+	a := new(big.Int).Exp(g3, px.v, dhQ)
 	a = mulMod(a, curr, dhQ)
+	a.Mod(a, dhQ)
 
 	c2buf := gotrax.AppendMPI([]byte{}, a)
 	for _, v := range values {
