@@ -230,6 +230,7 @@ func generatePublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms
 
 func (m *publicationMessage) validate(from string, s *GenericServer) error {
 	macKey := s.session(from).macKey()
+	sk := s.session(from).sharedSecret()
 	clientProfile := s.session(from).clientProfile()
 	mac := generateMACForPublicationMessage(m.clientProfile, m.prekeyProfile, m.prekeyMessages, m.prekeyMessageProofEcdh, m.prekeyMessageProofDh, m.prekeyProfileProofEcdh, macKey)
 
@@ -246,9 +247,41 @@ func (m *publicationMessage) validate(from string, s *GenericServer) error {
 		return errors.New("invalid prekey profile in publication message")
 	}
 
+	ks := []*gotrax.PublicKey{}
+	ks2 := []*big.Int{}
 	for _, pm := range m.prekeyMessages {
 		if pm.validate(tag) != nil {
 			return errors.New("invalid prekey message in publication message")
+		}
+		ks = append(ks, gotrax.CreatePublicKey(pm.y, gotrax.Ed448Key))
+		ks2 = append(ks2, pm.b)
+	}
+
+	msg := gotrax.KdfPrekeyServer(usageProofContext, 64, sk)
+	if len(m.prekeyMessages) > 0 {
+		if m.prekeyMessageProofEcdh == nil {
+			return errors.New("missing proof for prekey messages y key")
+		}
+		if m.prekeyMessageProofDh == nil {
+			return errors.New("missing proof for prekey messages b key")
+		}
+
+		if !m.prekeyMessageProofEcdh.verify(ks, msg, usageProofMessageEcdh) {
+			return errors.New("incorrect proof for prekey messages y key")
+		}
+
+		if !m.prekeyMessageProofDh.verify(ks2, msg, usageProofMessageDh) {
+			return errors.New("incorrect proof for prekey messages b key")
+		}
+	}
+
+	if m.prekeyProfile != nil {
+		if m.prekeyProfileProofEcdh == nil {
+			return errors.New("missing proof for prekey profile shared prekey")
+		}
+
+		if !m.prekeyProfileProofEcdh.verify([]*gotrax.PublicKey{m.prekeyProfile.sharedPrekey}, msg, usageProofSharedEcdh) {
+			return errors.New("incorrect proof for prekey profile shared prekey")
 		}
 	}
 

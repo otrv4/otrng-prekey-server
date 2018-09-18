@@ -1,6 +1,7 @@
 package prekeyserver
 
 import (
+	"bytes"
 	"crypto/rand"
 	"math/big"
 
@@ -182,4 +183,10 @@ func (s *GenericServerSuite) Test_generateDhProof_generatesSpecificValues(c *C) 
 		0xed, 0xfa, 0xa8, 0xbe, 0x3f, 0x5b, 0xd3, 0xbe,
 		0x97, 0x99, 0x80, 0x49, 0x8a, 0xb2, 0x39, 0xc6,
 	})
+}
+
+func (s *GenericServerSuite) Test_generateRandomExponent_returnsNilOnErrorWhenReading(c *C) {
+	wr := gotrax.ReaderIntoWithRandom(bytes.NewBuffer([]byte{}))
+	rr := generateRandomExponent(big.NewInt(3), wr)
+	c.Assert(rr, IsNil)
 }

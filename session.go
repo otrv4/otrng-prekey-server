@@ -17,6 +17,7 @@ type session interface {
 	save(*gotrax.Keypair, ed448.Point, uint32, *gotrax.ClientProfile)
 	instanceTag() uint32
 	macKey() []byte
+	sharedSecret() []byte
 	clientProfile() *gotrax.ClientProfile
 	pointI() ed448.Point
 	keypairS() *gotrax.Keypair
@@ -29,6 +30,7 @@ type realSession struct {
 	i           ed448.Point
 	cp          *gotrax.ClientProfile
 	storedMac   []byte
+	sk          []byte
 	lastTouched time.Time
 	sync.Mutex
 }
@@ -90,6 +92,17 @@ func (s *realSession) macKey() []byte {
 		return s.storedMac
 	}
 	return gotrax.KdfPrekeyServer(usagePreMACKey, 64, gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(s.i, s.s.Priv.K()))))
+}
+
+func (s *realSession) sharedSecret() []byte {
+	s.Lock()
+	defer s.Unlock()
+
+	s.touch()
+	if s.sk != nil {
+		return s.sk
+	}
+	return gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(s.i, s.s.Priv.K())))
 }
 
 func (s *realSession) hasExpired(timeout time.Duration) bool {
