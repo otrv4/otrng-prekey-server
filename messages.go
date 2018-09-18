@@ -150,7 +150,21 @@ func (m *ensembleRetrievalQueryMessage) respond(from string, s *GenericServer) (
 	}, nil
 }
 
-func generateMACForPublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, macKey []byte) []byte {
+func serializeProofs(prof1 *ecdhProof, prof2 *dhProof, prof3 *ecdhProof) []byte {
+	out := []byte{}
+	if prof1 != nil {
+		out = append(out, prof1.serialize()...)
+	}
+	if prof2 != nil {
+		out = append(out, prof2.serialize()...)
+	}
+	if prof3 != nil {
+		out = append(out, prof3.serialize()...)
+	}
+	return out
+}
+
+func generateMACForPublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, prof1 *ecdhProof, prof2 *dhProof, prof3 *ecdhProof, macKey []byte) []byte {
 	kpms := gotrax.KdfPrekeyServer(usagePrekeyMessage, 64, serializePrekeyMessages(pms))
 	k := byte(0)
 	kcp := []byte{}
@@ -166,6 +180,8 @@ func generateMACForPublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfil
 		kpps = gotrax.KdfPrekeyServer(usagePrekeyProfile, 64, pp.serialize())
 	}
 
+	pfs := gotrax.KdfPrekeyServer(usageMacProofs, 64, serializeProofs(prof1, prof2, prof3))
+
 	d := append(macKey, messageTypePublication)
 	d = append(d, byte(len(pms)))
 	d = append(d, kpms...)
@@ -173,6 +189,8 @@ func generateMACForPublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfil
 	d = append(d, kcp...)
 	d = append(d, j)
 	d = append(d, kpps...)
+	d = append(d, pfs...)
+
 	return gotrax.KdfPrekeyServer(usagePreMAC, 64, d)
 }
 
@@ -196,7 +214,7 @@ func gemeratePrekeyProfileProof(wr gotrax.WithRandom, ecdhKey *gotrax.Keypair, s
 }
 
 func generatePublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, prof1 *ecdhProof, prof2 *dhProof, prof3 *ecdhProof, macKey []byte) *publicationMessage {
-	mac := generateMACForPublicationMessage(cp, pp, pms, macKey)
+	mac := generateMACForPublicationMessage(cp, pp, pms, prof1, prof2, prof3, macKey)
 
 	pm := &publicationMessage{
 		prekeyMessages:         pms,
@@ -213,7 +231,7 @@ func generatePublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms
 func (m *publicationMessage) validate(from string, s *GenericServer) error {
 	macKey := s.session(from).macKey()
 	clientProfile := s.session(from).clientProfile()
-	mac := generateMACForPublicationMessage(m.clientProfile, m.prekeyProfile, m.prekeyMessages, macKey)
+	mac := generateMACForPublicationMessage(m.clientProfile, m.prekeyProfile, m.prekeyMessages, m.prekeyMessageProofEcdh, m.prekeyMessageProofDh, m.prekeyProfileProofEcdh, macKey)
 
 	if !bytes.Equal(mac[:], m.mac[:]) {
 		return errors.New("invalid mac for publication message")
