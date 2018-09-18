@@ -2,7 +2,9 @@ package prekeyserver
 
 import (
 	"bytes"
+	"crypto/rand"
 	"errors"
+	"math/big"
 	"time"
 
 	"github.com/coyim/gotrax"
@@ -20,7 +22,7 @@ type prekeyMessage struct {
 	identifier  uint32
 	instanceTag uint32
 	y           ed448.Point
-	b           []byte
+	b           *big.Int
 }
 
 type prekeyEnsemble struct {
@@ -43,17 +45,18 @@ func generatePrekeyProfile(wr gotrax.WithRandom, tag uint32, expiration time.Tim
 	return pp, sharedKey
 }
 
-func generatePrekeyMessage(wr gotrax.WithRandom, tag uint32) (*prekeyMessage, *gotrax.Keypair) {
+func generatePrekeyMessage(wr gotrax.WithRandom, tag uint32) (*prekeyMessage, *gotrax.Keypair, *big.Int, *big.Int) {
 	ident := gotrax.RandomUint32(wr)
 	y := gotrax.GenerateKeypair(wr)
-	b := []byte{0x04}
+	privB, _ := rand.Int(wr.RandReader(), dhQ)
+	pubB := new(big.Int).Exp(g3, privB, dhP)
 
 	return &prekeyMessage{
 		identifier:  ident,
 		instanceTag: tag,
 		y:           y.Pub.K(),
-		b:           b,
-	}, y
+		b:           pubB,
+	}, y, privB, pubB
 }
 
 func (pp *prekeyProfile) Equals(other *prekeyProfile) bool {

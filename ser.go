@@ -166,6 +166,18 @@ func (m *publicationMessage) serialize() []byte {
 		out = append(out, uint8(0))
 	}
 
+	if m.prekeyMessageProofEcdh != nil {
+		out = append(out, m.prekeyMessageProofEcdh.serialize()...)
+	}
+
+	if m.prekeyMessageProofDh != nil {
+		out = append(out, m.prekeyMessageProofDh.serialize()...)
+	}
+
+	if m.prekeyProfileProofEcdh != nil {
+		out = append(out, m.prekeyProfileProofEcdh.serialize()...)
+	}
+
 	out = append(out, m.mac[:]...)
 	return out
 }
@@ -213,6 +225,25 @@ func (m *publicationMessage) deserialize(buf []byte) ([]byte, bool) {
 	if tmp == 1 {
 		m.prekeyProfile = &prekeyProfile{}
 		if buf, ok = m.prekeyProfile.deserialize(buf); !ok {
+			return nil, false
+		}
+	}
+
+	if len(m.prekeyMessages) > 0 {
+		m.prekeyMessageProofEcdh = &ecdhProof{}
+		if buf, ok = m.prekeyMessageProofEcdh.deserialize(buf); !ok {
+			return nil, false
+		}
+
+		m.prekeyMessageProofDh = &dhProof{}
+		if buf, ok = m.prekeyMessageProofDh.deserialize(buf); !ok {
+			return nil, false
+		}
+	}
+
+	if m.prekeyProfile != nil {
+		m.prekeyProfileProofEcdh = &ecdhProof{}
+		if buf, ok = m.prekeyProfileProofEcdh.deserialize(buf); !ok {
 			return nil, false
 		}
 	}
@@ -524,7 +555,7 @@ func (pm *prekeyMessage) serialize() []byte {
 	out = gotrax.AppendWord(out, pm.identifier)
 	out = gotrax.AppendWord(out, pm.instanceTag)
 	out = append(out, gotrax.SerializePoint(pm.y)...)
-	out = gotrax.AppendData(out, pm.b)
+	out = gotrax.AppendMPI(out, pm.b)
 	return out
 }
 
@@ -553,7 +584,7 @@ func (pm *prekeyMessage) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
-	if buf, pm.b, ok1 = gotrax.ExtractData(buf); !ok1 {
+	if buf, pm.b, ok1 = gotrax.ExtractMPI(buf); !ok1 {
 		return nil, false
 	}
 

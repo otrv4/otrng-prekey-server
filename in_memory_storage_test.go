@@ -73,7 +73,7 @@ func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_shouldNotRemoveUserIfT
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2017, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pp2, _ := generatePrekeyProfile(gs, 0x42424242, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 
-	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm1, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
 
 	is.storePrekeyProfile("someone@example.org", pp1)
 	is.storePrekeyProfile("someone@example.org", pp2)

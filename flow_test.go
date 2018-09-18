@@ -2,6 +2,7 @@ package prekeyserver
 
 import (
 	"errors"
+	"math/big"
 	"time"
 
 	"github.com/coyim/gotrax"
@@ -411,11 +412,15 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 	sk := gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
 	sitaPrekeyMacK := gotrax.KdfPrekeyServer(usagePreMACKey, 64, sk)
 
-	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
+	pp1, ppk1 := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 
-	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	msg := generatePublicationMessage(sita.clientProfile, pp1, []*prekeyMessage{pm1, pm2}, sitaPrekeyMacK)
+	pm1, pmk1, pmbpriv1, pmbpub1 := generatePrekeyMessage(gs, sita.instanceTag)
+	pm2, pmk2, pmbpriv2, pmbpub2 := generatePrekeyMessage(gs, sita.instanceTag)
+
+	prof1, prof2 := generatePrekeyMessagesProofs(gs, []*gotrax.Keypair{pmk1, pmk2}, []*big.Int{pmbpriv1, pmbpriv2}, []*big.Int{pmbpub1, pmbpub2}, sk)
+	prof3 := gemeratePrekeyProfileProof(gs, ppk1, sk)
+
+	msg := generatePublicationMessage(sita.clientProfile, pp1, []*prekeyMessage{pm1, pm2}, prof1, prof2, prof3, sitaPrekeyMacK)
 
 	d3 := generateDake3(sita.instanceTag, sigma, msg.serialize())
 
@@ -463,8 +468,8 @@ func (s *GenericServerSuite) Test_flow_retrieveEnsemblesFromKnownPerson(c *C) {
 	stor.storeClientProfile("sita@example.org", sita.clientProfile)
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	stor.storePrekeyProfile("sita@example.org", pp1)
-	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm1, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm2, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	stor.storePrekeyMessages("sita@example.org", []*prekeyMessage{pm1, pm2})
 
 	retM := &ensembleRetrievalQueryMessage{

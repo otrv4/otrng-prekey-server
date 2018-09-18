@@ -51,8 +51,8 @@ func (s *GenericServerSuite) Test_fileStorage_numberStored_returnsNumberOfPrekey
 	gs := &GenericServer{
 		rand: gotrax.FixtureRand(),
 	}
-	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm1, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm2, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
 
 	pmDir := path.Join(testDir, prefixHexForUser1, hexForUser1, "11223344", "pm")
 	os.MkdirAll(pmDir, 0700)
@@ -142,7 +142,7 @@ func (s *GenericServerSuite) Test_fileStorage_cleanup_shouldNotRemoveUserIfThere
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2017, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pp2, _ := generatePrekeyProfile(gs, 0x42424242, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 
-	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm1, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
 
 	fs.storePrekeyProfile("someone@example.org", pp1)
 	fs.storePrekeyProfile("someone@example.org", pp2)
@@ -181,14 +181,14 @@ func (s *GenericServerSuite) Test_fileStorage_retrieveFor_willReturnAPrekeyEnsem
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2029, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pp2, _ := generatePrekeyProfile(gs, 0x42424242, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 
-	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	pm2, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	pm3, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	pm4, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm1, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm2, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm3, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm4, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
 
-	pm2x1, _ := generatePrekeyMessage(gs, 0x42424242)
-	pm2x2, _ := generatePrekeyMessage(gs, 0x42424242)
-	pm2x3, _ := generatePrekeyMessage(gs, 0x42424242)
+	pm2x1, _, _, _ := generatePrekeyMessage(gs, 0x42424242)
+	pm2x2, _, _, _ := generatePrekeyMessage(gs, 0x42424242)
+	pm2x3, _, _, _ := generatePrekeyMessage(gs, 0x42424242)
 
 	fs.storeClientProfile("someone@example.org", cp)
 	fs.storeClientProfile("someone@example.org", cp2)
@@ -213,8 +213,8 @@ func (s *GenericServerSuite) Test_fileStorage_retrieveFor_willReturnAPrekeyEnsem
 	c.Assert(pes[1].cp.Sig, DeepEquals, cp2.Sig)
 	c.Assert(pes[0].pp.sig, DeepEquals, pp1.sig)
 	c.Assert(pes[1].pp.sig, DeepEquals, pp2.sig)
-	c.Assert(pes[0].pm.identifier, DeepEquals, pm3.identifier)
-	c.Assert(pes[0].pm.b, DeepEquals, pm3.b)
+	c.Assert(pes[0].pm.identifier, DeepEquals, pm2.identifier)
+	c.Assert(pes[0].pm.b, DeepEquals, pm2.b)
 	c.Assert(pes[1].pm.identifier, DeepEquals, pm2x1.identifier)
 	c.Assert(pes[1].pm.b, DeepEquals, pm2x1.b)
 
@@ -225,17 +225,17 @@ func (s *GenericServerSuite) Test_fileStorage_retrieveFor_willReturnAPrekeyEnsem
 
 	pes = fs.retrieveFor("someone@example.org")
 	c.Assert(pes, HasLen, 2)
-	c.Assert(pes[0].pm.identifier, DeepEquals, pm4.identifier)
+	c.Assert(pes[0].pm.identifier, DeepEquals, pm3.identifier)
 	c.Assert(pes[1].pm.identifier, DeepEquals, pm2x2.identifier)
 
 	pes = fs.retrieveFor("someone@example.org")
 	c.Assert(pes, HasLen, 2)
-	c.Assert(pes[0].pm.identifier, DeepEquals, pm1.identifier)
+	c.Assert(pes[0].pm.identifier, DeepEquals, pm4.identifier)
 	c.Assert(pes[1].pm.identifier, DeepEquals, pm2x3.identifier)
 
 	pes = fs.retrieveFor("someone@example.org")
 	c.Assert(pes, HasLen, 1)
-	c.Assert(pes[0].pm.identifier, DeepEquals, pm2.identifier)
+	c.Assert(pes[0].pm.identifier, DeepEquals, pm1.identifier)
 
 	pes = fs.retrieveFor("someone@example.org")
 	c.Assert(pes, HasLen, 0)
@@ -259,7 +259,7 @@ func (s *GenericServerSuite) Test_fileStorage_storePrekeyMessages_reportsErrorWh
 	os.MkdirAll(path.Join(testDir, prefixHexForUser2, hexForUser2, "1245ABCD"), 0700)
 	os.Mkdir(path.Join(testDir, prefixHexForUser2, hexForUser2, "1245ABCD", "pm"), 0500)
 
-	pm1, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm1, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	e := fs.storePrekeyMessages("someone@example.org", []*prekeyMessage{pm1})
 	c.Assert(e, ErrorMatches, "open __dir_for_tests/79A6/79A6123C2DB3B110C92F2872D217545DFC5FF5147BBDD47E67E72F223747A538/1245ABCD/pm/ABCDABCD.bin: permission denied")
 }

@@ -4,15 +4,19 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math/big"
 
 	"github.com/coyim/gotrax"
 )
 
 type publicationMessage struct {
-	prekeyMessages []*prekeyMessage
-	clientProfile  *gotrax.ClientProfile
-	prekeyProfile  *prekeyProfile
-	mac            [macLength]byte
+	prekeyMessages         []*prekeyMessage
+	clientProfile          *gotrax.ClientProfile
+	prekeyProfile          *prekeyProfile
+	prekeyMessageProofEcdh *ecdhProof
+	prekeyMessageProofDh   *dhProof
+	prekeyProfileProofEcdh *ecdhProof
+	mac                    [macLength]byte
 }
 
 type storageInformationRequestMessage struct {
@@ -172,13 +176,35 @@ func generateMACForPublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfil
 	return gotrax.KdfPrekeyServer(usagePreMAC, 64, d)
 }
 
-func generatePublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, macKey []byte) *publicationMessage {
+func generatePrekeyMessagesProofs(wr gotrax.WithRandom, ecdhKeys []*gotrax.Keypair, dhPriv []*big.Int, dhPub []*big.Int, sk []byte) (*ecdhProof, *dhProof) {
+	if len(ecdhKeys) == 0 {
+		return nil, nil
+	}
+	m := gotrax.KdfPrekeyServer(usageProofContext, 64, sk)
+	prof1, _ := generateEcdhProof(wr, ecdhKeys, m, usageProofMessageEcdh)
+	prof2, _ := generateDhProof(wr, dhPriv, dhPub, m, usageProofMessageDh)
+	return prof1, prof2
+}
+
+func gemeratePrekeyProfileProof(wr gotrax.WithRandom, ecdhKey *gotrax.Keypair, sk []byte) *ecdhProof {
+	if ecdhKey == nil {
+		return nil
+	}
+	m := gotrax.KdfPrekeyServer(usageProofContext, 64, sk)
+	prof, _ := generateEcdhProof(wr, []*gotrax.Keypair{ecdhKey}, m, usageProofSharedEcdh)
+	return prof
+}
+
+func generatePublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, prof1 *ecdhProof, prof2 *dhProof, prof3 *ecdhProof, macKey []byte) *publicationMessage {
 	mac := generateMACForPublicationMessage(cp, pp, pms, macKey)
 
 	pm := &publicationMessage{
-		prekeyMessages: pms,
-		clientProfile:  cp,
-		prekeyProfile:  pp,
+		prekeyMessages:         pms,
+		clientProfile:          cp,
+		prekeyProfile:          pp,
+		prekeyMessageProofEcdh: prof1,
+		prekeyMessageProofDh:   prof2,
+		prekeyProfileProofEcdh: prof3,
 	}
 	copy(pm.mac[:], mac)
 	return pm

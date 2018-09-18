@@ -55,9 +55,7 @@ func init() {
 	one = big.NewInt(1)
 }
 
-func validateDHValue(v []byte) error {
-	vv := new(big.Int).SetBytes(v)
-
+func validateDHValue(vv *big.Int) error {
 	if vv.Cmp(g3) == -1 {
 		return errors.New("value less than g3")
 	}

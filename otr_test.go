@@ -1,6 +1,7 @@
 package prekeyserver
 
 import (
+	"math/big"
 	"time"
 
 	"github.com/coyim/gotrax"
@@ -70,7 +71,7 @@ func (s *GenericServerSuite) Test_prekeyMessage_validate_validatesACorrectPrekey
 	gs := &GenericServer{
 		rand: gotrax.FixtureRand(),
 	}
-	pm, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	c.Assert(pm.validate(sita.instanceTag), IsNil)
 }
 
@@ -78,7 +79,7 @@ func (s *GenericServerSuite) Test_prekeyMessage_validate_checksInvalidInstanceTa
 	gs := &GenericServer{
 		rand: gotrax.FixtureRand(),
 	}
-	pm, _ := generatePrekeyMessage(gs, 0xBADBADBA)
+	pm, _, _, _ := generatePrekeyMessage(gs, 0xBADBADBA)
 	c.Assert(pm.validate(sita.instanceTag), ErrorMatches, "invalid instance tag in prekey message")
 }
 
@@ -86,7 +87,7 @@ func (s *GenericServerSuite) Test_prekeyMessage_validate_checksInvalidYPoint(c *
 	gs := &GenericServer{
 		rand: gotrax.FixtureRand(),
 	}
-	pm, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm.y = identityPoint
 	c.Assert(pm.validate(sita.instanceTag), ErrorMatches, "prekey profile Y point is not a valid point")
 }
@@ -95,7 +96,7 @@ func (s *GenericServerSuite) Test_prekeyMessage_validate_checksInvalidBValue(c *
 	gs := &GenericServer{
 		rand: gotrax.FixtureRand(),
 	}
-	pm, _ := generatePrekeyMessage(gs, sita.instanceTag)
-	pm.b = []byte{0x00}
+	pm, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
+	pm.b = new(big.Int).SetBytes([]byte{0x00})
 	c.Assert(pm.validate(sita.instanceTag), ErrorMatches, "prekey profile B value is not a valid DH group member")
 }
