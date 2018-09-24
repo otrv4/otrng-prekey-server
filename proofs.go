@@ -21,8 +21,10 @@ type dhProof struct {
 
 const lambda = uint32(352 / 8) // 44 bytes
 
-func generateRandomExponent(order *big.Int, wr gotrax.WithRandom) *big.Int {
-	n, err := rand.Int(wr.RandReader(), new(big.Int).Sub(order, bigOne))
+type dhRandFunc func(gotrax.WithRandom) *big.Int
+
+func generateRandomExponent(wr gotrax.WithRandom) *big.Int {
+	n, err := rand.Int(wr.RandReader(), new(big.Int).Sub(dhQ, bigOne))
 	if err != nil {
 		return nil
 	}
@@ -129,15 +131,25 @@ func mulAndAddValues(r *big.Int, valuesPrivate []*big.Int, t [][]byte) *big.Int 
 	return r
 }
 
-func generateDhProof(wr gotrax.WithRandom, valuesPrivate []*big.Int, valuesPublic []*big.Int, m []byte, usageID uint8) (*dhProof, error) {
-	r := generateRandomExponent(dhQ, wr)
+func generateDhProof(wr gotrax.WithRandom, valuesPrivate []*big.Int, valuesPublic []*big.Int, m []byte, usageID uint8, rr dhRandFunc) (*dhProof, error) {
+	var r *big.Int
+	if rr != nil {
+		r = rr(wr)
+	} else {
+		r = generateRandomExponent(wr)
+	}
+
 	a := new(big.Int).Exp(g3, r, dhP)
 
 	cbuf := gotrax.AppendMPI([]byte{}, a)
+	// fmt.Printf("cbuf1: %#v\n", cbuf)
 	cbuf = gotrax.AppendMPIs(cbuf, valuesPublic...)
+	// fmt.Printf("cbuf2: %#v\n", cbuf)
 	cbuf = append(cbuf, m...)
+	// fmt.Printf("cbuf3: (len: %d) %#v\n", len(cbuf), cbuf)
 
 	c := gotrax.KdfPrekeyServer(usageID, 64, cbuf)
+	// fmt.Printf("usageID: %d, c: %#v\n", usageID, c)
 	p := gotrax.KdfPrekeyServer(usageProofCLambda, uint32(len(valuesPrivate))*lambda, c)
 	t := splitBufferIntoN(p, uint(len(valuesPrivate)))
 

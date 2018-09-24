@@ -200,7 +200,7 @@ func generatePrekeyMessagesProofs(wr gotrax.WithRandom, ecdhKeys []*gotrax.Keypa
 	}
 	m := gotrax.KdfPrekeyServer(usageProofContext, 64, sk)
 	prof1, _ := generateEcdhProof(wr, ecdhKeys, m, usageProofMessageEcdh)
-	prof2, _ := generateDhProof(wr, dhPriv, dhPub, m, usageProofMessageDh)
+	prof2, _ := generateDhProof(wr, dhPriv, dhPub, m, usageProofMessageDh, nil)
 	return prof1, prof2
 }
 
