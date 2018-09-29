@@ -76,10 +76,16 @@ func (fs *fileStorage) writeData(user, file string, itag uint32, data []byte) er
 }
 
 func (fs *fileStorage) storeClientProfile(user string, cp *gotrax.ClientProfile) error {
+	if cp == nil {
+		return nil
+	}
 	return fs.writeData(user, "cp.bin", cp.InstanceTag, cp.Serialize())
 }
 
 func (fs *fileStorage) storePrekeyProfile(user string, pp *prekeyProfile) error {
+	if pp == nil {
+		return nil
+	}
 	return fs.writeData(user, "pp.bin", pp.instanceTag, pp.serialize())
 }
 
@@ -148,6 +154,9 @@ func (fs *fileStorage) getOrCreatePmDir(userDir string) string {
 }
 
 func (fs *fileStorage) storePrekeyMessages(user string, pms []*prekeyMessage) error {
+	if len(pms) == 0 {
+		return nil
+	}
 	userDir := fs.getOrCreateDirFor(user)
 	t1 := lockDir(userDir)
 	defer unlockDir(userDir, t1)

@@ -72,10 +72,12 @@ func (s *inMemoryStorage) storageEntryFor(from string) *inMemoryStorageEntry {
 }
 
 func (s *inMemoryStorage) storeClientProfile(from string, cp *gotrax.ClientProfile) error {
-	se := s.storageEntryFor(from)
-	se.Lock()
-	defer se.Unlock()
-	se.clientProfiles[cp.InstanceTag] = cp
+	if cp != nil {
+		se := s.storageEntryFor(from)
+		se.Lock()
+		defer se.Unlock()
+		se.clientProfiles[cp.InstanceTag] = cp
+	}
 	return nil
 }
 
