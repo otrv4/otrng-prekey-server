@@ -40,7 +40,7 @@ func (mh *otrngMessageHandler) handleInnerMessage(from string, message []byte) (
 
 	r, e := result.respond(from, mh.s)
 	if e != nil {
-		return nil, e
+		return result.respondError(from, e, mh.s)
 	}
 
 	return r, nil

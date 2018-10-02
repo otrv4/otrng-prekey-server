@@ -59,6 +59,7 @@ type message interface {
 	serializable
 	validate(string, *GenericServer) error
 	respond(string, *GenericServer) (serializable, error)
+	respondError(string, error, *GenericServer) (serializable, error)
 }
 
 func parseVersion(message []byte) uint16 {
@@ -121,6 +122,10 @@ func (m *storageInformationRequestMessage) respond(from string, s *GenericServer
 	return ret, nil
 }
 
+func (m *storageInformationRequestMessage) respondError(from string, e error, s *GenericServer) (serializable, error) {
+	return nil, e
+}
+
 func (m *storageInformationRequestMessage) validate(from string, s *GenericServer) error {
 	prekeyMacK := s.session(from).macKey()
 	tag := gotrax.KdfPrekeyServer(usageStorageInfoMAC, 64, prekeyMacK, []byte{messageTypeStorageInformationRequest})
@@ -148,6 +153,10 @@ func (m *ensembleRetrievalQueryMessage) respond(from string, s *GenericServer) (
 		instanceTag: m.instanceTag,
 		ensembles:   bundles,
 	}, nil
+}
+
+func (m *ensembleRetrievalQueryMessage) respondError(from string, e error, s *GenericServer) (serializable, error) {
+	return nil, e
 }
 
 func serializeProofs(prof1 *ecdhProof, prof2 *dhProof, prof3 *ecdhProof) []byte {
@@ -299,6 +308,17 @@ func generateSuccessMessage(macKey []byte, tag uint32) *successMessage {
 	return m
 }
 
+func generateFailureMessage(macKey []byte, tag uint32) *failureMessage {
+	m := &failureMessage{
+		instanceTag: tag,
+	}
+
+	mac := gotrax.KdfPrekeyServer(usageFailureMAC, 64, gotrax.AppendWord(append(macKey, messageTypeFailure), tag))
+	copy(m.mac[:], mac)
+
+	return m
+}
+
 func (m *publicationMessage) respond(from string, s *GenericServer) (serializable, error) {
 	stor := s.storage()
 	stor.storeClientProfile(from, m.clientProfile)
@@ -311,4 +331,18 @@ func (m *publicationMessage) respond(from string, s *GenericServer) (serializabl
 	s.sessionComplete(from)
 
 	return generateSuccessMessage(macKey, instanceTag), nil
+}
+
+func (m *publicationMessage) respondError(from string, e error, s *GenericServer) (serializable, error) {
+	stor := s.storage()
+	stor.storeClientProfile(from, m.clientProfile)
+	stor.storePrekeyProfile(from, m.prekeyProfile)
+	stor.storePrekeyMessages(from, m.prekeyMessages)
+
+	macKey := s.session(from).macKey()
+	instanceTag := s.session(from).instanceTag()
+
+	s.sessionComplete(from)
+
+	return generateFailureMessage(macKey, instanceTag), nil
 }

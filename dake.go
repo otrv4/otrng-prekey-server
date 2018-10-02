@@ -112,6 +112,14 @@ func (m *dake1Message) respond(from string, s *GenericServer) (serializable, err
 	return generateDake2(m.instanceTag, []byte(s.identity), s.key.Pub.K(), sk.Pub.K(), sigma), nil
 }
 
+func (m *dake1Message) respondError(from string, e error, s *GenericServer) (serializable, error) {
+	return nil, e
+}
+
 func (m *dake3Message) respond(from string, s *GenericServer) (serializable, error) {
 	return s.messageHandler.handleInnerMessage(from, m.message)
+}
+
+func (m *dake3Message) respondError(from string, e error, s *GenericServer) (serializable, error) {
+	return nil, e
 }
