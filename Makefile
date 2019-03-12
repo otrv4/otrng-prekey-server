@@ -37,3 +37,8 @@ lint:
 cover:
 	go test ./... -coverprofile=coverage.out
 	go tool cover -html=coverage.out
+
+update-vendor:
+	go get -u ./...
+	go get -u -t ./...
+	govendor update +v
