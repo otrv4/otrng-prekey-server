@@ -15,6 +15,7 @@ import (
 // fits. There exists an optimal algorithm for doing this, but honestly
 // I don't think it's worth the trouble and complexity to implement it
 
+// Fragmentor contains all the functionality for keeping track of fragmentation or de-fragmentation
 type Fragmentor struct {
 	contexts map[string]*fragmentationContext
 	// For now we will have one big mutex for all contexts
@@ -33,6 +34,7 @@ type fragmentationContext struct {
 	lastTouched time.Time
 }
 
+// NewFragmentor creates a new Fragmentor
 func NewFragmentor(prefix string) *Fragmentor {
 	return &Fragmentor{
 		contexts: make(map[string]*fragmentationContext),
@@ -44,6 +46,7 @@ func (fc *fragmentationContext) hasExpired(timeout time.Duration) bool {
 	return fc.lastTouched.Add(timeout).Before(time.Now())
 }
 
+// Cleanup should be periodically called to remove all old contexts
 func (f *Fragmentor) Cleanup(timeout time.Duration) {
 	toRemove := []string{}
 	for nm, fc := range f.contexts {
@@ -56,6 +59,7 @@ func (f *Fragmentor) Cleanup(timeout time.Duration) {
 	}
 }
 
+// IsFragment checks whether the given message is a fragment
 func (f *Fragmentor) IsFragment(msg string) bool {
 	return strings.HasPrefix(msg, f.prefix) && strings.HasSuffix(msg, ",")
 }
@@ -90,6 +94,7 @@ func (f *Fragmentor) getOrCreate(ctx string, tot uint16) *fragmentationContext {
 	return fc
 }
 
+// InstanceTagsFrom tries to extract the instance tags from the prefix of the given fragmented string
 func (f *Fragmentor) InstanceTagsFrom(frag string) (uint32, uint32, error) {
 	frag = frag[len(f.prefix) : len(frag)-1]
 	fragOne := strings.SplitN(frag, "|", 3)
@@ -208,6 +213,7 @@ func (f *Fragmentor) fragmentData(data string, i, fraglen, l int) string {
 const maxPrefixLen = 10 + 1 + 8 + 1 + 8 + 1 + 5 + 1 + 5 + 1
 const totalEnvelopeLen = maxPrefixLen + 1
 
+// PotentiallyFragment checks whether it should fragment the given message, and if so does it
 func (f *Fragmentor) PotentiallyFragment(msg string, fragLen int, itagS, itagR uint32, r WithRandom) []string {
 	l := len(msg)
 

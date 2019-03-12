@@ -2,6 +2,7 @@ package gotrax
 
 import "github.com/otrv4/ed448"
 
+// Serialize returns a serialization of the given public key
 func (p *PublicKey) Serialize() []byte {
 	keyType := []byte{0xBA, 0xD0}
 	switch p.keyType {
@@ -15,10 +16,12 @@ func (p *PublicKey) Serialize() []byte {
 	return append(keyType, p.k.DSAEncode()...)
 }
 
+// Serialize returns a serialization of the given signature
 func (s *EddsaSignature) Serialize() []byte {
 	return s.s[:]
 }
 
+// Deserialize tries to deserialize the given bytes into a signature or signals failure
 func (s *EddsaSignature) Deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
 	var res []byte
@@ -29,10 +32,12 @@ func (s *EddsaSignature) Deserialize(buf []byte) ([]byte, bool) {
 	return buf, true
 }
 
+// SerializePoint will return the DSA encoding of the ECC point public key
 func SerializePoint(p ed448.Point) []byte {
 	return p.DSAEncode()
 }
 
+// DeserializePoint tries to deserialize the buffer into an ECC public key
 func DeserializePoint(buf []byte) ([]byte, ed448.Point, bool) {
 	if len(buf) < 57 {
 		return buf, nil, false
@@ -50,10 +55,12 @@ func DeserializePoint(buf []byte) ([]byte, ed448.Point, bool) {
 	return buf[57:], tp, true
 }
 
+// SerializeScalar returns the byte level representation of the ECC scalar
 func SerializeScalar(s ed448.Scalar) []byte {
 	return s.Encode()
 }
 
+// DeserializeScalar tries to interpret the bytes given as an ECC scalar, or signals failure
 func DeserializeScalar(buf []byte) ([]byte, ed448.Scalar, bool) {
 	if len(buf) < 56 {
 		return nil, nil, false
@@ -64,6 +71,7 @@ func DeserializeScalar(buf []byte) ([]byte, ed448.Scalar, bool) {
 
 }
 
+// Deserialize tries to interpret the bytes given as an OTR public key, or signals failure
 func (p *PublicKey) Deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
 	pubKeyType := uint16(0)

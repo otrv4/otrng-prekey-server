@@ -7,69 +7,86 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+// KeyType is an OTR key type
 type KeyType uint8
 
 const (
+	// Ed448Key is a key type for Ed448 keys
 	Ed448Key KeyType = iota
+	// SharedPrekeyKey is a key type for a shared prekey
 	SharedPrekeyKey
+	// ForgingKey is a key type for forging keys
 	ForgingKey
 )
 
+// Keypair represents a standard Elliptic Curve keypair
 type Keypair struct {
 	Sym  [SymKeyLength]byte
 	Priv *PrivateKey
 	Pub  *PublicKey
 }
 
+// PublicKey represents a standard Elliptic Curve public key, with a keytype
 type PublicKey struct {
 	k       ed448.Point
 	keyType KeyType
 }
 
+// PrivateKey represents a standard Elliptic Curve privat key
 type PrivateKey struct {
 	k ed448.Scalar
 }
 
+// EddsaSignature represents a 114-byte EdDSA signature
 type EddsaSignature struct {
 	s [114]byte
 }
 
+// K returns the underlying value
 func (pub *PublicKey) K() ed448.Point {
 	return pub.k
 }
 
+// K returns the underlying value
 func (priv *PrivateKey) K() ed448.Scalar {
 	return priv.k
 }
 
+// S returns the underlying value
 func (s *EddsaSignature) S() [114]byte {
 	return s.s
 }
 
+// CreateEddsaSignature will create a new EddsaSignature object from the given bytes
 func CreateEddsaSignature(k [114]byte) *EddsaSignature {
 	return &EddsaSignature{k}
 }
 
+// CreatePublicKey will create a new public key from the given values
 func CreatePublicKey(k ed448.Point, keyType KeyType) *PublicKey {
 	return &PublicKey{k, keyType}
 }
 
+// CreatePrivateKey will create a new private key from the given value
 func CreatePrivateKey(k ed448.Scalar) *PrivateKey {
 	return &PrivateKey{k}
 }
 
+// GenerateKeypair will create a new keypair from the given randomness
 func GenerateKeypair(r WithRandom) *Keypair {
 	sym := [SymKeyLength]byte{}
 	RandomInto(r, sym[:])
 	return DeriveKeypair(sym)
 }
 
+// DeriveKeypair will create a new keypair derived from the bytes given
 func DeriveKeypair(sym [SymKeyLength]byte) *Keypair {
 	digest := [PrivKeyLength]byte{}
 	sha3.ShakeSum256(digest[:], sym[:])
 	return CreateKeypair(digest, sym)
 }
 
+// CreateKeypair will create a new keypair from the private digest and bytes given
 func CreateKeypair(digest [PrivKeyLength]byte, sym [SymKeyLength]byte) *Keypair {
 	digest[0] &= -(ed448.Cofactor)
 	digest[PrivKeyLength-1] = 0
@@ -93,6 +110,7 @@ func CreateKeypair(digest [PrivKeyLength]byte, sym [SymKeyLength]byte) *Keypair 
 	return kp
 }
 
+// ValidatePoint returns an error if the point can't be validated according to standard ECC algorithms
 func ValidatePoint(p ed448.Point) error {
 	if p.Equals(IdentityPoint) {
 		return errors.New("given point is the identity point")
@@ -112,14 +130,17 @@ func ValidatePoint(p ed448.Point) error {
 	return nil
 }
 
+// Fingerprint is a set of bytes representing a longer public key
 type Fingerprint [FingerprintLength]byte
 
+// Fingerprint will generate a fingerprint from the keypair's public key
 func (kp *Keypair) Fingerprint() Fingerprint {
 	return kp.Pub.Fingerprint()
 }
 
-func (p *PublicKey) Fingerprint() Fingerprint {
+// Fingerprint will return an OTR fingerprint from the public key
+func (pub *PublicKey) Fingerprint() Fingerprint {
 	var f Fingerprint
-	Kdfx(usageFingerprint, f[:], p.Serialize())
+	Kdfx(usageFingerprint, f[:], pub.Serialize())
 	return f
 }

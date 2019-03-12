@@ -1,5 +1,6 @@
 package gotrax
 
+// Deserialize will deserialize a ring signature or return failure
 func (r *RingSignature) Deserialize(buf []byte) ([]byte, bool) {
 	var ok bool
 	if buf, r.C1, ok = DeserializeScalar(buf); !ok {
@@ -29,6 +30,7 @@ func (r *RingSignature) Deserialize(buf []byte) ([]byte, bool) {
 	return buf, true
 }
 
+// Serialize will return the serialization of the ring signature
 func (r *RingSignature) Serialize() []byte {
 	var out []byte
 	out = append(out, SerializeScalar(r.C1)...)
