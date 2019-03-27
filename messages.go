@@ -47,11 +47,13 @@ type ensembleRetrievalQueryMessage struct {
 
 type ensembleRetrievalMessage struct {
 	instanceTag uint32
+	identity    string
 	ensembles   []*prekeyEnsemble
 }
 
 type noPrekeyEnsemblesMessage struct {
 	instanceTag uint32
+	identity    string
 	message     string
 }
 
@@ -146,11 +148,13 @@ func (m *ensembleRetrievalQueryMessage) respond(from string, s *GenericServer) (
 	if len(bundles) == 0 {
 		return &noPrekeyEnsemblesMessage{
 			instanceTag: m.instanceTag,
+			identity:    m.identity,
 			message:     noPrekeyMessagesAvailableMessage,
 		}, nil
 	}
 	return &ensembleRetrievalMessage{
 		instanceTag: m.instanceTag,
+		identity:    m.identity,
 		ensembles:   bundles,
 	}, nil
 }

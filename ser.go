@@ -431,6 +431,7 @@ func (m *ensembleRetrievalMessage) serialize() []byte {
 	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypeEnsembleRetrieval)
 	out = gotrax.AppendWord(out, m.instanceTag)
+	out = gotrax.AppendData(out, []byte(m.identity))
 	out = append(out, uint8(len(m.ensembles)))
 	for _, pe := range m.ensembles {
 		out = append(out, pe.serialize()...)
@@ -455,6 +456,12 @@ func (m *ensembleRetrievalMessage) deserialize(buf []byte) ([]byte, bool) {
 		return nil, false
 	}
 
+	var tmpd []byte
+	if buf, tmpd, ok = gotrax.ExtractData(buf); !ok {
+		return nil, false
+	}
+	m.identity = string(tmpd)
+
 	var tmp uint8
 	if buf, tmp, ok = gotrax.ExtractByte(buf); !ok || tmp == 0 {
 		return nil, false
@@ -475,6 +482,7 @@ func (m *noPrekeyEnsemblesMessage) serialize() []byte {
 	out := gotrax.AppendShort(nil, version)
 	out = append(out, messageTypeNoPrekeyEnsembles)
 	out = gotrax.AppendWord(out, m.instanceTag)
+	out = gotrax.AppendData(out, []byte(m.identity))
 	out = gotrax.AppendData(out, []byte(m.message))
 	return out
 }
@@ -496,6 +504,11 @@ func (m *noPrekeyEnsemblesMessage) deserialize(buf []byte) ([]byte, bool) {
 	}
 
 	var tmp []byte
+	if buf, tmp, ok = gotrax.ExtractData(buf); !ok {
+		return nil, false
+	}
+	m.identity = string(tmp)
+
 	if buf, tmp, ok = gotrax.ExtractData(buf); !ok {
 		return nil, false
 	}

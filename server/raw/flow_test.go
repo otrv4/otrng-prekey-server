@@ -31,7 +31,7 @@ func (s *RawServerSuite) Test_flowTest_success(c *C) {
 	defer con.Close()
 
 	ensembleRetrievalQueryMessage := "AAQQEkRVEQAAABBzaXRhQGV4YW1wbGUub3JnAAAAAQQ=."
-	expectedResult := "AAQOEkRVEQAAAC5ObyBQcmVrZXkgTWVzc2FnZXMgYXZhaWxhYmxlIGZvciB0aGlzIGlkZW50aXR5."
+	expectedResult := "AAQOEkRVEQAAABBzaXRhQGV4YW1wbGUub3JnAAAALk5vIFByZWtleSBNZXNzYWdlcyBhdmFpbGFibGUgZm9yIHRoaXMgaWRlbnRpdHk=."
 	from := "rama@example.org"
 
 	toSend := []byte{}
@@ -48,7 +48,7 @@ func (s *RawServerSuite) Test_flowTest_success(c *C) {
 	res, e := ioutil.ReadAll(con)
 	c.Assert(e, IsNil)
 	_, ss, _ := extractShort(res)
-	c.Assert(ss, Equals, uint16(77))
+	c.Assert(ss, Equals, uint16(105))
 	c.Assert(string(res[2:]), Equals, expectedResult)
 
 	c.Assert(capture.finish(), Equals,

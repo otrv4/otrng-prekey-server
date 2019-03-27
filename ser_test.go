@@ -1557,6 +1557,7 @@ func (s *GenericServerSuite) Test_noPrekeyEnsemblesMessage_shouldSerializeCorrec
 	m := &noPrekeyEnsemblesMessage{}
 	m.instanceTag = 0x4253112D
 	m.message = "no prekeys, sorry very sorry"
+	m.identity = "ola"
 	expected := []byte{
 		// version
 		0x00, 0x04,
@@ -1566,6 +1567,10 @@ func (s *GenericServerSuite) Test_noPrekeyEnsemblesMessage_shouldSerializeCorrec
 
 		// instance tag
 		0x42, 0x53, 0x11, 0x2D,
+
+		// identity
+		0x0, 0x0, 0x0, 0x3,
+		0x6f, 0x6c, 0x61,
 
 		// message
 		0x00, 0x00, 0x00, 0x1C, 0x6E, 0x6F, 0x20, 0x70,
@@ -1589,6 +1594,10 @@ func (s *GenericServerSuite) Test_noPrekeyEnsemblesMessage_shouldDeserializeCorr
 		// instance tag
 		0x42, 0x53, 0x11, 0x2D,
 
+		// identity
+		0x0, 0x0, 0x0, 0x3,
+		0x6f, 0x6c, 0x61,
+
 		// message
 		0x00, 0x00, 0x00, 0x1C, 0x6E, 0x6F, 0x20, 0x70,
 		0x72, 0x65, 0x6B, 0x65, 0x79, 0x73, 0x2C, 0x20,
@@ -1596,6 +1605,7 @@ func (s *GenericServerSuite) Test_noPrekeyEnsemblesMessage_shouldDeserializeCorr
 		0x72, 0x79, 0x20, 0x73, 0x6F, 0x72, 0x72, 0x79,
 	})
 	c.Assert(ok, Equals, true)
+	c.Assert(m.identity, Equals, "ola")
 	c.Assert(m.instanceTag, Equals, uint32(0x4253112D))
 	c.Assert(m.message, DeepEquals, "no prekeys, sorry very sorry")
 }
@@ -2903,6 +2913,8 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_shouldSerializeCorrec
 		pe,
 	}
 
+	m.identity = "ola"
+
 	expected := []byte{
 		// version
 		0x00, 0x04,
@@ -2912,6 +2924,10 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_shouldSerializeCorrec
 
 		// instance tag
 		0x12, 0x34, 0xAA, 0xBB,
+
+		// identity
+		0x0, 0x0, 0x0, 0x3,
+		0x6f, 0x6c, 0x61,
 
 		// L
 		0x01,
@@ -3052,6 +3068,10 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_shouldDeserializeCorr
 		// instance tag
 		0x12, 0x34, 0xAA, 0xBB,
 
+		// identity
+		0x0, 0x0, 0x0, 0x3,
+		0x6f, 0x6c, 0x61,
+
 		// L
 		0x01,
 
@@ -3167,6 +3187,7 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_shouldDeserializeCorr
 
 	c.Assert(ok, Equals, true)
 
+	c.Assert(m.identity, Equals, "ola")
 	c.Assert(len(m.ensembles), Equals, 1)
 	c.Assert(m.ensembles[0].cp, Not(IsNil))
 	c.Assert(m.ensembles[0].cp.InstanceTag, Equals, uint32(0x4253112A))
