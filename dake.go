@@ -104,9 +104,11 @@ func (m *dake1Message) respond(from string, s *GenericServer) (serializable, err
 	t = append(t, gotrax.SerializePoint(m.i)...)
 	t = append(t, gotrax.SerializePoint(sk.Pub.K())...)
 	t = append(t, gotrax.KdfPrekeyServer(usageInitiatorPrekeyCompositePHI, 64, phi)...)
+	fmt.Println("AM I THE GOLANG ONE")
 	for i := 0; i < 306; i++ {
 		fmt.Printf("0x%02x ", t[i])
 	}
+	fmt.Println("")
 
 	sigma, e := gotrax.GenerateSignature(s, s.key.Priv, s.key.Pub, m.clientProfile.PublicKey, s.key.Pub, gotrax.CreatePublicKey(m.i, gotrax.Ed448Key), t, gotrax.KdfPrekeyServer, usageAuth)
 	if e != nil {
