@@ -105,7 +105,7 @@ func (m *dake1Message) respond(from string, s *GenericServer) (serializable, err
 	t = append(t, gotrax.SerializePoint(sk.Pub.K())...)
 	t = append(t, gotrax.KdfPrekeyServer(usageInitiatorPrekeyCompositePHI, 64, phi)...)
 	fmt.Println("AM I THE GOLANG ONE")
-	for i := 0; i < 306; i++ {
+	for i := 64; i < 128; i++ {
 		fmt.Printf("0x%02x ", t[i])
 	}
 	fmt.Println("")

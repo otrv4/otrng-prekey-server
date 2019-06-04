@@ -97,7 +97,7 @@ func (g *GenericServer) cleanupAfter() {
 }
 
 func (g *GenericServer) compositeIdentity() []byte {
-	return append(gotrax.AppendData(nil, []byte(g.identity)), g.key.Pub.Serialize()...)
+	return append(gotrax.AppendData(nil, []byte(g.identity)))
 }
 
 func (g *GenericServer) session(from string) session {
