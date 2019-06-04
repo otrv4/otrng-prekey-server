@@ -2,6 +2,7 @@ package prekeyserver
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"time"
 
@@ -97,6 +98,9 @@ func (g *GenericServer) cleanupAfter() {
 }
 
 func (g *GenericServer) compositeIdentity() []byte {
+	fmt.Printf("string identity %s \n", g.identity)
+	fmt.Printf("byte identity %x \n", []byte(g.identity))
+	fmt.Printf("appended byte identity %x \n", append(gotrax.AppendData(nil, []byte(g.identity))))
 	return append(gotrax.AppendData(nil, []byte(g.identity)))
 }
 
