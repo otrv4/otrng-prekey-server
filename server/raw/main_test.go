@@ -43,7 +43,7 @@ func (s *RawServerSuite) Test_main_printsErrorFromRun(c *C) {
 
 	c.Assert(capture.finish(), Equals,
 		"Starting server on localhost:3242...\n"+
-			"  [BBF1E0F815113A2E 016ADE9398D8CA6C C48DB33134F09918 A478A6CC98A9F0E7 A435962990B44512 5D1BC95FA9AA2D91 46BBC3F5061AE490]\n"+
+			"BBF1E0F815113A2E 016ADE9398D8CA6C C48DB33134F09918 A478A6CC98A9F0E7 A435962990B44512 5D1BC95FA9AA2D91 46BBC3F5061AE490\n"+
 			"encountered error when running listener: listen tcp 127.0.0.1:3242: bind: address already in use\n",
 	)
 }

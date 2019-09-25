@@ -51,9 +51,7 @@ func (rs *rawServer) load(f pks.Factory) error {
 
 func (rs *rawServer) run() error {
 	fmt.Printf("Starting server on %s...\n", net.JoinHostPort(*listenIP, fmt.Sprintf("%d", *listenPort)))
-	fmt.Print("lol")
-	fmt.Printf("%s \n", formatFingerprint(rs.kp.Fingerprint()))
-	fmt.Printf("  [%s]\n", formatFingerprint(rs.kp.Fingerprint()))
+	fmt.Printf("%s\n", formatFingerprint(rs.kp.Fingerprint()))
 
 	if e := rs.listenWith(); e != nil {
 		return fmt.Errorf("encountered error when running listener: %v", e)
