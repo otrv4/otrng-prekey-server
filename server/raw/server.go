@@ -82,11 +82,9 @@ func (rs *rawServer) listenWith() error {
 				fmt.Printf("Couldn't establish the connection")
 				return err
 			} else if te.Timeout() {
-				fmt.Printf("%s", err)
-				continue
+				return err
 			} else if te.Temporary() {
-				fmt.Printf("%s", err)
-				continue
+				return err
 			}
 		}
 	}
