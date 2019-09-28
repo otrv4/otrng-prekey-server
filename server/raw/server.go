@@ -80,7 +80,9 @@ func (rs *rawServer) listenWith() error {
 			go rs.handleRequest(conn)
 		} else {
 			fmt.Println("AM I HERE 1")
-			if te, ok := err.(net.Error); !ok || !te.Timeout() {
+			if te, ok := err.(net.Error); !ok || te.Timeout() {
+				fmt.Printf("Is this a timeout? %t", te.Timeout())
+				fmt.Printf("Is this a timeout? %t", te.Temporary())
 				return err
 			}
 		}
