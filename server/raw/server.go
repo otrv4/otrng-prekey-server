@@ -65,10 +65,12 @@ func (rs *rawServer) listenWith() error {
 		return e
 	}
 	l, err := net.ListenTCP("tcp", addr)
+	fmt.Println("AM I HERE 3")
 	if err != nil {
 		return err
 	}
 	rs.l = l
+	fmt.Println("AM I HERE 4")
 	defer rs.l.Close()
 	for !rs.finishRequested {
 		l.SetDeadline(time.Now().Add(time.Duration(100) * time.Millisecond))
@@ -77,11 +79,13 @@ func (rs *rawServer) listenWith() error {
 			conn.SetDeadline(time.Now().Add(time.Duration(2) * time.Minute))
 			go rs.handleRequest(conn)
 		} else {
+			fmt.Println("AM I HERE 1")
 			if te, ok := err.(net.Error); !ok || !te.Timeout() {
 				return err
 			}
 		}
 	}
+	fmt.Println("AM I HERE 2")
 	return nil
 }
 
