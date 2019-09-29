@@ -77,13 +77,7 @@ func (rs *rawServer) listenWith() error {
 			conn.SetDeadline(time.Now().Add(time.Duration(2) * time.Minute))
 			go rs.handleRequest(conn)
 		} else {
-			te, ok := err.(net.Error)
-			if !ok {
-				fmt.Printf("Couldn't establish the connection")
-				return err
-			} else if te.Timeout() {
-				return err
-			} else if te.Temporary() {
+			if te, ok := err.(net.Error); !ok || !te.Timeout() {
 				return err
 			}
 		}
