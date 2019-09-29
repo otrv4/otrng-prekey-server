@@ -54,7 +54,6 @@ func (rs *rawServer) run() error {
 	fmt.Printf("%s\n", formatFingerprint(rs.kp.Fingerprint()))
 
 	if e := rs.listenWith(); e != nil {
-		fmt.Println("AM I HERE \n")
 		return fmt.Errorf("encountered error when running listener: %v", e)
 	}
 	return nil
@@ -80,7 +79,7 @@ func (rs *rawServer) listenWith() error {
 		} else {
 			if te, ok := err.(net.Error); !ok {
 				if te.Timeout() {
-					fmt.Println("CONTINUE \n")
+					fmt.Println("Timeout but continuing...")
 				} else {
 					return err
 				}
