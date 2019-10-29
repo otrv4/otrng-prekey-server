@@ -4,8 +4,8 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
+	"github.com/otrv4/gotrx"
 	. "gopkg.in/check.v1"
 )
 
@@ -13,15 +13,15 @@ func (s *GenericServerSuite) Test_dake1Message_shouldSerializeCorrectly(c *C) {
 	d1 := &dake1Message{}
 	d1.instanceTag = 0x4253112A
 	d1.i = generatePointFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF})
-	d1.clientProfile = &gotrax.ClientProfile{}
+	d1.clientProfile = &gotrx.ClientProfile{}
 	d1.clientProfile.InstanceTag = 0x4253112A
 	d1.clientProfile.PublicKey = generatePublicKeyFrom([symKeyLength]byte{0xAB, 0x42})
-	d1.clientProfile.ForgingKey = gotrax.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0xCD, 0x53}).K(), gotrax.ForgingKey)
+	d1.clientProfile.ForgingKey = gotrx.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0xCD, 0x53}).K(), gotrx.ForgingKey)
 	d1.clientProfile.Versions = []byte{0x04}
 	d1.clientProfile.Expiration = time.Date(2034, 11, 5, 13, 46, 00, 12, time.UTC)
 	d1.clientProfile.DsaKey = nil
 	d1.clientProfile.TransitionalSignature = nil
-	d1.clientProfile.Sig = gotrax.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12})
+	d1.clientProfile.Sig = gotrx.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12})
 
 	expected := []byte{
 		// version
@@ -171,7 +171,7 @@ func (s *GenericServerSuite) Test_dake1Message_shouldDeserializeCorrectly(c *C) 
 	c.Assert(d1.clientProfile.Expiration, Equals, time.Date(2034, 11, 5, 13, 46, 00, 00, time.UTC))
 	c.Assert(d1.clientProfile.DsaKey, IsNil)
 	c.Assert(d1.clientProfile.TransitionalSignature, IsNil)
-	c.Assert(d1.clientProfile.Sig, DeepEquals, gotrax.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12}))
+	c.Assert(d1.clientProfile.Sig, DeepEquals, gotrx.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12}))
 	c.Assert(d1.i.Equals(generatePointFrom([symKeyLength]byte{0x42, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF})), Equals, true)
 }
 
@@ -446,10 +446,10 @@ func (s *GenericServerSuite) Test_dake2Message_shouldSerializeCorrectly(c *C) {
 	d2 := &dake2Message{}
 	d2.instanceTag = 0x4253112B
 	d2.serverIdentity = []byte("prekey1.example.org")
-	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrx.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	d2.serverKey = serverKey.Pub.K()
 	d2.s = generatePointFrom([symKeyLength]byte{0x41, 0x12, 0xAC, 0xDF, 0xBD, 0xBF, 0xFE})
-	d2.sigma = &gotrax.RingSignature{
+	d2.sigma = &gotrx.RingSignature{
 		C1: generateScalarFrom(0x01, 0x42, 0x12, 0xAB, 0xFC),
 		R1: generateScalarFrom(0x01, 0x42, 0x12, 0xAB, 0xFD),
 		C2: generateScalarFrom(0x02, 0x42, 0x15, 0xAB, 0xFC),
@@ -656,7 +656,7 @@ func (s *GenericServerSuite) Test_dake2Message_shouldDeserializeCorrectly(c *C) 
 	c.Assert(ok, Equals, true)
 	c.Assert(d2.instanceTag, Equals, uint32(0x4253112B))
 	c.Assert(d2.serverIdentity, DeepEquals, []byte("prekey1.example.org"))
-	c.Assert(gotrax.SerializePoint(d2.serverKey), DeepEquals, []byte{
+	c.Assert(gotrx.SerializePoint(d2.serverKey), DeepEquals, []byte{
 		0xaf, 0xde, 0x43, 0x7d, 0x1e, 0x80, 0xf8, 0x1a,
 		0xb7, 0xfe, 0x5b, 0x21, 0x8c, 0x59, 0xa5, 0xff,
 		0x5d, 0x7, 0xbb, 0xe1, 0xab, 0xe9, 0xc7, 0xaf,
@@ -678,7 +678,7 @@ func (s *GenericServerSuite) Test_dake2Message_shouldDeserializeCorrectly(c *C) 
 func (s *GenericServerSuite) Test_dake3Message_shouldSerializeCorrectly(c *C) {
 	d3 := &dake3Message{}
 	d3.instanceTag = 0x4253112C
-	d3.sigma = &gotrax.RingSignature{
+	d3.sigma = &gotrx.RingSignature{
 		C1: generateScalarFrom(0x01, 0x43, 0x12, 0xAB, 0xFC),
 		R1: generateScalarFrom(0x01, 0x43, 0x12, 0xAB, 0xFD),
 		C2: generateScalarFrom(0x02, 0x43, 0x15, 0xAB, 0xFC),
@@ -2294,24 +2294,24 @@ func (s *GenericServerSuite) Test_publicationMessage_shouldSerializeCorrectly_wi
 func (s *GenericServerSuite) Test_publicationMessage_shouldSerializeCorrectly_withAllThreeTypes(c *C) {
 	m := &publicationMessage{}
 
-	cp := &gotrax.ClientProfile{}
+	cp := &gotrx.ClientProfile{}
 	cp.InstanceTag = 0x4253112A
 	cp.PublicKey = generatePublicKeyFrom([symKeyLength]byte{0xAB, 0x42})
-	cp.PublicKey = gotrax.CreatePublicKey(cp.PublicKey.K(), gotrax.Ed448Key)
-	cp.ForgingKey = gotrax.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0xCD, 0x53}).K(), gotrax.ForgingKey)
+	cp.PublicKey = gotrx.CreatePublicKey(cp.PublicKey.K(), gotrx.Ed448Key)
+	cp.ForgingKey = gotrx.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0xCD, 0x53}).K(), gotrx.ForgingKey)
 	cp.Versions = []byte{0x04}
 	cp.Expiration = time.Date(2034, 11, 5, 13, 46, 00, 12, time.UTC)
 	cp.DsaKey = nil
 	cp.TransitionalSignature = nil
-	cp.Sig = gotrax.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12})
+	cp.Sig = gotrx.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12})
 	m.clientProfile = cp
 
 	pp := &prekeyProfile{}
 	pp.instanceTag = 0x1234ABC1
 	pp.expiration = time.Date(2034, 11, 5, 13, 46, 00, 12, time.UTC)
 	pp.sharedPrekey = generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF})
-	pp.sharedPrekey = gotrax.CreatePublicKey(pp.sharedPrekey.K(), gotrax.SharedPrekeyKey)
-	pp.sig = gotrax.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11})
+	pp.sharedPrekey = gotrx.CreatePublicKey(pp.sharedPrekey.K(), gotrx.SharedPrekeyKey)
+	pp.sig = gotrx.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11})
 	m.prekeyProfile = pp
 
 	pm1 := &prekeyMessage{}
@@ -2843,13 +2843,13 @@ func (s *GenericServerSuite) Test_publicationMessage_shouldDeserializeCorrectly_
 	c.Assert(m.clientProfile.Expiration, Equals, time.Date(2034, 11, 5, 13, 46, 00, 00, time.UTC))
 	c.Assert(m.clientProfile.DsaKey, IsNil)
 	c.Assert(m.clientProfile.TransitionalSignature, IsNil)
-	c.Assert(m.clientProfile.Sig, DeepEquals, gotrax.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12}))
+	c.Assert(m.clientProfile.Sig, DeepEquals, gotrx.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12}))
 
 	c.Assert(m.prekeyProfile, Not(IsNil))
 	c.Assert(m.prekeyProfile.instanceTag, Equals, uint32(0x1234ABC1))
 	c.Assert(m.prekeyProfile.expiration, DeepEquals, time.Date(2034, 11, 5, 13, 46, 00, 00, time.UTC))
 	c.Assert(m.prekeyProfile.sharedPrekey.K().Equals(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).K()), Equals, true)
-	c.Assert(m.prekeyProfile.sig, DeepEquals, gotrax.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11}))
+	c.Assert(m.prekeyProfile.sig, DeepEquals, gotrx.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11}))
 
 	c.Assert(len(m.prekeyMessages), Equals, 1)
 	c.Assert(m.prekeyMessages[0].identifier, Equals, uint32(0x4264212E))
@@ -2887,21 +2887,21 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_shouldSerializeCorrec
 
 	pe := &prekeyEnsemble{}
 
-	pe.cp = &gotrax.ClientProfile{}
+	pe.cp = &gotrx.ClientProfile{}
 	pe.cp.InstanceTag = 0x4253112A
-	pe.cp.PublicKey = gotrax.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0xAB, 0x42}).K(), gotrax.Ed448Key)
-	pe.cp.ForgingKey = gotrax.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0xCD, 0x53}).K(), gotrax.ForgingKey)
+	pe.cp.PublicKey = gotrx.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0xAB, 0x42}).K(), gotrx.Ed448Key)
+	pe.cp.ForgingKey = gotrx.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0xCD, 0x53}).K(), gotrx.ForgingKey)
 	pe.cp.Versions = []byte{0x04}
 	pe.cp.Expiration = time.Date(2034, 11, 5, 13, 46, 00, 12, time.UTC)
 	pe.cp.DsaKey = nil
 	pe.cp.TransitionalSignature = nil
-	pe.cp.Sig = gotrax.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12})
+	pe.cp.Sig = gotrx.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12})
 
 	pe.pp = &prekeyProfile{}
 	pe.pp.instanceTag = 0x1234ABC1
 	pe.pp.expiration = time.Date(2034, 11, 5, 13, 46, 00, 12, time.UTC)
-	pe.pp.sharedPrekey = gotrax.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).K(), gotrax.SharedPrekeyKey)
-	pe.pp.sig = gotrax.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11})
+	pe.pp.sharedPrekey = gotrx.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).K(), gotrx.SharedPrekeyKey)
+	pe.pp.sig = gotrx.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11})
 
 	pe.pm = &prekeyMessage{}
 	pe.pm.identifier = 0x4264212E
@@ -3196,12 +3196,12 @@ func (s *GenericServerSuite) Test_ensembleRetrievalMessage_shouldDeserializeCorr
 	c.Assert(m.ensembles[0].cp.Expiration, Equals, time.Date(2034, 11, 5, 13, 46, 00, 00, time.UTC))
 	c.Assert(m.ensembles[0].cp.DsaKey, IsNil)
 	c.Assert(m.ensembles[0].cp.TransitionalSignature, IsNil)
-	c.Assert(m.ensembles[0].cp.Sig, DeepEquals, gotrax.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12}))
+	c.Assert(m.ensembles[0].cp.Sig, DeepEquals, gotrx.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12}))
 
 	c.Assert(m.ensembles[0].pp.instanceTag, Equals, uint32(0x1234ABC1))
 	c.Assert(m.ensembles[0].pp.expiration, DeepEquals, time.Date(2034, 11, 5, 13, 46, 00, 00, time.UTC))
 	c.Assert(m.ensembles[0].pp.sharedPrekey.K().Equals(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).K()), Equals, true)
-	c.Assert(m.ensembles[0].pp.sig, DeepEquals, gotrax.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11}))
+	c.Assert(m.ensembles[0].pp.sig, DeepEquals, gotrx.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11}))
 
 	c.Assert(m.ensembles[0].pm.identifier, Equals, uint32(0x4264212E))
 	c.Assert(m.ensembles[0].pm.instanceTag, Equals, uint32(0x1234ABC0))
@@ -3302,8 +3302,8 @@ func (s *GenericServerSuite) Test_prekeyProfile_shouldSerializeCorrectly(c *C) {
 	m := &prekeyProfile{}
 	m.instanceTag = 0x1234ABC1
 	m.expiration = time.Date(2034, 11, 5, 13, 46, 00, 12, time.UTC)
-	m.sharedPrekey = gotrax.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).K(), gotrax.SharedPrekeyKey)
-	m.sig = gotrax.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11})
+	m.sharedPrekey = gotrx.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).K(), gotrx.SharedPrekeyKey)
+	m.sig = gotrx.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11})
 
 	expected := []byte{
 		// // version
@@ -3397,27 +3397,27 @@ func (s *GenericServerSuite) Test_prekeyProfile_shouldDeserializeCorrectly(c *C)
 	c.Assert(m.instanceTag, Equals, uint32(0x1234ABC1))
 	c.Assert(m.expiration, DeepEquals, time.Date(2034, 11, 5, 13, 46, 00, 00, time.UTC))
 	c.Assert(m.sharedPrekey.K().Equals(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).K()), Equals, true)
-	c.Assert(m.sig, DeepEquals, gotrax.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11}))
+	c.Assert(m.sig, DeepEquals, gotrx.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11}))
 }
 
 func (s *GenericServerSuite) Test_prekeyEnsemble_shouldSerializeCorrectly(c *C) {
 	m := &prekeyEnsemble{}
-	cp := &gotrax.ClientProfile{}
+	cp := &gotrx.ClientProfile{}
 	cp.InstanceTag = 0x4253112A
-	cp.PublicKey = gotrax.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0xAB, 0x42}).K(), gotrax.Ed448Key)
-	cp.ForgingKey = gotrax.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0xCD, 0x53}).K(), gotrax.ForgingKey)
+	cp.PublicKey = gotrx.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0xAB, 0x42}).K(), gotrx.Ed448Key)
+	cp.ForgingKey = gotrx.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0xCD, 0x53}).K(), gotrx.ForgingKey)
 	cp.Versions = []byte{0x04}
 	cp.Expiration = time.Date(2034, 11, 5, 13, 46, 00, 12, time.UTC)
 	cp.DsaKey = nil
 	cp.TransitionalSignature = nil
-	cp.Sig = gotrax.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12})
+	cp.Sig = gotrx.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12})
 	m.cp = cp
 
 	pp := &prekeyProfile{}
 	pp.instanceTag = 0x1234ABC1
 	pp.expiration = time.Date(2034, 11, 5, 13, 46, 00, 12, time.UTC)
-	pp.sharedPrekey = gotrax.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).K(), gotrax.SharedPrekeyKey)
-	pp.sig = gotrax.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11})
+	pp.sharedPrekey = gotrx.CreatePublicKey(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).K(), gotrx.SharedPrekeyKey)
+	pp.sig = gotrx.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11})
 	m.pp = pp
 
 	pm := &prekeyMessage{}
@@ -3679,12 +3679,12 @@ func (s *GenericServerSuite) Test_prekeyEnsemble_shouldDeserializeCorrectly(c *C
 	c.Assert(m.cp.Expiration, Equals, time.Date(2034, 11, 5, 13, 46, 00, 00, time.UTC))
 	c.Assert(m.cp.DsaKey, IsNil)
 	c.Assert(m.cp.TransitionalSignature, IsNil)
-	c.Assert(m.cp.Sig, DeepEquals, gotrax.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12}))
+	c.Assert(m.cp.Sig, DeepEquals, gotrx.CreateEddsaSignature([114]byte{0x15, 0x00, 0x00, 0x00, 0x12}))
 
 	c.Assert(m.pp.instanceTag, Equals, uint32(0x1234ABC1))
 	c.Assert(m.pp.expiration, DeepEquals, time.Date(2034, 11, 5, 13, 46, 00, 00, time.UTC))
 	c.Assert(m.pp.sharedPrekey.K().Equals(generatePublicKeyFrom([symKeyLength]byte{0x44, 0x11, 0xAA, 0xDE, 0xAD, 0xBE, 0xEF}).K()), Equals, true)
-	c.Assert(m.pp.sig, DeepEquals, gotrax.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11}))
+	c.Assert(m.pp.sig, DeepEquals, gotrx.CreateEddsaSignature([114]byte{0x16, 0x00, 0x00, 0x00, 0x12, 0x11}))
 
 	c.Assert(m.pm.identifier, Equals, uint32(0x4264212E))
 	c.Assert(m.pm.instanceTag, Equals, uint32(0x1234ABC0))

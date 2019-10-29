@@ -1,8 +1,8 @@
 package prekeyserver
 
 import (
-	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
+	"github.com/otrv4/gotrx"
 	. "gopkg.in/check.v1"
 )
 
@@ -13,10 +13,10 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnMess
 
 func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnErrorsFromResponse(c *C) {
 	stor := createInMemoryStorage()
-	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrx.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        gotrax.FixtureRand(),
+		rand:        gotrx.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.Pub.Fingerprint(),
 		storageImpl: stor,
@@ -30,10 +30,10 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnErro
 
 func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnRestrictedDake1(c *C) {
 	stor := createInMemoryStorage()
-	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrx.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        gotrax.FixtureRand(),
+		rand:        gotrx.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.Pub.Fingerprint(),
 		storageImpl: stor,
@@ -51,10 +51,10 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnRest
 
 func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnRestrictedDake3(c *C) {
 	stor := createInMemoryStorage()
-	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrx.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        gotrax.FixtureRand(),
+		rand:        gotrx.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.Pub.Fingerprint(),
 		storageImpl: stor,
@@ -70,18 +70,18 @@ func (s *GenericServerSuite) Test_otrngMessageHandler_handleMessage_errorsOnRest
 	d2 := dake2Message{}
 	d2.deserialize(r)
 
-	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
+	phi := gotrx.AppendData(gotrx.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
-	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
-	t = append(t, gotrax.SerializePoint(d2.s)...)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, gotrx.SerializePoint(sita.i.Pub.K())...)
+	t = append(t, gotrx.SerializePoint(d2.s)...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := gotrax.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t, gotrax.KdfPrekeyServer, usageAuth)
-	sk := gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
-	sitaPrekeyMac := gotrax.KdfPrekeyServer(usagePreMACKey, 64, sk)
+	sigma, _ := gotrx.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrx.CreatePublicKey(d2.s, gotrx.Ed448Key), t, gotrx.KdfPrekeyServer, usageAuth)
+	sk := gotrx.KdfPrekeyServer(usageSK, skLength, gotrx.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
+	sitaPrekeyMac := gotrx.KdfPrekeyServer(usagePreMACKey, 64, sk)
 	msg := generateStorageInformationRequestMessage(sitaPrekeyMac)
 
 	d3 := generateDake3(sita.instanceTag, sigma, msg.serialize())

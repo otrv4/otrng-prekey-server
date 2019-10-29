@@ -5,7 +5,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/coyim/gotrax"
+	"github.com/otrv4/gotrx"
 	. "gopkg.in/check.v1"
 )
 
@@ -73,7 +73,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_willValidateAValid
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand:     gotrax.FixtureRand(),
+		rand:     gotrx.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
@@ -84,7 +84,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_willValidateAValid
 	pp1, ppk1 := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pm1, pmk1, pmbpriv1, pmbpub1 := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, pmk2, pmbpriv2, pmbpub2 := generatePrekeyMessage(gs, sita.instanceTag)
-	prof1, prof2 := generatePrekeyMessagesProofs(gs, []*gotrax.Keypair{pmk1, pmk2}, []*big.Int{pmbpriv1, pmbpriv2}, []*big.Int{pmbpub1, pmbpub2}, sitaSK)
+	prof1, prof2 := generatePrekeyMessagesProofs(gs, []*gotrx.Keypair{pmk1, pmk2}, []*big.Int{pmbpriv1, pmbpriv2}, []*big.Int{pmbpub1, pmbpub2}, sitaSK)
 	prof3 := gemeratePrekeyProfileProof(gs, ppk1, sitaSK)
 
 	msg := generatePublicationMessage(sita.clientProfile, pp1, []*prekeyMessage{pm1, pm2}, prof1, prof2, prof3, sitaPrekeyMacK)
@@ -113,7 +113,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidMac(
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand:     gotrax.FixtureRand(),
+		rand:     gotrx.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
@@ -158,7 +158,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidClie
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand:     gotrax.FixtureRand(),
+		rand:     gotrx.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = 0xDDDDAAAA
@@ -168,7 +168,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidClie
 
 	cp := generateSitaTestData().clientProfile
 	cp.Expiration = time.Date(2017, 11, 5, 13, 46, 00, 13, time.UTC)
-	cp.Sig = gotrax.CreateEddsaSignature(cp.GenerateSignature(sita.longTerm))
+	cp.Sig = gotrx.CreateEddsaSignature(cp.GenerateSignature(sita.longTerm))
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pm1, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
@@ -198,7 +198,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidPrek
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand:     gotrax.FixtureRand(),
+		rand:     gotrx.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
@@ -208,7 +208,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidPrek
 
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pp1.instanceTag = 0xAADDAADD
-	pp1.sig = gotrax.CreateEddsaSignature(pp1.generateSignature(sita.longTerm))
+	pp1.sig = gotrx.CreateEddsaSignature(pp1.generateSignature(sita.longTerm))
 	pm1, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	msg := generatePublicationMessage(sita.clientProfile, pp1, []*prekeyMessage{pm1, pm2}, nil, nil, nil, sitaPrekeyMacK)
@@ -237,7 +237,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidPrek
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand:     gotrax.FixtureRand(),
+		rand:     gotrx.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
@@ -275,7 +275,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnMissingProo
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand:     gotrax.FixtureRand(),
+		rand:     gotrx.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
@@ -286,7 +286,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnMissingProo
 	pp1, ppk1 := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pm1, pmk1, pmbpriv1, pmbpub1 := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, pmk2, pmbpriv2, pmbpub2 := generatePrekeyMessage(gs, sita.instanceTag)
-	prof1, prof2 := generatePrekeyMessagesProofs(gs, []*gotrax.Keypair{pmk1, pmk2}, []*big.Int{pmbpriv1, pmbpriv2}, []*big.Int{pmbpub1, pmbpub2}, sitaSK)
+	prof1, prof2 := generatePrekeyMessagesProofs(gs, []*gotrx.Keypair{pmk1, pmk2}, []*big.Int{pmbpriv1, pmbpriv2}, []*big.Int{pmbpub1, pmbpub2}, sitaSK)
 	prof3 := gemeratePrekeyProfileProof(gs, ppk1, sitaSK)
 
 	msg := generatePublicationMessage(sita.clientProfile, pp1, []*prekeyMessage{pm1, pm2}, nil, prof2, prof3, sitaPrekeyMacK)
@@ -321,7 +321,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidProo
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand:     gotrax.FixtureRand(),
+		rand:     gotrx.FixtureRand(),
 		sessions: newSessionManager(),
 	}
 	gs.session("somewhere@example.org").(*realSession).tag = sita.instanceTag
@@ -332,7 +332,7 @@ func (s *GenericServerSuite) Test_publicationMessage_validate_failsOnInvalidProo
 	pp1, ppk1 := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pm1, pmk1, pmbpriv1, pmbpub1 := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, pmk2, pmbpriv2, pmbpub2 := generatePrekeyMessage(gs, sita.instanceTag)
-	prof1, prof2 := generatePrekeyMessagesProofs(gs, []*gotrax.Keypair{pmk1, pmk2}, []*big.Int{pmbpriv1, pmbpriv2}, []*big.Int{pmbpub1, pmbpub2}, sitaSK)
+	prof1, prof2 := generatePrekeyMessagesProofs(gs, []*gotrx.Keypair{pmk1, pmk2}, []*big.Int{pmbpriv1, pmbpriv2}, []*big.Int{pmbpub1, pmbpub2}, sitaSK)
 	prof3 := gemeratePrekeyProfileProof(gs, ppk1, sitaSK)
 
 	prof1c := append([]byte{}, prof1.c...)
@@ -378,7 +378,7 @@ func (s *GenericServerSuite) Test_publicationMessage_respond_willRemoveTheSessio
 		0x3f, 0x75, 0x9, 0xed, 0xf4, 0xfc, 0x90, 0x94,
 	}
 	gs := &GenericServer{
-		rand:        gotrax.FixtureRand(),
+		rand:        gotrx.FixtureRand(),
 		storageImpl: stor,
 		sessions:    newSessionManager(),
 	}

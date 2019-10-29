@@ -5,13 +5,13 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
+	"github.com/otrv4/gotrx"
 	. "gopkg.in/check.v1"
 )
 
-func generateSitaClientProfile(longTerm *gotrax.Keypair, forgingKey *gotrax.Keypair) *gotrax.ClientProfile {
-	sita := &gotrax.ClientProfile{}
+func generateSitaClientProfile(longTerm *gotrx.Keypair, forgingKey *gotrx.Keypair) *gotrx.ClientProfile {
+	sita := &gotrx.ClientProfile{}
 	sita.InstanceTag = 0x1245ABCD
 	sita.PublicKey = longTerm.Pub
 	sita.ForgingKey = forgingKey.Pub
@@ -19,7 +19,7 @@ func generateSitaClientProfile(longTerm *gotrax.Keypair, forgingKey *gotrax.Keyp
 	sita.Expiration = time.Date(2028, 11, 5, 13, 46, 00, 13, time.UTC)
 	sita.DsaKey = nil
 	sita.TransitionalSignature = nil
-	sita.Sig = gotrax.CreateEddsaSignature([114]byte{
+	sita.Sig = gotrx.CreateEddsaSignature([114]byte{
 		0x54, 0x5a, 0x43, 0x79, 0xb1, 0xbe, 0x27,
 		0xa0, 0x7d, 0xe2, 0x81, 0xbe, 0x20, 0x93,
 		0x23, 0x30, 0xeb, 0x1b, 0x64, 0xbc, 0x05,
@@ -41,24 +41,24 @@ func generateSitaClientProfile(longTerm *gotrax.Keypair, forgingKey *gotrax.Keyp
 	return sita
 }
 
-func generateSitaIPoint() *gotrax.Keypair {
-	return gotrax.DeriveKeypair([symKeyLength]byte{0x42, 0x11, 0xCC, 0x22, 0xDD, 0x11, 0xFF})
+func generateSitaIPoint() *gotrx.Keypair {
+	return gotrx.DeriveKeypair([symKeyLength]byte{0x42, 0x11, 0xCC, 0x22, 0xDD, 0x11, 0xFF})
 }
 
 type testData struct {
 	instanceTag   uint32
-	longTerm      *gotrax.Keypair
-	forgingKey    *gotrax.Keypair
-	clientProfile *gotrax.ClientProfile
-	i             *gotrax.Keypair
+	longTerm      *gotrx.Keypair
+	forgingKey    *gotrx.Keypair
+	clientProfile *gotrx.ClientProfile
+	i             *gotrx.Keypair
 }
 
 func generateSitaTestData() *testData {
 	t := &testData{}
 	t.instanceTag = 0x1245ABCD
-	t.longTerm = gotrax.DeriveKeypair([symKeyLength]byte{0x42, 0x00, 0x00, 0x55, 0x55, 0x00, 0x00, 0x55})
-	t.forgingKey = gotrax.DeriveKeypair([symKeyLength]byte{0x55, 0x00, 0x00, 0x22, 0x33, 0x00, 0x00, 0x44})
-	t.forgingKey.Pub = gotrax.CreatePublicKey(t.forgingKey.Pub.K(), gotrax.ForgingKey)
+	t.longTerm = gotrx.DeriveKeypair([symKeyLength]byte{0x42, 0x00, 0x00, 0x55, 0x55, 0x00, 0x00, 0x55})
+	t.forgingKey = gotrx.DeriveKeypair([symKeyLength]byte{0x55, 0x00, 0x00, 0x22, 0x33, 0x00, 0x00, 0x44})
+	t.forgingKey.Pub = gotrx.CreatePublicKey(t.forgingKey.Pub.K(), gotrx.ForgingKey)
 	t.clientProfile = generateSitaClientProfile(t.longTerm, t.forgingKey)
 	t.i = generateSitaIPoint()
 	return t
@@ -68,10 +68,10 @@ var sita = generateSitaTestData()
 
 func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 	stor := createInMemoryStorage()
-	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrx.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        gotrax.FixtureRand(),
+		rand:        gotrx.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.Pub.Fingerprint(),
 		storageImpl: stor,
@@ -93,7 +93,7 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 	c.Assert(ok, Equals, true)
 	c.Assert(d2.instanceTag, Equals, uint32(0x1245ABCD))
 	c.Assert(d2.serverIdentity, DeepEquals, []byte("masterOfKeys.example.org"))
-	c.Assert(gotrax.SerializePoint(d2.serverKey), DeepEquals, []byte{
+	c.Assert(gotrx.SerializePoint(d2.serverKey), DeepEquals, []byte{
 		0xaf, 0xde, 0x43, 0x7d, 0x1e, 0x80, 0xf8, 0x1a,
 		0xb7, 0xfe, 0x5b, 0x21, 0x8c, 0x59, 0xa5, 0xff,
 		0x5d, 0x7, 0xbb, 0xe1, 0xab, 0xe9, 0xc7, 0xaf,
@@ -170,19 +170,19 @@ func (s *GenericServerSuite) Test_flow_CheckStorageNumber(c *C) {
 		0x93, 0x4a, 0x86, 0x95, 0x4c, 0x7, 0x0, 0xda,
 		0xee, 0xd2, 0x8c, 0x4, 0xc0, 0x57, 0x71, 0x28})
 
-	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
+	phi := gotrx.AppendData(gotrx.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
-	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
-	t = append(t, gotrax.SerializePoint(d2.s)...)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, gotrx.SerializePoint(sita.i.Pub.K())...)
+	t = append(t, gotrx.SerializePoint(d2.s)...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := gotrax.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t, gotrax.KdfPrekeyServer, usageAuth)
+	sigma, _ := gotrx.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrx.CreatePublicKey(d2.s, gotrx.Ed448Key), t, gotrx.KdfPrekeyServer, usageAuth)
 
-	sk := gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
-	sitaPrekeyMac := gotrax.KdfPrekeyServer(usagePreMACKey, 64, sk)
+	sk := gotrx.KdfPrekeyServer(usageSK, skLength, gotrx.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
+	sitaPrekeyMac := gotrx.KdfPrekeyServer(usagePreMACKey, 64, sk)
 	msg := generateStorageInformationRequestMessage(sitaPrekeyMac)
 
 	d3 := generateDake3(sita.instanceTag, sigma, msg.serialize())
@@ -217,10 +217,10 @@ func (s *GenericServerSuite) Test_flow_retrieveEnsemblesFromUnknownPerson(c *C) 
 		versions:    []byte{0x04},
 	}
 
-	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrx.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        gotrax.FixtureRand(),
+		rand:        gotrx.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.Pub.Fingerprint(),
 		storageImpl: stor,
@@ -239,10 +239,10 @@ func (s *GenericServerSuite) Test_flow_retrieveEnsemblesFromUnknownPerson(c *C) 
 }
 
 func (s *GenericServerSuite) Test_flow_invalidUserProfileInDAKE1(c *C) {
-	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrx.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        gotrax.FixtureRand(),
+		rand:        gotrx.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.Pub.Fingerprint(),
 		rest:        nullRestrictor,
@@ -261,10 +261,10 @@ func (s *GenericServerSuite) Test_flow_invalidUserProfileInDAKE1(c *C) {
 }
 
 func (s *GenericServerSuite) Test_flow_invalidPointI(c *C) {
-	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrx.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        gotrax.FixtureRand(),
+		rand:        gotrx.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.Pub.Fingerprint(),
 		rest:        nullRestrictor,
@@ -282,10 +282,10 @@ func (s *GenericServerSuite) Test_flow_invalidPointI(c *C) {
 }
 
 func (s *GenericServerSuite) Test_flow_invalidDAKE3(c *C) {
-	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrx.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        gotrax.FixtureRand(),
+		rand:        gotrx.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.Pub.Fingerprint(),
 		sessions:    newSessionManager(),
@@ -304,19 +304,19 @@ func (s *GenericServerSuite) Test_flow_invalidDAKE3(c *C) {
 
 	c.Assert(ok, Equals, true)
 
-	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
+	phi := gotrx.AppendData(gotrx.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
-	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
-	t = append(t, gotrax.SerializePoint(d2.s)...)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, gotrx.SerializePoint(sita.i.Pub.K())...)
+	t = append(t, gotrx.SerializePoint(d2.s)...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := gotrax.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t, gotrax.KdfPrekeyServer, usageAuth)
+	sigma, _ := gotrx.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrx.CreatePublicKey(d2.s, gotrx.Ed448Key), t, gotrx.KdfPrekeyServer, usageAuth)
 
-	sk := gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
-	sitaPrekeyMac := gotrax.KdfPrekeyServer(usagePreMACKey, 64, sk)
+	sk := gotrx.KdfPrekeyServer(usageSK, skLength, gotrx.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
+	sitaPrekeyMac := gotrx.KdfPrekeyServer(usagePreMACKey, 64, sk)
 	msg := generateStorageInformationRequestMessage(sitaPrekeyMac)
 
 	d3 := generateDake3(0xBADBADBA, sigma, msg.serialize())
@@ -326,10 +326,10 @@ func (s *GenericServerSuite) Test_flow_invalidDAKE3(c *C) {
 }
 
 func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
-	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrx.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        gotrax.FixtureRand(),
+		rand:        gotrx.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.Pub.Fingerprint(),
 		sessions:    newSessionManager(),
@@ -349,19 +349,19 @@ func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
 
 	c.Assert(ok, Equals, true)
 
-	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
+	phi := gotrx.AppendData(gotrx.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
-	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
-	t = append(t, gotrax.SerializePoint(d2.s)...)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, gotrx.SerializePoint(sita.i.Pub.K())...)
+	t = append(t, gotrx.SerializePoint(d2.s)...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := gotrax.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t, gotrax.KdfPrekeyServer, usageAuth)
+	sigma, _ := gotrx.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrx.CreatePublicKey(d2.s, gotrx.Ed448Key), t, gotrx.KdfPrekeyServer, usageAuth)
 
-	sk := gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
-	sitaBadPrekeyMacK := gotrax.KdfPrekeyServer(usagePreMACKey, 64, sk)
+	sk := gotrx.KdfPrekeyServer(usageSK, skLength, gotrx.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
+	sitaBadPrekeyMacK := gotrx.KdfPrekeyServer(usagePreMACKey, 64, sk)
 	sitaBadPrekeyMacK[0] = 0xBA
 	sitaBadPrekeyMacK[1] = 0xDB
 	msg := generateStorageInformationRequestMessage(sitaBadPrekeyMacK)
@@ -374,10 +374,10 @@ func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
 
 func (s *GenericServerSuite) Test_flow_publication(c *C) {
 	stor := createInMemoryStorage()
-	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrx.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        gotrax.FixtureRand(),
+		rand:        gotrx.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.Pub.Fingerprint(),
 		storageImpl: stor,
@@ -398,26 +398,26 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 
 	c.Assert(ok, Equals, true)
 
-	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
+	phi := gotrx.AppendData(gotrx.AppendData(nil, []byte("sita@example.org")), []byte(gs.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
-	t = append(t, gotrax.SerializePoint(sita.i.Pub.K())...)
-	t = append(t, gotrax.SerializePoint(d2.s)...)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverClientProfile, 64, sita.clientProfile.Serialize())...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, gs.compositeIdentity())...)
+	t = append(t, gotrx.SerializePoint(sita.i.Pub.K())...)
+	t = append(t, gotrx.SerializePoint(d2.s)...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	sigma, _ := gotrax.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrax.CreatePublicKey(d2.s, gotrax.Ed448Key), t, gotrax.KdfPrekeyServer, usageAuth)
+	sigma, _ := gotrx.GenerateSignature(gs, sita.longTerm.Priv, sita.longTerm.Pub, sita.longTerm.Pub, gs.key.Pub, gotrx.CreatePublicKey(d2.s, gotrx.Ed448Key), t, gotrx.KdfPrekeyServer, usageAuth)
 
-	sk := gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
-	sitaPrekeyMacK := gotrax.KdfPrekeyServer(usagePreMACKey, 64, sk)
+	sk := gotrx.KdfPrekeyServer(usageSK, skLength, gotrx.SerializePoint(ed448.PointScalarMul(d2.s, sita.i.Priv.K())))
+	sitaPrekeyMacK := gotrx.KdfPrekeyServer(usagePreMACKey, 64, sk)
 
 	pp1, ppk1 := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 
 	pm1, pmk1, pmbpriv1, pmbpub1 := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, pmk2, pmbpriv2, pmbpub2 := generatePrekeyMessage(gs, sita.instanceTag)
 
-	prof1, prof2 := generatePrekeyMessagesProofs(gs, []*gotrax.Keypair{pmk1, pmk2}, []*big.Int{pmbpriv1, pmbpriv2}, []*big.Int{pmbpub1, pmbpub2}, sk)
+	prof1, prof2 := generatePrekeyMessagesProofs(gs, []*gotrx.Keypair{pmk1, pmk2}, []*big.Int{pmbpriv1, pmbpriv2}, []*big.Int{pmbpub1, pmbpub2}, sk)
 	prof3 := gemeratePrekeyProfileProof(gs, ppk1, sk)
 
 	msg := generatePublicationMessage(sita.clientProfile, pp1, []*prekeyMessage{pm1, pm2}, prof1, prof2, prof3, sitaPrekeyMacK)
@@ -453,12 +453,12 @@ func (s *GenericServerSuite) Test_flow_publication(c *C) {
 }
 
 func (s *GenericServerSuite) Test_flow_retrieveEnsemblesFromKnownPerson(c *C) {
-	serverKey := gotrax.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
+	serverKey := gotrx.DeriveKeypair([symKeyLength]byte{0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25, 0x25})
 	stor := createInMemoryStorage()
 
 	gs := &GenericServer{
 		identity:    "masterOfKeys.example.org",
-		rand:        gotrax.FixtureRand(),
+		rand:        gotrx.FixtureRand(),
 		key:         serverKey,
 		fingerprint: serverKey.Pub.Fingerprint(),
 		storageImpl: stor,

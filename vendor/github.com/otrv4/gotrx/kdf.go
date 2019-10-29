@@ -1,4 +1,4 @@
-package gotrax
+package gotrx
 
 import "golang.org/x/crypto/sha3"
 

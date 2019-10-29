@@ -5,7 +5,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/coyim/gotrax"
+	"github.com/otrv4/gotrx"
 )
 
 // GenericServer represents the main entry point for the prekey server functionality.
@@ -13,13 +13,13 @@ type GenericServer struct {
 	// The identity, for example prekey.example.org
 	identity string
 	// The fingerprint of the long term key for the server
-	fingerprint gotrax.Fingerprint
+	fingerprint gotrx.Fingerprint
 
-	key *gotrax.Keypair
+	key *gotrx.Keypair
 
 	// Should be minimum 48, since the max envelope size is 47
 	fragLen        int
-	fragmentations *gotrax.Fragmentor
+	fragmentations *gotrx.Fragmentor
 
 	messageHandler messageHandler
 
@@ -97,7 +97,7 @@ func (g *GenericServer) cleanupAfter() {
 }
 
 func (g *GenericServer) compositeIdentity() []byte {
-	return append(gotrax.AppendData(nil, []byte(g.identity)), g.key.Pub.Serialize()...)
+	return append(gotrx.AppendData(nil, []byte(g.identity)), g.key.Pub.Serialize()...)
 }
 
 func (g *GenericServer) session(from string) session {

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coyim/gotrax"
+	"github.com/otrv4/gotrx"
 	. "gopkg.in/check.v1"
 )
 
@@ -41,7 +41,7 @@ func (m *mockMessageHandler) handleInnerMessage(from string, message []byte) (se
 
 func (s *GenericServerSuite) Test_Handle_WillPassOnTheIdentityToTheMessageHandler(c *C) {
 	gs := &GenericServer{
-		fragmentations: gotrax.NewFragmentor(fragmentationPrefix),
+		fragmentations: gotrx.NewFragmentor(fragmentationPrefix),
 		storageImpl:    createInMemoryStorage(),
 		sessions:       newSessionManager(),
 	}
@@ -53,7 +53,7 @@ func (s *GenericServerSuite) Test_Handle_WillPassOnTheIdentityToTheMessageHandle
 
 func (s *GenericServerSuite) Test_Handle_WillDecodeBase64EncodedMessage(c *C) {
 	gs := &GenericServer{
-		fragmentations: gotrax.NewFragmentor(fragmentationPrefix),
+		fragmentations: gotrx.NewFragmentor(fragmentationPrefix),
 		storageImpl:    createInMemoryStorage(),
 		sessions:       newSessionManager(),
 	}
@@ -64,7 +64,7 @@ func (s *GenericServerSuite) Test_Handle_WillDecodeBase64EncodedMessage(c *C) {
 }
 
 func (s *GenericServerSuite) Test_Handle_AMessageWithoutProperFormatSHhouldGenerateAnError(c *C) {
-	gs := &GenericServer{fragmentations: gotrax.NewFragmentor(fragmentationPrefix)}
+	gs := &GenericServer{fragmentations: gotrx.NewFragmentor(fragmentationPrefix)}
 	m := &mockMessageHandler{}
 	gs.messageHandler = m
 	_, e := gs.Handle("myname", "aGksIHRoaXMgaXMgbm90IGEgdmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4=")
@@ -72,7 +72,7 @@ func (s *GenericServerSuite) Test_Handle_AMessageWithoutProperFormatSHhouldGener
 }
 
 func (s *GenericServerSuite) Test_Handle_ACorruptedBase64MessageGeneratesAnError(c *C) {
-	gs := &GenericServer{fragmentations: gotrax.NewFragmentor(fragmentationPrefix)}
+	gs := &GenericServer{fragmentations: gotrx.NewFragmentor(fragmentationPrefix)}
 	m := &mockMessageHandler{}
 	gs.messageHandler = m
 	_, e := gs.Handle("myname", "aGksIHRoaXMgaXMgbm90IGEgdmFsaWQgb3RyNCBtZXNzYWdlLCBidXQgc3RpbGwuLi4.")
@@ -81,7 +81,7 @@ func (s *GenericServerSuite) Test_Handle_ACorruptedBase64MessageGeneratesAnError
 
 func (s *GenericServerSuite) Test_Handle_WillBase64EncodeAndFormatReturnValues(c *C) {
 	gs := &GenericServer{
-		fragmentations: gotrax.NewFragmentor(fragmentationPrefix),
+		fragmentations: gotrx.NewFragmentor(fragmentationPrefix),
 		storageImpl:    createInMemoryStorage(),
 		sessions:       newSessionManager(),
 	}
@@ -95,7 +95,7 @@ func (s *GenericServerSuite) Test_Handle_WillBase64EncodeAndFormatReturnValues(c
 }
 
 func (s *GenericServerSuite) Test_Handle_ReturnsAnErrorFromMessageHandler(c *C) {
-	gs := &GenericServer{fragmentations: gotrax.NewFragmentor(fragmentationPrefix)}
+	gs := &GenericServer{fragmentations: gotrx.NewFragmentor(fragmentationPrefix)}
 	m := &mockMessageHandler{
 		toReturnError: errors.New("yipii"),
 	}
@@ -106,7 +106,7 @@ func (s *GenericServerSuite) Test_Handle_ReturnsAnErrorFromMessageHandler(c *C) 
 }
 
 func (s *GenericServerSuite) Test_Handle_HandlesAFragmentedMessage(c *C) {
-	gs := &GenericServer{fragmentations: gotrax.NewFragmentor(fragmentationPrefix), storageImpl: createInMemoryStorage(), sessions: newSessionManager()}
+	gs := &GenericServer{fragmentations: gotrx.NewFragmentor(fragmentationPrefix), storageImpl: createInMemoryStorage(), sessions: newSessionManager()}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
 	}
@@ -123,7 +123,7 @@ func (s *GenericServerSuite) Test_Handle_HandlesAFragmentedMessage(c *C) {
 }
 
 func (s *GenericServerSuite) Test_Handle_PassesOnAFragmentationError(c *C) {
-	gs := &GenericServer{fragmentations: gotrax.NewFragmentor(fragmentationPrefix)}
+	gs := &GenericServer{fragmentations: gotrx.NewFragmentor(fragmentationPrefix)}
 	m := &mockMessageHandler{
 		toReturnMessage: []byte("this is our fancy return"),
 	}
@@ -136,8 +136,8 @@ func (s *GenericServerSuite) Test_Handle_PassesOnAFragmentationError(c *C) {
 func (s *GenericServerSuite) Test_Handle_WillPotentiallyFragmentReturnValues(c *C) {
 	gs := &GenericServer{
 		fragLen:        54,
-		rand:           gotrax.FixtureRand(),
-		fragmentations: gotrax.NewFragmentor(fragmentationPrefix),
+		rand:           gotrx.FixtureRand(),
+		fragmentations: gotrx.NewFragmentor(fragmentationPrefix),
 		storageImpl:    createInMemoryStorage(),
 		sessions:       newSessionManager(),
 	}
@@ -156,7 +156,7 @@ func (s *GenericServerSuite) Test_Handle_WillPotentiallyFragmentReturnValues(c *
 }
 
 func (s *GenericServerSuite) Test_handleMessage_panicsWhenNoMessageHandlerIsConfigured(c *C) {
-	gs := &GenericServer{fragLen: 7, rand: gotrax.FixtureRand()}
+	gs := &GenericServer{fragLen: 7, rand: gotrx.FixtureRand()}
 	c.Assert(func() { gs.handleMessage("foo@example.org", nil) }, PanicMatches, "programmer error, missing message handler")
 }
 
@@ -177,7 +177,7 @@ func (s *GenericServerSuite) Test_hasSession_returnsFalseWhenNoSessionsExist(c *
 func (s *GenericServerSuite) Test_cleanupAfter_removesOldSessions(c *C) {
 	gs := &GenericServer{
 		sessionTimeout: time.Duration(30) * time.Minute,
-		fragmentations: gotrax.NewFragmentor(fragmentationPrefix),
+		fragmentations: gotrx.NewFragmentor(fragmentationPrefix),
 		storageImpl:    createInMemoryStorage(),
 		sessions:       newSessionManager(),
 	}
@@ -194,7 +194,7 @@ func (s *GenericServerSuite) Test_cleanupAfter_removesOldSessions(c *C) {
 func (s *GenericServerSuite) Test_cleanupAfter_doesntDoAnythingWithEmptySessions(c *C) {
 	gs := &GenericServer{
 		sessionTimeout: time.Duration(30) * time.Minute,
-		fragmentations: gotrax.NewFragmentor(fragmentationPrefix),
+		fragmentations: gotrx.NewFragmentor(fragmentationPrefix),
 		storageImpl:    createInMemoryStorage(),
 		sessions:       newSessionManager(),
 	}

@@ -6,7 +6,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/coyim/gotrax"
+	"github.com/otrv4/gotrx"
 	. "gopkg.in/check.v1"
 )
 
@@ -49,7 +49,7 @@ func (s *GenericServerSuite) Test_fileStorage_numberStored_returnsNumberOfPrekey
 	fs := fsf.createStorage()
 
 	gs := &GenericServer{
-		rand: gotrax.FixtureRand(),
+		rand: gotrx.FixtureRand(),
 	}
 	pm1, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
 	pm2, _, _, _ := generatePrekeyMessage(gs, sita.instanceTag)
@@ -76,11 +76,11 @@ func (s *GenericServerSuite) Test_fileStorage_cleanup_willRemoveExpiredClientPro
 
 	cp := generateSitaTestData().clientProfile
 	cp.Expiration = time.Date(2017, 11, 5, 13, 46, 00, 13, time.UTC)
-	cp.Sig = gotrax.CreateEddsaSignature(cp.GenerateSignature(sita.longTerm))
+	cp.Sig = gotrx.CreateEddsaSignature(cp.GenerateSignature(sita.longTerm))
 
 	cp2 := generateSitaTestData().clientProfile
 	cp2.InstanceTag = 0x42424242
-	cp2.Sig = gotrax.CreateEddsaSignature(cp2.GenerateSignature(sita.longTerm))
+	cp2.Sig = gotrx.CreateEddsaSignature(cp2.GenerateSignature(sita.longTerm))
 
 	fs.storeClientProfile("someone@example.org", cp)
 	fs.storeClientProfile("someone@example.org", cp2)
@@ -103,7 +103,7 @@ func (s *GenericServerSuite) Test_fileStorage_cleanup_willRemoveExpiredPrekeyPro
 	defer os.RemoveAll(testDir)
 
 	gs := &GenericServer{
-		rand: gotrax.FixtureRand(),
+		rand: gotrx.FixtureRand(),
 	}
 
 	fsf, _ := createFileStorageFactoryFrom("dir:" + testDir)
@@ -133,7 +133,7 @@ func (s *GenericServerSuite) Test_fileStorage_cleanup_shouldNotRemoveUserIfThere
 	defer os.RemoveAll(testDir)
 
 	gs := &GenericServer{
-		rand: gotrax.FixtureRand(),
+		rand: gotrx.FixtureRand(),
 	}
 
 	fsf, _ := createFileStorageFactoryFrom("dir:" + testDir)
@@ -167,7 +167,7 @@ func (s *GenericServerSuite) Test_fileStorage_retrieveFor_willReturnAPrekeyEnsem
 	defer os.RemoveAll(testDir)
 
 	gs := &GenericServer{
-		rand: gotrax.FixtureRand(),
+		rand: gotrx.FixtureRand(),
 	}
 
 	fsf, _ := createFileStorageFactoryFrom("dir:" + testDir)
@@ -176,7 +176,7 @@ func (s *GenericServerSuite) Test_fileStorage_retrieveFor_willReturnAPrekeyEnsem
 	cp := generateSitaTestData().clientProfile
 	cp2 := generateSitaTestData().clientProfile
 	cp2.InstanceTag = 0x42424242
-	cp2.Sig = gotrax.CreateEddsaSignature(cp2.GenerateSignature(sita.longTerm))
+	cp2.Sig = gotrx.CreateEddsaSignature(cp2.GenerateSignature(sita.longTerm))
 
 	pp1, _ := generatePrekeyProfile(gs, sita.instanceTag, time.Date(2029, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
 	pp2, _ := generatePrekeyProfile(gs, 0x42424242, time.Date(2028, 11, 5, 4, 46, 00, 13, time.UTC), sita.longTerm)
@@ -250,7 +250,7 @@ func (s *GenericServerSuite) Test_fileStorage_storePrekeyMessages_reportsErrorWh
 	defer os.RemoveAll(testDir)
 
 	gs := &GenericServer{
-		rand: gotrax.FixtureRand(),
+		rand: gotrx.FixtureRand(),
 	}
 
 	fsf, _ := createFileStorageFactoryFrom("dir:" + testDir)

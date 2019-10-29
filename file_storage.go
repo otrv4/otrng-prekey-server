@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/coyim/gotrax"
+	"github.com/otrv4/gotrx"
 )
 
 // Design:
@@ -75,7 +75,7 @@ func (fs *fileStorage) writeData(user, file string, itag uint32, data []byte) er
 	return ioutil.WriteFile(path.Join(itagDir, file), data, 0600)
 }
 
-func (fs *fileStorage) storeClientProfile(user string, cp *gotrax.ClientProfile) error {
+func (fs *fileStorage) storeClientProfile(user string, cp *gotrx.ClientProfile) error {
 	if cp == nil {
 		return nil
 	}
@@ -231,7 +231,7 @@ func (fs *fileStorage) retrieveFor(user string) []*prekeyEnsemble {
 					pp, e3 := ioutil.ReadFile(ppFile)
 					if e1 == nil && e2 == nil && e3 == nil {
 						pmR := &prekeyMessage{}
-						cpR := &gotrax.ClientProfile{}
+						cpR := &gotrx.ClientProfile{}
 						ppR := &prekeyProfile{}
 						_, ok1 := pmR.deserialize(pm)
 						_, ok2 := cpR.Deserialize(cp)
@@ -255,7 +255,7 @@ func (fs *fileStorage) retrieveFor(user string) []*prekeyEnsemble {
 
 func cleanupClientProfile(p string) error {
 	cpFile := path.Join(p, "cp.bin")
-	cp := &gotrax.ClientProfile{}
+	cp := &gotrx.ClientProfile{}
 	cpd, e := ioutil.ReadFile(cpFile)
 	if e != nil {
 		return e

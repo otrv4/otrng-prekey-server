@@ -17,7 +17,6 @@ const (
 	// The size of the Goldilocks field, in bits.
 	fieldBits = 448
 	edwardsD  = -39081
-	effD      = 39082
 
 	// The size of the Goldilocks field, in bytes.
 	fieldBytes     = fieldBits / 8 // 56
@@ -102,13 +101,6 @@ var (
 		0x88ea1859, 0x0d66de23, 0x5ee4d838, 0xae17cf72,
 		0xa3c47c44, 0x1a9cc14b, 0xe4d070af, 0x2052bcb7,
 		0xf823b729, 0x3402a939,
-	}
-
-	factor = &bigNumber{
-		0x05572736, 0x042ef0f4, 0x00ce5296, 0x07bf6aa2,
-		0x0ed26033, 0x0f4fd6ed, 0x0a839a66, 0x0968c14b,
-		0x04a2d780, 0x0b8d54b6, 0x01a7b8a5, 0x06aa0a1f,
-		0x0d722fa2, 0x0683bf68, 0x0beb24f7, 0x022d962f,
 	}
 
 	// TODO: only use this one

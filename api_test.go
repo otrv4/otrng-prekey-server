@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/coyim/gotrax"
+	"github.com/otrv4/gotrx"
 	. "gopkg.in/check.v1"
 )
 
@@ -17,13 +17,13 @@ func (s *GenericServerSuite) Test_realFactory_RandReader_returnsTheDefaultRandRe
 }
 
 func (s *GenericServerSuite) Test_realFactory_RandReader_returnsTheGivenReader(c *C) {
-	f := gotrax.FixtureRand()
+	f := gotrx.FixtureRand()
 	r := &realFactory{r: f}
 	c.Assert(r.RandReader(), Equals, f)
 }
 
 func (s *GenericServerSuite) Test_CreateFactory_returnsARealFactoryWithTheGivenRandomness(c *C) {
-	f := gotrax.FixtureRand()
+	f := gotrx.FixtureRand()
 	fact := CreateFactory(f)
 	rf, ok := fact.(*realFactory)
 	c.Assert(ok, Equals, true)
@@ -63,11 +63,11 @@ func (s *GenericServerSuite) Test_realFactory_LoadStorageType_givesErrorForUnkno
 }
 
 func (s *GenericServerSuite) Test_realFactory_CreateKeypair_createsAKeypairFromTheGivenRandomness(c *C) {
-	r := gotrax.FixtureRand()
+	r := gotrx.FixtureRand()
 	res := (&realFactory{r: r}).CreateKeypair()
 	c.Assert(res, Not(IsNil))
-	c.Assert(res, FitsTypeOf, &gotrax.Keypair{})
-	c.Assert(res.(*gotrax.Keypair).Sym[:], DeepEquals, []byte{
+	c.Assert(res, FitsTypeOf, &gotrx.Keypair{})
+	c.Assert(res.(*gotrx.Keypair).Sym[:], DeepEquals, []byte{
 		0xab, 0xcd, 0xab, 0xcd, 0xab, 0xcd, 0xab, 0xcd,
 		0xab, 0xcd, 0xab, 0xcd, 0xab, 0xcd, 0xab, 0xcd,
 		0xab, 0xcd, 0xab, 0xcd, 0xab, 0xcd, 0xab, 0xcd,
@@ -79,7 +79,7 @@ func (s *GenericServerSuite) Test_realFactory_CreateKeypair_createsAKeypairFromT
 }
 
 func (s *GenericServerSuite) Test_realFactory_NewServer_createsAServerWithTheGivenValues(c *C) {
-	f := &realFactory{r: gotrax.FixtureRand()}
+	f := &realFactory{r: gotrx.FixtureRand()}
 	kp := f.CreateKeypair()
 	mockCalled := false
 	mockRestrictor := func(string) bool {
@@ -91,7 +91,7 @@ func (s *GenericServerSuite) Test_realFactory_NewServer_createsAServerWithTheGiv
 	c.Assert(res, FitsTypeOf, &GenericServer{})
 	gs := res.(*GenericServer)
 	c.Assert(gs.identity, Equals, "foobar")
-	c.Assert(gs.fingerprint, DeepEquals, gotrax.Fingerprint(kp.(*gotrax.Keypair).Fingerprint()))
+	c.Assert(gs.fingerprint, DeepEquals, gotrx.Fingerprint(kp.(*gotrx.Keypair).Fingerprint()))
 	c.Assert(gs.key, Equals, kp)
 	c.Assert(gs.fragLen, Equals, 42)
 	c.Assert(gs.fragmentations, Not(IsNil))
@@ -107,7 +107,7 @@ func (s *GenericServerSuite) Test_realFactory_NewServer_createsAServerWithTheGiv
 }
 
 func (s *GenericServerSuite) Test_realFactory_NewServer_setsANullRestrictorIfNoneIsGiven(c *C) {
-	f := &realFactory{r: gotrax.FixtureRand()}
+	f := &realFactory{r: gotrx.FixtureRand()}
 	kp := f.CreateKeypair()
 	res := f.NewServer("foobar", kp, 42, &inMemoryStorageFactory{}, time.Duration(25), time.Duration(77), nil)
 	gs := res.(*GenericServer)
@@ -126,7 +126,7 @@ func (s *GenericServerSuite) Test_keypairInStorage_intoKeypair_decodesACorrectMe
 		0x00,
 	}
 
-	expectedKp := gotrax.DeriveKeypair(sym)
+	expectedKp := gotrx.DeriveKeypair(sym)
 
 	kis := &keypairInStorage{
 		Symmetric: "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
@@ -208,7 +208,7 @@ func (s *GenericServerSuite) Test_realFactory_LoadKeypairFrom_canLoadAKeypairCor
 		0x00,
 	}
 
-	expectedKp := gotrax.DeriveKeypair(sym)
+	expectedKp := gotrx.DeriveKeypair(sym)
 
 	b := bytes.NewBufferString("{\"Symmetric\":\"AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"," +
 		"\"Private\":\"S0Cr1lAIHXdTixCTeWQAQRJksS0o9Ftr/EcO0yemXi9fJOTAWj+c9h9QVW5M0KDm9uH04SopxiA=\"," +
@@ -216,9 +216,9 @@ func (s *GenericServerSuite) Test_realFactory_LoadKeypairFrom_canLoadAKeypairCor
 	f := &realFactory{}
 	kp, e := f.LoadKeypairFrom(b)
 	c.Assert(e, IsNil)
-	c.Assert(kp.(*gotrax.Keypair).Sym, DeepEquals, expectedKp.Sym)
-	c.Assert(kp.(*gotrax.Keypair).Pub.K().Equals(expectedKp.Pub.K()), Equals, true)
-	c.Assert(kp.(*gotrax.Keypair).Priv.K().Equals(expectedKp.Priv.K()), Equals, true)
+	c.Assert(kp.(*gotrx.Keypair).Sym, DeepEquals, expectedKp.Sym)
+	c.Assert(kp.(*gotrx.Keypair).Pub.K().Equals(expectedKp.Pub.K()), Equals, true)
+	c.Assert(kp.(*gotrx.Keypair).Priv.K().Equals(expectedKp.Priv.K()), Equals, true)
 }
 
 type erroringReader struct{}
@@ -257,7 +257,7 @@ func (s *GenericServerSuite) Test_realFactory_StoreKeysInto_willPrintTheExpected
 	}
 	rf := &realFactory{}
 
-	kp := gotrax.DeriveKeypair(sym)
+	kp := gotrx.DeriveKeypair(sym)
 	var b bytes.Buffer
 	rf.StoreKeysInto(kp, &b)
 
@@ -286,7 +286,7 @@ func (s *GenericServerSuite) Test_realFactory_StoreKeysInto_willReturnAnyErrorEn
 	}
 	rf := &realFactory{}
 
-	kp := gotrax.DeriveKeypair(sym)
+	kp := gotrx.DeriveKeypair(sym)
 	e := rf.StoreKeysInto(kp, &erroringWriter{})
 
 	c.Assert(e, ErrorMatches, "something bad")

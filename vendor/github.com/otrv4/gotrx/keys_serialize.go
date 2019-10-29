@@ -1,4 +1,4 @@
-package gotrax
+package gotrx
 
 import "github.com/otrv4/ed448"
 

@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/coyim/gotrax"
+	"github.com/otrv4/gotrx"
 )
 
 type publicationMessage struct {
 	prekeyMessages         []*prekeyMessage
-	clientProfile          *gotrax.ClientProfile
+	clientProfile          *gotrx.ClientProfile
 	prekeyProfile          *prekeyProfile
 	prekeyMessageProofEcdh *ecdhProof
 	prekeyMessageProofDh   *dhProof
@@ -65,7 +65,7 @@ type message interface {
 }
 
 func parseVersion(message []byte) uint16 {
-	_, v, _ := gotrax.ExtractShort(message)
+	_, v, _ := gotrx.ExtractShort(message)
 	return v
 }
 
@@ -102,7 +102,7 @@ func parseMessage(msg []byte) (message, uint8, error) {
 }
 
 func generateStorageInformationRequestMessage(macKey []byte) *storageInformationRequestMessage {
-	mac := gotrax.KdfPrekeyServer(usageStorageInfoMAC, 64, macKey, []byte{messageTypeStorageInformationRequest})
+	mac := gotrx.KdfPrekeyServer(usageStorageInfoMAC, 64, macKey, []byte{messageTypeStorageInformationRequest})
 	res := &storageInformationRequestMessage{}
 	copy(res.mac[:], mac)
 	return res
@@ -113,7 +113,7 @@ func (m *storageInformationRequestMessage) respond(from string, s *GenericServer
 	num := s.storage().numberStored(from, ses.instanceTag())
 	itag := ses.instanceTag()
 	prekeyMacK := ses.macKey()
-	statusMac := gotrax.KdfPrekeyServer(usageStatusMAC, 64, prekeyMacK, []byte{messageTypeStorageStatusMessage}, gotrax.SerializeWord(itag), gotrax.SerializeWord(num))
+	statusMac := gotrx.KdfPrekeyServer(usageStatusMAC, 64, prekeyMacK, []byte{messageTypeStorageStatusMessage}, gotrx.SerializeWord(itag), gotrx.SerializeWord(num))
 
 	ret := &storageStatusMessage{
 		instanceTag: itag,
@@ -130,7 +130,7 @@ func (m *storageInformationRequestMessage) respondError(from string, e error, s 
 
 func (m *storageInformationRequestMessage) validate(from string, s *GenericServer) error {
 	prekeyMacK := s.session(from).macKey()
-	tag := gotrax.KdfPrekeyServer(usageStorageInfoMAC, 64, prekeyMacK, []byte{messageTypeStorageInformationRequest})
+	tag := gotrx.KdfPrekeyServer(usageStorageInfoMAC, 64, prekeyMacK, []byte{messageTypeStorageInformationRequest})
 	if !bytes.Equal(tag, m.mac[:]) {
 		return errors.New("incorrect MAC")
 	}
@@ -177,23 +177,23 @@ func serializeProofs(prof1 *ecdhProof, prof2 *dhProof, prof3 *ecdhProof) []byte 
 	return out
 }
 
-func generateMACForPublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, prof1 *ecdhProof, prof2 *dhProof, prof3 *ecdhProof, macKey []byte) []byte {
-	kpms := gotrax.KdfPrekeyServer(usagePrekeyMessage, 64, serializePrekeyMessages(pms))
+func generateMACForPublicationMessage(cp *gotrx.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, prof1 *ecdhProof, prof2 *dhProof, prof3 *ecdhProof, macKey []byte) []byte {
+	kpms := gotrx.KdfPrekeyServer(usagePrekeyMessage, 64, serializePrekeyMessages(pms))
 	k := byte(0)
 	kcp := []byte{}
 	if cp != nil {
 		k = 1
-		kcp = gotrax.KdfPrekeyServer(usageClientProfile, 64, cp.Serialize())
+		kcp = gotrx.KdfPrekeyServer(usageClientProfile, 64, cp.Serialize())
 	}
 
 	j := byte(0)
 	kpps := []byte{}
 	if pp != nil {
 		j = 1
-		kpps = gotrax.KdfPrekeyServer(usagePrekeyProfile, 64, pp.serialize())
+		kpps = gotrx.KdfPrekeyServer(usagePrekeyProfile, 64, pp.serialize())
 	}
 
-	pfs := gotrax.KdfPrekeyServer(usageMacProofs, 64, serializeProofs(prof1, prof2, prof3))
+	pfs := gotrx.KdfPrekeyServer(usageMacProofs, 64, serializeProofs(prof1, prof2, prof3))
 
 	d := append(macKey, messageTypePublication)
 	d = append(d, byte(len(pms)))
@@ -204,29 +204,29 @@ func generateMACForPublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfil
 	d = append(d, kpps...)
 	d = append(d, pfs...)
 
-	return gotrax.KdfPrekeyServer(usagePreMAC, 64, d)
+	return gotrx.KdfPrekeyServer(usagePreMAC, 64, d)
 }
 
-func generatePrekeyMessagesProofs(wr gotrax.WithRandom, ecdhKeys []*gotrax.Keypair, dhPriv []*big.Int, dhPub []*big.Int, sk []byte) (*ecdhProof, *dhProof) {
+func generatePrekeyMessagesProofs(wr gotrx.WithRandom, ecdhKeys []*gotrx.Keypair, dhPriv []*big.Int, dhPub []*big.Int, sk []byte) (*ecdhProof, *dhProof) {
 	if len(ecdhKeys) == 0 {
 		return nil, nil
 	}
-	m := gotrax.KdfPrekeyServer(usageProofContext, 64, sk)
+	m := gotrx.KdfPrekeyServer(usageProofContext, 64, sk)
 	prof1, _ := generateEcdhProof(wr, ecdhKeys, m, usageProofMessageEcdh)
 	prof2, _ := generateDhProof(wr, dhPriv, dhPub, m, usageProofMessageDh, nil)
 	return prof1, prof2
 }
 
-func gemeratePrekeyProfileProof(wr gotrax.WithRandom, ecdhKey *gotrax.Keypair, sk []byte) *ecdhProof {
+func gemeratePrekeyProfileProof(wr gotrx.WithRandom, ecdhKey *gotrx.Keypair, sk []byte) *ecdhProof {
 	if ecdhKey == nil {
 		return nil
 	}
-	m := gotrax.KdfPrekeyServer(usageProofContext, 64, sk)
-	prof, _ := generateEcdhProof(wr, []*gotrax.Keypair{ecdhKey}, m, usageProofSharedEcdh)
+	m := gotrx.KdfPrekeyServer(usageProofContext, 64, sk)
+	prof, _ := generateEcdhProof(wr, []*gotrx.Keypair{ecdhKey}, m, usageProofSharedEcdh)
 	return prof
 }
 
-func generatePublicationMessage(cp *gotrax.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, prof1 *ecdhProof, prof2 *dhProof, prof3 *ecdhProof, macKey []byte) *publicationMessage {
+func generatePublicationMessage(cp *gotrx.ClientProfile, pp *prekeyProfile, pms []*prekeyMessage, prof1 *ecdhProof, prof2 *dhProof, prof3 *ecdhProof, macKey []byte) *publicationMessage {
 	mac := generateMACForPublicationMessage(cp, pp, pms, prof1, prof2, prof3, macKey)
 
 	pm := &publicationMessage{
@@ -260,17 +260,17 @@ func (m *publicationMessage) validate(from string, s *GenericServer) error {
 		return errors.New("invalid prekey profile in publication message")
 	}
 
-	ks := []*gotrax.PublicKey{}
+	ks := []*gotrx.PublicKey{}
 	ks2 := []*big.Int{}
 	for _, pm := range m.prekeyMessages {
 		if pm.validate(tag) != nil {
 			return errors.New("invalid prekey message in publication message")
 		}
-		ks = append(ks, gotrax.CreatePublicKey(pm.y, gotrax.Ed448Key))
+		ks = append(ks, gotrx.CreatePublicKey(pm.y, gotrx.Ed448Key))
 		ks2 = append(ks2, pm.b)
 	}
 
-	msg := gotrax.KdfPrekeyServer(usageProofContext, 64, sk)
+	msg := gotrx.KdfPrekeyServer(usageProofContext, 64, sk)
 	if len(m.prekeyMessages) > 0 {
 		if m.prekeyMessageProofEcdh == nil {
 			return errors.New("missing proof for prekey messages y key")
@@ -293,7 +293,7 @@ func (m *publicationMessage) validate(from string, s *GenericServer) error {
 			return errors.New("missing proof for prekey profile shared prekey")
 		}
 
-		if !m.prekeyProfileProofEcdh.verify([]*gotrax.PublicKey{m.prekeyProfile.sharedPrekey}, msg, usageProofSharedEcdh) {
+		if !m.prekeyProfileProofEcdh.verify([]*gotrx.PublicKey{m.prekeyProfile.sharedPrekey}, msg, usageProofSharedEcdh) {
 			return errors.New("incorrect proof for prekey profile shared prekey")
 		}
 	}
@@ -306,7 +306,7 @@ func generateSuccessMessage(macKey []byte, tag uint32) *successMessage {
 		instanceTag: tag,
 	}
 
-	mac := gotrax.KdfPrekeyServer(usageSuccessMAC, 64, gotrax.AppendWord(append(macKey, messageTypeSuccess), tag))
+	mac := gotrx.KdfPrekeyServer(usageSuccessMAC, 64, gotrx.AppendWord(append(macKey, messageTypeSuccess), tag))
 	copy(m.mac[:], mac)
 
 	return m
@@ -317,7 +317,7 @@ func generateFailureMessage(macKey []byte, tag uint32) *failureMessage {
 		instanceTag: tag,
 	}
 
-	mac := gotrax.KdfPrekeyServer(usageFailureMAC, 64, gotrax.AppendWord(append(macKey, messageTypeFailure), tag))
+	mac := gotrx.KdfPrekeyServer(usageFailureMAC, 64, gotrx.AppendWord(append(macKey, messageTypeFailure), tag))
 	copy(m.mac[:], mac)
 
 	return m

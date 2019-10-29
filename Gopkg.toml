@@ -39,4 +39,4 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/coyim/gotrax"
+  name = "github.com/otrv4/gotrx"

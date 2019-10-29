@@ -1,4 +1,4 @@
-package gotrax
+package gotrx
 
 import (
 	"errors"

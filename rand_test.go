@@ -3,13 +3,13 @@ package prekeyserver
 import (
 	"crypto/rand"
 
-	"github.com/coyim/gotrax"
+	"github.com/otrv4/gotrx"
 	. "gopkg.in/check.v1"
 )
 
 func (s *GenericServerSuite) Test_GenericServer_RandReader_returnsRandIfExists(c *C) {
 	gs := &GenericServer{}
-	fr := gotrax.FixtureRand()
+	fr := gotrx.FixtureRand()
 	gs.rand = fr
 	c.Assert(gs.RandReader(), Equals, fr)
 }

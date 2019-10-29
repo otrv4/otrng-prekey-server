@@ -5,8 +5,8 @@ import (
 	"crypto/rand"
 	"math/big"
 
-	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
+	"github.com/otrv4/gotrx"
 )
 
 type ecdhProof struct {
@@ -21,9 +21,9 @@ type dhProof struct {
 
 const lambda = uint32(352 / 8) // 44 bytes
 
-type dhRandFunc func(gotrax.WithRandom) *big.Int
+type dhRandFunc func(gotrx.WithRandom) *big.Int
 
-func generateRandomExponent(wr gotrax.WithRandom) *big.Int {
+func generateRandomExponent(wr gotrx.WithRandom) *big.Int {
 	n, err := rand.Int(wr.RandReader(), new(big.Int).Sub(dhQ, bigOne))
 	if err != nil {
 		return nil
@@ -43,7 +43,7 @@ func splitBufferIntoN(b []byte, n uint) [][]byte {
 	return result
 }
 
-func mulAndAddScalars(result ed448.Scalar, values []*gotrax.Keypair, t [][]byte) ed448.Scalar {
+func mulAndAddScalars(result ed448.Scalar, values []*gotrx.Keypair, t [][]byte) ed448.Scalar {
 	for ix, tn := range t {
 		tnv := ed448.NewScalar(tn)
 		tnv.Mul(tnv, values[ix].Priv.K())
@@ -53,18 +53,18 @@ func mulAndAddScalars(result ed448.Scalar, values []*gotrax.Keypair, t [][]byte)
 }
 
 // m should be 64 bytes
-func generateEcdhProof(wr gotrax.WithRandom, values []*gotrax.Keypair, m []byte, usageID uint8) (*ecdhProof, error) {
-	key := gotrax.GenerateKeypair(wr)
+func generateEcdhProof(wr gotrx.WithRandom, values []*gotrx.Keypair, m []byte, usageID uint8) (*ecdhProof, error) {
+	key := gotrx.GenerateKeypair(wr)
 	r := key.Priv.K()
 	a := key.Pub.K()
 
-	cbuf := gotrax.SerializePoint(a)
+	cbuf := gotrx.SerializePoint(a)
 	for _, v := range values {
-		cbuf = append(cbuf, gotrax.SerializePoint(v.Pub.K())...)
+		cbuf = append(cbuf, gotrx.SerializePoint(v.Pub.K())...)
 	}
 	cbuf = append(cbuf, m...)
-	c := gotrax.KdfPrekeyServer(usageID, 64, cbuf)
-	p := gotrax.KdfPrekeyServer(usageProofCLambda, uint32(len(values))*lambda, c)
+	c := gotrx.KdfPrekeyServer(usageID, 64, cbuf)
+	p := gotrx.KdfPrekeyServer(usageProofCLambda, uint32(len(values))*lambda, c)
 	t := splitBufferIntoN(p, uint(len(values)))
 
 	return &ecdhProof{
@@ -73,7 +73,7 @@ func generateEcdhProof(wr gotrax.WithRandom, values []*gotrax.Keypair, m []byte,
 	}, nil
 }
 
-func mulAndAddPoints(values []*gotrax.PublicKey, t [][]byte) ed448.Point {
+func mulAndAddPoints(values []*gotrx.PublicKey, t [][]byte) ed448.Point {
 	curr := ed448.NewPoint([16]uint32{0x00}, [16]uint32{0x01}, [16]uint32{0x01}, [16]uint32{0x00})
 
 	// It would be awesome to have true n-multiexponentiation here, but using PointDoubleScalarMul at least cuts performance roughly in
@@ -94,24 +94,24 @@ func mulAndAddPoints(values []*gotrax.PublicKey, t [][]byte) ed448.Point {
 	return curr
 }
 
-func appendPoints(l []byte, values ...*gotrax.PublicKey) []byte {
+func appendPoints(l []byte, values ...*gotrx.PublicKey) []byte {
 	for _, v := range values {
-		l = append(l, gotrax.SerializePoint(v.K())...)
+		l = append(l, gotrx.SerializePoint(v.K())...)
 	}
 	return l
 }
 
-func (px *ecdhProof) verify(values []*gotrax.PublicKey, m []byte, usageID uint8) bool {
-	p := gotrax.KdfPrekeyServer(usageProofCLambda, uint32(len(values))*lambda, px.c)
+func (px *ecdhProof) verify(values []*gotrx.PublicKey, m []byte, usageID uint8) bool {
+	p := gotrx.KdfPrekeyServer(usageProofCLambda, uint32(len(values))*lambda, px.c)
 	t := splitBufferIntoN(p, uint(len(values)))
 
 	a := ed448.PrecomputedScalarMul(px.v)
 	a.Sub(a, mulAndAddPoints(values, t))
 
-	c2buf := gotrax.SerializePoint(a)
+	c2buf := gotrx.SerializePoint(a)
 	c2buf = appendPoints(c2buf, values...)
 	c2buf = append(c2buf, m...)
-	c2 := gotrax.KdfPrekeyServer(usageID, 64, c2buf)
+	c2 := gotrx.KdfPrekeyServer(usageID, 64, c2buf)
 
 	return bytes.Equal(px.c, c2)
 }
@@ -131,7 +131,7 @@ func mulAndAddValues(r *big.Int, valuesPrivate []*big.Int, t [][]byte) *big.Int 
 	return r
 }
 
-func generateDhProof(wr gotrax.WithRandom, valuesPrivate []*big.Int, valuesPublic []*big.Int, m []byte, usageID uint8, rr dhRandFunc) (*dhProof, error) {
+func generateDhProof(wr gotrx.WithRandom, valuesPrivate []*big.Int, valuesPublic []*big.Int, m []byte, usageID uint8, rr dhRandFunc) (*dhProof, error) {
 	var r *big.Int
 	if rr != nil {
 		r = rr(wr)
@@ -141,16 +141,16 @@ func generateDhProof(wr gotrax.WithRandom, valuesPrivate []*big.Int, valuesPubli
 
 	a := new(big.Int).Exp(g3, r, dhP)
 
-	cbuf := gotrax.AppendMPI([]byte{}, a)
+	cbuf := gotrx.AppendMPI([]byte{}, a)
 	// fmt.Printf("cbuf1: %#v\n", cbuf)
-	cbuf = gotrax.AppendMPIs(cbuf, valuesPublic...)
+	cbuf = gotrx.AppendMPIs(cbuf, valuesPublic...)
 	// fmt.Printf("cbuf2: %#v\n", cbuf)
 	cbuf = append(cbuf, m...)
 	// fmt.Printf("cbuf3: (len: %d) %#v\n", len(cbuf), cbuf)
 
-	c := gotrax.KdfPrekeyServer(usageID, 64, cbuf)
+	c := gotrx.KdfPrekeyServer(usageID, 64, cbuf)
 	// fmt.Printf("usageID: %d, c: %#v\n", usageID, c)
-	p := gotrax.KdfPrekeyServer(usageProofCLambda, uint32(len(valuesPrivate))*lambda, c)
+	p := gotrx.KdfPrekeyServer(usageProofCLambda, uint32(len(valuesPrivate))*lambda, c)
 	t := splitBufferIntoN(p, uint(len(valuesPrivate)))
 
 	return &dhProof{
@@ -172,16 +172,16 @@ func expAndMulValues(values []*big.Int, t [][]byte) *big.Int {
 }
 
 func (px *dhProof) verify(values []*big.Int, m []byte, usageID uint8) bool {
-	p := gotrax.KdfPrekeyServer(usageProofCLambda, uint32(len(values))*lambda, px.c)
+	p := gotrx.KdfPrekeyServer(usageProofCLambda, uint32(len(values))*lambda, px.c)
 	t := splitBufferIntoN(p, uint(len(values)))
 
 	a := new(big.Int).Exp(g3, px.v, dhP)
 	a = mulMod(a, expAndMulValues(values, t), dhP)
 
-	c2buf := gotrax.AppendMPI([]byte{}, a)
-	c2buf = gotrax.AppendMPIs(c2buf, values...)
+	c2buf := gotrx.AppendMPI([]byte{}, a)
+	c2buf = gotrx.AppendMPIs(c2buf, values...)
 	c2buf = append(c2buf, m...)
-	c2 := gotrax.KdfPrekeyServer(usageID, 64, c2buf)
+	c2 := gotrx.KdfPrekeyServer(usageID, 64, c2buf)
 
 	return bytes.Equal(px.c, c2)
 }

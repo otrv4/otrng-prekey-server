@@ -3,7 +3,7 @@ package prekeyserver
 import (
 	"time"
 
-	"github.com/coyim/gotrax"
+	"github.com/otrv4/gotrx"
 	. "gopkg.in/check.v1"
 )
 
@@ -24,11 +24,11 @@ func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_willRemoveExpiredClien
 
 	cp := generateSitaTestData().clientProfile
 	cp.Expiration = time.Date(2017, 11, 5, 13, 46, 00, 13, time.UTC)
-	cp.Sig = gotrax.CreateEddsaSignature(cp.GenerateSignature(sita.longTerm))
+	cp.Sig = gotrx.CreateEddsaSignature(cp.GenerateSignature(sita.longTerm))
 
 	cp2 := generateSitaTestData().clientProfile
 	cp2.InstanceTag = 0x42424242
-	cp2.Sig = gotrax.CreateEddsaSignature(cp2.GenerateSignature(sita.longTerm))
+	cp2.Sig = gotrx.CreateEddsaSignature(cp2.GenerateSignature(sita.longTerm))
 
 	is.storeClientProfile("someone@example.org", cp)
 	is.storeClientProfile("someone@example.org", cp2)
@@ -45,7 +45,7 @@ func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_willRemoveExpiredClien
 
 func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_willRemoveExpiredPrekeyProfiles(c *C) {
 	gs := &GenericServer{
-		rand: gotrax.FixtureRand(),
+		rand: gotrx.FixtureRand(),
 	}
 	is := createInMemoryStorage()
 
@@ -66,7 +66,7 @@ func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_willRemoveExpiredPreke
 }
 func (s *GenericServerSuite) Test_inMemoryStorage_cleanup_shouldNotRemoveUserIfThereArePrekeyMessages(c *C) {
 	gs := &GenericServer{
-		rand: gotrax.FixtureRand(),
+		rand: gotrx.FixtureRand(),
 	}
 	is := createInMemoryStorage()
 

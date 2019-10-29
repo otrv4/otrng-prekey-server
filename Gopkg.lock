@@ -2,48 +2,65 @@
 
 
 [[projects]]
-  branch = "master"
-  name = "github.com/coyim/gotrax"
-  packages = ["."]
-  revision = "64aa0e642191449dcd9531bfafb2dbab3114a886"
-
-[[projects]]
+  digest = "1:ca955a9cd5b50b0f43d2cc3aeb35c951473eeca41b34eb67507f1dbcc0542394"
   name = "github.com/kr/pretty"
   packages = ["."]
+  pruneopts = "UT"
   revision = "73f6ac0b30a98e433b289500d779f50c1a6f0712"
   version = "v0.1.0"
 
 [[projects]]
+  digest = "1:15b5cc79aad436d47019f814fde81a10221c740dc8ddf769221a65097fb6c2e9"
   name = "github.com/kr/text"
   packages = ["."]
+  pruneopts = "UT"
   revision = "e2ffdb16a802fe2bb95e2e35ff34f0e53aeef34f"
   version = "v0.1.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:24cdce7ef421d0662960571933c98a90a82fc979437c63afa659b13e630db320"
   name = "github.com/otrv4/ed448"
   packages = ["."]
+  pruneopts = "UT"
   revision = "75bc328cc212f0f8cb9823364339890df2c3f409"
 
 [[projects]]
   branch = "master"
+  digest = "1:a68edad07a0452b25ebba2254a98caa36fa3aa462a697ba0c515a9d20447f8f3"
+  name = "github.com/otrv4/gotrx"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "b5994e4df53cbfc731f3076b8b04659d084ecbf0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:a79dc41b8227c1c2bb79140d741cd6cb24768784aefdf5ffa7c2f5e9bb3fdc84"
   name = "golang.org/x/crypto"
   packages = [
     "pbkdf2",
     "scrypt",
-    "sha3"
+    "sha3",
   ]
+  pruneopts = "UT"
   revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
 
 [[projects]]
   branch = "v1"
+  digest = "1:af715ae33cc1f5695c4b2a4e4b21d008add8802a99e15bb467ac7c32edb5000d"
   name = "gopkg.in/check.v1"
   packages = ["."]
+  pruneopts = "UT"
   revision = "788fd78401277ebd861206a03c884797c6ec5541"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0b035b4cdc0015aa3ed87ec92e6916140754b00e0202421f4e3f593b19658f92"
+  input-imports = [
+    "github.com/otrv4/ed448",
+    "github.com/otrv4/gotrx",
+    "golang.org/x/crypto/scrypt",
+    "gopkg.in/check.v1",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

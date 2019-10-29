@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-// RandReader implements the gotrax.WithRandom interface
+// RandReader implements the gotrx.WithRandom interface
 func (g *GenericServer) RandReader() io.Reader {
 	if g.rand != nil {
 		return g.rand

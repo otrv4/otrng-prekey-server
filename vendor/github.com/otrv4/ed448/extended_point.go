@@ -78,7 +78,7 @@ func (p *twExtendedPoint) add(q, r *twExtendedPoint) {
 	b.addRaw(q.y, q.x)
 	p.y.mul(d, b)
 	b.mul(r.t, q.t)
-	p.x.mulW(b, 2*effD)
+	p.x.mulW(b, 2-2*edwardsD)
 	b.addRaw(a, p.y)
 	c.sub(p.y, a)
 	a.mul(q.z, r.z)
@@ -188,9 +188,10 @@ func (p *twExtendedPoint) deisogenize(t, overT word) *bigNumber {
 	return s
 }
 
-// TODO: should this return a bool and an error?
-func decafDecodeOld(dst *twExtendedPoint, src serialized, useIdentity bool) (word, error) {
+// XXX: should this return a bool and an error?
+func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, error) {
 	a, b, c, d, e := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
+
 	n, succ := deserializeReturnMask(src)
 	zero := n.decafEq(bigZero)
 	if useIdentity {
@@ -226,53 +227,6 @@ func decafDecodeOld(dst *twExtendedPoint, src serialized, useIdentity bool) (wor
 		err = errors.New("unable to decode given point")
 		return succ, err
 	}
-	return succ, err
-}
-
-func decafDecode(dst *twExtendedPoint, src serialized, useIdentity bool) (word, error) {
-	s2 := &bigNumber{}
-	num := &bigNumber{}
-	tmp := &bigNumber{}
-	tmp2 := &bigNumber{}
-	isr := dst.x
-	den := dst.t
-	ynum := dst.z
-
-	s, succ := deserializeReturnMask(src)
-	zero := s.decafEq(bigZero)
-	if useIdentity {
-		succ &= decafTrue | ^zero
-	} else {
-		succ &= decafFalse | ^zero
-	}
-	succ &= ^lowBit(s)
-
-	s2.square(s)
-	den.sub(bigOne, s2)
-	ynum.add(bigOne, s2)
-	num.mulWSignedCurveConstant(s2, -4*(edwardsD-1))
-	tmp.square(den)
-	num.add(tmp, num)
-	tmp2.mul(num, tmp)
-	succ &= isr.isr(tmp2)
-	tmp.mul(isr, den)
-	dst.y.mul(tmp, ynum)
-	tmp2.mul(tmp, s)
-	tmp2.add(tmp2, tmp2)
-	tmp.mul(tmp2, isr)
-	dst.x.mul(tmp, num)
-	tmp.mul(tmp2, factor)
-
-	dst.x.decafCondNegate(lowBit(tmp))
-	dst.z.set(bigOne)
-	dst.t.mul(dst.x, dst.y)
-
-	var err error
-	if succ != decafTrue {
-		err = errors.New("unable to decode given point")
-		return succ, err
-	}
-
 	return succ, err
 }
 
@@ -320,7 +274,8 @@ func dsaLikeDecode(p *twExtendedPoint, srcOrg []byte) word {
 	if len(srcOrg) != dsaFieldBytes {
 		panic("Attempted to decode with a source that is not 57 bytes")
 	}
-	src := append([]byte{}, srcOrg...)
+	src := make([]byte, dsaFieldBytes)
+	copy(src, srcOrg)
 
 	succ := decafTrue
 	var cofactorMask uint = zeroMask
@@ -434,14 +389,14 @@ func (p *twExtendedPoint) subProjectiveNielsFromExtendedPoint(p2 *twPNiels, befo
 // Convert from the extended twisted Edwards representation of a point to affine
 // Given (X : Y : Z : T), compute X/Z^2, Y/Z^3 and ignore T.
 // If the point is ∞ it returns 0, 0.
-// TODO: check me
+// XXX: check me
 func (p *twExtendedPoint) toAffine() *affineCoordinates {
 	out := &affineCoordinates{
 		&bigNumber{},
 		&bigNumber{},
 	}
 
-	if p.equals(identity) == decafTrue || p.z.decafEq(bigZero) == decafTrue {
+	if p.equals(identity) == decafTrue || p.z.equals(bigZero) {
 		return out
 	}
 
@@ -457,7 +412,7 @@ func (p *twExtendedPoint) toAffine() *affineCoordinates {
 	return out
 }
 
-//TODO: extendedPoint should not know about twNiels
+//XXX: extendedPoint should not know about twNiels
 func (np *twNiels) toExtended() *twExtendedPoint {
 	p := &twExtendedPoint{
 		&bigNumber{},
@@ -596,7 +551,7 @@ func precomputedScalarMul(s *scalar) *twExtendedPoint {
 }
 
 // using the montgomery ladder
-// TODO: implement the one not using montgomery?
+// XXX: implement the one not using montgomery?
 func directPointScalarMul(p [fieldBytes]byte, s *scalar, useIdentity word) ([fieldBytes]byte, word) {
 	var out [56]byte
 	xa, xs, zs, l0, l1 := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
@@ -646,8 +601,8 @@ func directPointScalarMul(p [fieldBytes]byte, s *scalar, useIdentity word) ([fie
 	xa.conditionalSwap(xd, pflip)
 	za.conditionalSwap(zd, pflip)
 
-	// TODO: should be constant time
-	// reserialize TODO: simplify this reserialization
+	// XXX: should be constant time
+	// reserialize XXX: simplify this reserialization
 	xzD, xzA, xzS, den, l2, l3 := &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}, &bigNumber{}
 
 	xzS.mul(xs, zs)
@@ -750,7 +705,7 @@ func NewPointFromBytes(in ...[]byte) Point {
 	}
 	tmpIn := [fieldBytes]byte{}
 	copy(tmpIn[:], bytes[:])
-	decafDecodeOld(out, tmpIn, false)
+	decafDecode(out, tmpIn, false)
 
 	return out
 }
@@ -817,7 +772,7 @@ func (p *twExtendedPoint) Decode(src []byte, useIdentity bool) (bool, error) {
 	ser := [fieldBytes]byte{}
 	copy(ser[:], src[:])
 
-	valid, err := decafDecodeOld(p, ser, useIdentity)
+	valid, err := decafDecode(p, ser, useIdentity)
 	if err != nil {
 		return false, err
 	}

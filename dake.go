@@ -3,13 +3,13 @@ package prekeyserver
 import (
 	"errors"
 
-	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
+	"github.com/otrv4/gotrx"
 )
 
 type dake1Message struct {
 	instanceTag   uint32
-	clientProfile *gotrax.ClientProfile
+	clientProfile *gotrx.ClientProfile
 	i             ed448.Point
 }
 
@@ -18,16 +18,16 @@ type dake2Message struct {
 	serverIdentity []byte
 	serverKey      ed448.Point
 	s              ed448.Point
-	sigma          *gotrax.RingSignature
+	sigma          *gotrx.RingSignature
 }
 
 type dake3Message struct {
 	instanceTag uint32
-	sigma       *gotrax.RingSignature
+	sigma       *gotrx.RingSignature
 	message     []byte // can be either publication or storage information request
 }
 
-func generateDake1(it uint32, cp *gotrax.ClientProfile, i ed448.Point) *dake1Message {
+func generateDake1(it uint32, cp *gotrx.ClientProfile, i ed448.Point) *dake1Message {
 	return &dake1Message{
 		instanceTag:   it,
 		clientProfile: cp,
@@ -35,7 +35,7 @@ func generateDake1(it uint32, cp *gotrax.ClientProfile, i ed448.Point) *dake1Mes
 	}
 }
 
-func generateDake2(it uint32, si []byte, sk ed448.Point, s ed448.Point, sigma *gotrax.RingSignature) *dake2Message {
+func generateDake2(it uint32, si []byte, sk ed448.Point, s ed448.Point, sigma *gotrx.RingSignature) *dake2Message {
 	return &dake2Message{
 		instanceTag:    it,
 		serverIdentity: si,
@@ -45,7 +45,7 @@ func generateDake2(it uint32, si []byte, sk ed448.Point, s ed448.Point, sigma *g
 	}
 }
 
-func generateDake3(it uint32, sigma *gotrax.RingSignature, m []byte) *dake3Message {
+func generateDake3(it uint32, sigma *gotrx.RingSignature, m []byte) *dake3Message {
 	return &dake3Message{
 		instanceTag: it,
 		sigma:       sigma,
@@ -58,7 +58,7 @@ func (m *dake1Message) validate(string, *GenericServer) error {
 		return errors.New("invalid client profile")
 	}
 
-	if e := gotrax.ValidatePoint(m.i); e != nil {
+	if e := gotrx.ValidatePoint(m.i); e != nil {
 		return errors.New("invalid point I")
 	}
 
@@ -75,16 +75,16 @@ func (m *dake3Message) validate(from string, s *GenericServer) error {
 		return errors.New("incorrect message")
 	}
 
-	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte(from)), []byte(s.identity))
+	phi := gotrx.AppendData(gotrx.AppendData(nil, []byte(from)), []byte(s.identity))
 
 	t := append([]byte{}, 0x01)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverClientProfile, 64, sess.clientProfile().Serialize())...)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, s.compositeIdentity())...)
-	t = append(t, gotrax.SerializePoint(sess.pointI())...)
-	t = append(t, gotrax.SerializePoint(sess.keypairS().Pub.K())...)
-	t = append(t, gotrax.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverClientProfile, 64, sess.clientProfile().Serialize())...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverPrekeyCompositeIdentity, 64, s.compositeIdentity())...)
+	t = append(t, gotrx.SerializePoint(sess.pointI())...)
+	t = append(t, gotrx.SerializePoint(sess.keypairS().Pub.K())...)
+	t = append(t, gotrx.KdfPrekeyServer(usageReceiverPrekeyCompositePHI, 64, phi)...)
 
-	if !m.sigma.Verify(sess.clientProfile().PublicKey, s.key.Pub, sess.keypairS().Pub, t, gotrax.KdfPrekeyServer, usageAuth) {
+	if !m.sigma.Verify(sess.clientProfile().PublicKey, s.key.Pub, sess.keypairS().Pub, t, gotrx.KdfPrekeyServer, usageAuth) {
 		return errors.New("incorrect ring signature")
 	}
 
@@ -92,19 +92,19 @@ func (m *dake3Message) validate(from string, s *GenericServer) error {
 }
 
 func (m *dake1Message) respond(from string, s *GenericServer) (serializable, error) {
-	sk := gotrax.GenerateKeypair(s)
+	sk := gotrx.GenerateKeypair(s)
 	s.session(from).save(sk, m.i, m.instanceTag, m.clientProfile)
 
-	phi := gotrax.AppendData(gotrax.AppendData(nil, []byte(from)), []byte(s.identity))
+	phi := gotrx.AppendData(gotrx.AppendData(nil, []byte(from)), []byte(s.identity))
 
 	t := append([]byte{}, 0x00)
-	t = append(t, gotrax.KdfPrekeyServer(usageInitiatorClientProfile, 64, m.clientProfile.Serialize())...)
-	t = append(t, gotrax.KdfPrekeyServer(usageInitiatorPrekeyCompositeIdentity, 64, s.compositeIdentity())...)
-	t = append(t, gotrax.SerializePoint(m.i)...)
-	t = append(t, gotrax.SerializePoint(sk.Pub.K())...)
-	t = append(t, gotrax.KdfPrekeyServer(usageInitiatorPrekeyCompositePHI, 64, phi)...)
+	t = append(t, gotrx.KdfPrekeyServer(usageInitiatorClientProfile, 64, m.clientProfile.Serialize())...)
+	t = append(t, gotrx.KdfPrekeyServer(usageInitiatorPrekeyCompositeIdentity, 64, s.compositeIdentity())...)
+	t = append(t, gotrx.SerializePoint(m.i)...)
+	t = append(t, gotrx.SerializePoint(sk.Pub.K())...)
+	t = append(t, gotrx.KdfPrekeyServer(usageInitiatorPrekeyCompositePHI, 64, phi)...)
 
-	sigma, e := gotrax.GenerateSignature(s, s.key.Priv, s.key.Pub, m.clientProfile.PublicKey, s.key.Pub, gotrax.CreatePublicKey(m.i, gotrax.Ed448Key), t, gotrax.KdfPrekeyServer, usageAuth)
+	sigma, e := gotrx.GenerateSignature(s, s.key.Priv, s.key.Pub, m.clientProfile.PublicKey, s.key.Pub, gotrx.CreatePublicKey(m.i, gotrx.Ed448Key), t, gotrx.KdfPrekeyServer, usageAuth)
 	if e != nil {
 		return nil, errors.New("invalid ring signature generation")
 	}

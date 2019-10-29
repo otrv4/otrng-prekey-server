@@ -4,8 +4,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
+	"github.com/otrv4/gotrx"
 )
 
 type sessionManager struct {
@@ -14,21 +14,21 @@ type sessionManager struct {
 }
 
 type session interface {
-	save(*gotrax.Keypair, ed448.Point, uint32, *gotrax.ClientProfile)
+	save(*gotrx.Keypair, ed448.Point, uint32, *gotrx.ClientProfile)
 	instanceTag() uint32
 	macKey() []byte
 	sharedSecret() []byte
-	clientProfile() *gotrax.ClientProfile
+	clientProfile() *gotrx.ClientProfile
 	pointI() ed448.Point
-	keypairS() *gotrax.Keypair
+	keypairS() *gotrx.Keypair
 	hasExpired(time.Duration) bool
 }
 
 type realSession struct {
 	tag         uint32
-	s           *gotrax.Keypair
+	s           *gotrx.Keypair
 	i           ed448.Point
-	cp          *gotrax.ClientProfile
+	cp          *gotrx.ClientProfile
 	storedMac   []byte
 	sk          []byte
 	lastTouched time.Time
@@ -40,7 +40,7 @@ func (s *realSession) touch() {
 	s.lastTouched = time.Now()
 }
 
-func (s *realSession) save(kp *gotrax.Keypair, i ed448.Point, tag uint32, cp *gotrax.ClientProfile) {
+func (s *realSession) save(kp *gotrx.Keypair, i ed448.Point, tag uint32, cp *gotrx.ClientProfile) {
 	s.Lock()
 	defer s.Unlock()
 
@@ -59,7 +59,7 @@ func (s *realSession) instanceTag() uint32 {
 	return s.tag
 }
 
-func (s *realSession) clientProfile() *gotrax.ClientProfile {
+func (s *realSession) clientProfile() *gotrx.ClientProfile {
 	s.Lock()
 	defer s.Unlock()
 
@@ -75,7 +75,7 @@ func (s *realSession) pointI() ed448.Point {
 	return s.i
 }
 
-func (s *realSession) keypairS() *gotrax.Keypair {
+func (s *realSession) keypairS() *gotrx.Keypair {
 	s.Lock()
 	defer s.Unlock()
 
@@ -91,7 +91,7 @@ func (s *realSession) macKey() []byte {
 	if s.storedMac != nil {
 		return s.storedMac
 	}
-	return gotrax.KdfPrekeyServer(usagePreMACKey, 64, gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(s.i, s.s.Priv.K()))))
+	return gotrx.KdfPrekeyServer(usagePreMACKey, 64, gotrx.KdfPrekeyServer(usageSK, skLength, gotrx.SerializePoint(ed448.PointScalarMul(s.i, s.s.Priv.K()))))
 }
 
 func (s *realSession) sharedSecret() []byte {
@@ -102,7 +102,7 @@ func (s *realSession) sharedSecret() []byte {
 	if s.sk != nil {
 		return s.sk
 	}
-	return gotrax.KdfPrekeyServer(usageSK, skLength, gotrax.SerializePoint(ed448.PointScalarMul(s.i, s.s.Priv.K())))
+	return gotrx.KdfPrekeyServer(usageSK, skLength, gotrx.SerializePoint(ed448.PointScalarMul(s.i, s.s.Priv.K())))
 }
 
 func (s *realSession) hasExpired(timeout time.Duration) bool {

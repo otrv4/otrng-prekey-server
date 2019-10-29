@@ -3,8 +3,8 @@ package prekeyserver
 import (
 	"math/big"
 
-	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
+	"github.com/otrv4/gotrx"
 )
 
 // bnFromHex is a test utility that doesn't take into account possible errors. Thus, make sure to only call it with valid hexadecimal strings (of even length)
@@ -17,8 +17,8 @@ func generatePointFrom(data [symKeyLength]byte) ed448.Point {
 	return generatePublicKeyFrom(data).K()
 }
 
-func generatePublicKeyFrom(data [symKeyLength]byte) *gotrax.PublicKey {
-	return gotrax.DeriveKeypair(data).Pub
+func generatePublicKeyFrom(data [symKeyLength]byte) *gotrx.PublicKey {
+	return gotrx.DeriveKeypair(data).Pub
 }
 
 func generateScalarFrom(data ...byte) ed448.Scalar {

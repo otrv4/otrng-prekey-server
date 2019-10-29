@@ -1,6 +1,5 @@
 package ed448
 
-// TODO: this has changed
 //c = a * a
 func karatsubaSquare(c, a *bigNumber) *bigNumber {
 	aa := [8]dword{

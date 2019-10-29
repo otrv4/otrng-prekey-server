@@ -3,7 +3,7 @@ package prekeyserver
 import (
 	"sync"
 
-	"github.com/coyim/gotrax"
+	"github.com/otrv4/gotrx"
 )
 
 func isInMemoryStorageDescriptor(desc string) bool {
@@ -17,7 +17,7 @@ func (*inMemoryStorageFactory) createStorage() storage {
 }
 
 type inMemoryStorageEntry struct {
-	clientProfiles map[uint32]*gotrax.ClientProfile
+	clientProfiles map[uint32]*gotrx.ClientProfile
 	prekeyProfiles map[uint32]*prekeyProfile
 	prekeyMessages map[uint32][]*prekeyMessage
 	sync.Mutex
@@ -60,7 +60,7 @@ func (s *inMemoryStorage) storageEntryFor(from string) *inMemoryStorageEntry {
 	s.RUnlock()
 	if !ok {
 		se = &inMemoryStorageEntry{
-			clientProfiles: make(map[uint32]*gotrax.ClientProfile),
+			clientProfiles: make(map[uint32]*gotrx.ClientProfile),
 			prekeyProfiles: make(map[uint32]*prekeyProfile),
 			prekeyMessages: make(map[uint32][]*prekeyMessage),
 		}
@@ -71,7 +71,7 @@ func (s *inMemoryStorage) storageEntryFor(from string) *inMemoryStorageEntry {
 	return se
 }
 
-func (s *inMemoryStorage) storeClientProfile(from string, cp *gotrax.ClientProfile) error {
+func (s *inMemoryStorage) storeClientProfile(from string, cp *gotrx.ClientProfile) error {
 	if cp != nil {
 		se := s.storageEntryFor(from)
 		se.Lock()

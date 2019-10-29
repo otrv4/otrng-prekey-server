@@ -4,22 +4,22 @@ import (
 	"crypto/rand"
 	"math/big"
 
-	"github.com/coyim/gotrax"
+	"github.com/otrv4/gotrx"
 	. "gopkg.in/check.v1"
 )
 
 func (s *GenericServerSuite) Test_generateEcdhProof_and_verify_generatesProofsThatValidates(c *C) {
-	wr := gotrax.ReaderIntoWithRandom(gotrax.FixtureRand())
-	values := make([]*gotrax.Keypair, 3)
-	values[0] = gotrax.GenerateKeypair(wr)
-	values[1] = gotrax.GenerateKeypair(wr)
-	values[2] = gotrax.GenerateKeypair(wr)
+	wr := gotrx.ReaderIntoWithRandom(gotrx.FixtureRand())
+	values := make([]*gotrx.Keypair, 3)
+	values[0] = gotrx.GenerateKeypair(wr)
+	values[1] = gotrx.GenerateKeypair(wr)
+	values[2] = gotrx.GenerateKeypair(wr)
 	m := [64]byte{0x01, 0x02, 0x03}
 
 	proof, e := generateEcdhProof(wr, values, m[:], usageProofMessageEcdh)
 	c.Assert(e, IsNil)
 
-	values2 := make([]*gotrax.PublicKey, 3)
+	values2 := make([]*gotrx.PublicKey, 3)
 	values2[0] = values[0].Pub
 	values2[1] = values[1].Pub
 	values2[2] = values[2].Pub
@@ -30,18 +30,18 @@ func (s *GenericServerSuite) Test_generateEcdhProof_and_verify_generatesProofsTh
 	m2 := [64]byte{0x02, 0x02, 0x03}
 	c.Assert(proof.verify(values2, m2[:], usageProofMessageEcdh), Equals, false)
 
-	wrongDL := gotrax.GenerateKeypair(wr)
+	wrongDL := gotrx.GenerateKeypair(wr)
 	values2[1] = wrongDL.Pub
 	c.Assert(proof.verify(values2, m[:], usageProofMessageEcdh), Equals, false)
 }
 
-func randomDhSecretValue(wr gotrax.WithRandom) *big.Int {
+func randomDhSecretValue(wr gotrx.WithRandom) *big.Int {
 	res, _ := rand.Int(wr.RandReader(), dhQ)
 	return res
 }
 
 func (s *GenericServerSuite) Test_generateDhProof_and_verify_generatesProofsThatValidates(c *C) {
-	wr := gotrax.ReaderIntoWithRandom(gotrax.FixtureRand())
+	wr := gotrx.ReaderIntoWithRandom(gotrx.FixtureRand())
 	valuesPriv := make([]*big.Int, 3)
 	valuesPriv[0] = randomDhSecretValue(wr)
 	valuesPriv[1] = randomDhSecretValue(wr)
@@ -69,13 +69,13 @@ func (s *GenericServerSuite) Test_generateDhProof_and_verify_generatesProofsThat
 }
 
 func (s *GenericServerSuite) Test_generateEcdhProof_generatesSpecificValue(c *C) {
-	wr := gotrax.ReaderIntoWithRandom(gotrax.FixtureRand())
-	values := make([]*gotrax.Keypair, 5)
-	values[0] = gotrax.GenerateKeypair(wr)
-	values[1] = gotrax.GenerateKeypair(wr)
-	values[2] = gotrax.GenerateKeypair(wr)
-	values[3] = gotrax.GenerateKeypair(wr)
-	values[4] = gotrax.GenerateKeypair(wr)
+	wr := gotrx.ReaderIntoWithRandom(gotrx.FixtureRand())
+	values := make([]*gotrx.Keypair, 5)
+	values[0] = gotrx.GenerateKeypair(wr)
+	values[1] = gotrx.GenerateKeypair(wr)
+	values[2] = gotrx.GenerateKeypair(wr)
+	values[3] = gotrx.GenerateKeypair(wr)
+	values[4] = gotrx.GenerateKeypair(wr)
 	m := [64]byte{0x03, 0x03, 0x01}
 
 	proof, e := generateEcdhProof(wr, values, m[:], usageProofMessageEcdh)
@@ -91,7 +91,7 @@ func (s *GenericServerSuite) Test_generateEcdhProof_generatesSpecificValue(c *C)
 		0x7a, 0xb9, 0xbf, 0xed, 0x2c, 0x90, 0x1e, 0x4f,
 		0xfd, 0xfa, 0x54, 0x95, 0x04, 0x19, 0x02, 0x5e,
 	})
-	c.Assert(gotrax.SerializeScalar(proof.v), DeepEquals, []byte{
+	c.Assert(gotrx.SerializeScalar(proof.v), DeepEquals, []byte{
 		0x85, 0x52, 0xb9, 0xd0, 0x72, 0x20, 0xed, 0x97,
 		0x8e, 0x1a, 0xe5, 0x8f, 0x05, 0x51, 0x4a, 0x56,
 		0x25, 0x08, 0xf3, 0xec, 0xd7, 0x7a, 0xbc, 0xd4,
@@ -103,7 +103,7 @@ func (s *GenericServerSuite) Test_generateEcdhProof_generatesSpecificValue(c *C)
 }
 
 func (s *GenericServerSuite) Test_generateDhProof_generatesSpecificValues(c *C) {
-	wr := gotrax.ReaderIntoWithRandom(gotrax.FixtureRand())
+	wr := gotrx.ReaderIntoWithRandom(gotrx.FixtureRand())
 	valuesPriv := make([]*big.Int, 5)
 	valuesPriv[0] = randomDhSecretValue(wr)
 	valuesPriv[1] = randomDhSecretValue(wr)
@@ -227,9 +227,9 @@ func (s *GenericServerSuite) Test_dhProof_generatesSpecificValues2(c *C) {
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00}
 
-	_, privsb[0], _ = gotrax.ExtractMPI(privs[0])
-	_, privsb[1], _ = gotrax.ExtractMPI(privs[1])
-	_, privsb[2], _ = gotrax.ExtractMPI(privs[2])
+	_, privsb[0], _ = gotrx.ExtractMPI(privs[0])
+	_, privsb[1], _ = gotrx.ExtractMPI(privs[1])
+	_, privsb[2], _ = gotrx.ExtractMPI(privs[2])
 
 	pubs := make([]*big.Int, 3)
 	pubs[0] = new(big.Int).Exp(g3, privsb[0], dhP)
@@ -246,9 +246,9 @@ func (s *GenericServerSuite) Test_dhProof_generatesSpecificValues2(c *C) {
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 
-	var wr gotrax.WithRandom = nil
-	rr := func(_ gotrax.WithRandom) *big.Int {
-		_, val, _ := gotrax.ExtractMPI([]byte{
+	var wr gotrx.WithRandom = nil
+	rr := func(_ gotrx.WithRandom) *big.Int {
+		_, val, _ := gotrx.ExtractMPI([]byte{
 			0x00, 0x00, 0x00, 0x50, 0x01, 0x02, 0x01, 0x04,
 			0x01, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -485,9 +485,9 @@ func (s *GenericServerSuite) _Test_dhProof_verify_verifiesSpecificValues(c *C) {
 		0x70, 0x89, 0x0F, 0x54, 0x24, 0x48, 0xA2, 0xC1,
 		0x7F, 0x92, 0x94, 0x88, 0x63, 0xC2, 0xF5, 0x2F}
 
-	_, p0, _ := gotrax.ExtractMPI(pubs0)
-	_, p1, _ := gotrax.ExtractMPI(pubs1)
-	_, p2, _ := gotrax.ExtractMPI(pubs2)
+	_, p0, _ := gotrx.ExtractMPI(pubs0)
+	_, p1, _ := gotrx.ExtractMPI(pubs1)
+	_, p2, _ := gotrx.ExtractMPI(pubs2)
 	pubs := []*big.Int{p0, p1, p2}
 	proof := &dhProof{}
 	proof.deserialize(px)

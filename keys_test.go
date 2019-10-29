@@ -1,7 +1,7 @@
 package prekeyserver
 
 import (
-	"github.com/coyim/gotrax"
+	"github.com/otrv4/gotrx"
 	. "gopkg.in/check.v1"
 )
 
@@ -17,7 +17,7 @@ func (s *GenericServerSuite) Test_fingerprint_returnsCorrectFingerprint(c *C) {
 		0x00,
 	}
 
-	expectedFpr := gotrax.Fingerprint{
+	expectedFpr := gotrx.Fingerprint{
 		0x4, 0x31, 0x67, 0xb9, 0x76, 0x1e, 0x86, 0x29,
 		0x69, 0x85, 0xdd, 0xb, 0x95, 0xba, 0x46, 0xdc,
 		0xaf, 0xb5, 0x68, 0x4f, 0x1a, 0x27, 0x62, 0x31,
@@ -27,7 +27,7 @@ func (s *GenericServerSuite) Test_fingerprint_returnsCorrectFingerprint(c *C) {
 		0x5b, 0xe, 0xba, 0x10, 0x9a, 0x87, 0x8c, 0xeb,
 	}
 
-	kp := gotrax.DeriveKeypair(sym)
+	kp := gotrx.DeriveKeypair(sym)
 	fpr := kp.Fingerprint()
 	c.Assert(fpr, DeepEquals, expectedFpr)
 }
@@ -44,7 +44,7 @@ func (s *GenericServerSuite) Test_keypair_Fingerprint_returnsTheFingerprint(c *C
 		0x00,
 	}
 
-	expectedFpr := gotrax.Fingerprint{
+	expectedFpr := gotrx.Fingerprint{
 		0x4, 0x31, 0x67, 0xb9, 0x76, 0x1e, 0x86, 0x29,
 		0x69, 0x85, 0xdd, 0xb, 0x95, 0xba, 0x46, 0xdc,
 		0xaf, 0xb5, 0x68, 0x4f, 0x1a, 0x27, 0x62, 0x31,
@@ -54,7 +54,7 @@ func (s *GenericServerSuite) Test_keypair_Fingerprint_returnsTheFingerprint(c *C
 		0x5b, 0xe, 0xba, 0x10, 0x9a, 0x87, 0x8c, 0xeb,
 	}
 
-	kp := gotrax.DeriveKeypair(sym)
+	kp := gotrx.DeriveKeypair(sym)
 	fpr := kp.Fingerprint()
 	c.Assert(fpr, DeepEquals, expectedFpr)
 }

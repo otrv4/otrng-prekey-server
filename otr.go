@@ -7,15 +7,15 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/coyim/gotrax"
 	"github.com/otrv4/ed448"
+	"github.com/otrv4/gotrx"
 )
 
 type prekeyProfile struct {
 	instanceTag  uint32
 	expiration   time.Time
-	sharedPrekey *gotrax.PublicKey
-	sig          *gotrax.EddsaSignature
+	sharedPrekey *gotrx.PublicKey
+	sig          *gotrx.EddsaSignature
 }
 
 type prekeyMessage struct {
@@ -26,28 +26,28 @@ type prekeyMessage struct {
 }
 
 type prekeyEnsemble struct {
-	cp *gotrax.ClientProfile
+	cp *gotrx.ClientProfile
 	pp *prekeyProfile
 	pm *prekeyMessage
 }
 
-func generatePrekeyProfile(wr gotrax.WithRandom, tag uint32, expiration time.Time, longTerm *gotrax.Keypair) (*prekeyProfile, *gotrax.Keypair) {
-	sharedKey := gotrax.GenerateKeypair(wr)
-	sharedKey.Pub = gotrax.CreatePublicKey(sharedKey.Pub.K(), gotrax.SharedPrekeyKey)
+func generatePrekeyProfile(wr gotrx.WithRandom, tag uint32, expiration time.Time, longTerm *gotrx.Keypair) (*prekeyProfile, *gotrx.Keypair) {
+	sharedKey := gotrx.GenerateKeypair(wr)
+	sharedKey.Pub = gotrx.CreatePublicKey(sharedKey.Pub.K(), gotrx.SharedPrekeyKey)
 	pp := &prekeyProfile{
 		instanceTag:  tag,
 		expiration:   expiration,
 		sharedPrekey: sharedKey.Pub,
 	}
 
-	pp.sig = gotrax.CreateEddsaSignature(pp.generateSignature(longTerm))
+	pp.sig = gotrx.CreateEddsaSignature(pp.generateSignature(longTerm))
 
 	return pp, sharedKey
 }
 
-func generatePrekeyMessage(wr gotrax.WithRandom, tag uint32) (*prekeyMessage, *gotrax.Keypair, *big.Int, *big.Int) {
-	ident := gotrax.RandomUint32(wr)
-	y := gotrax.GenerateKeypair(wr)
+func generatePrekeyMessage(wr gotrx.WithRandom, tag uint32) (*prekeyMessage, *gotrx.Keypair, *big.Int, *big.Int) {
+	ident := gotrx.RandomUint32(wr)
+	y := gotrx.GenerateKeypair(wr)
 	privB, _ := rand.Int(wr.RandReader(), dhQ)
 	pubB := new(big.Int).Exp(g3, privB, dhP)
 
@@ -67,12 +67,12 @@ func (pm *prekeyMessage) Equals(other *prekeyMessage) bool {
 	return bytes.Equal(pm.serialize(), other.serialize())
 }
 
-func (pp *prekeyProfile) generateSignature(kp *gotrax.Keypair) [114]byte {
+func (pp *prekeyProfile) generateSignature(kp *gotrx.Keypair) [114]byte {
 	msg := pp.serializeForSignature()
 	return ed448.DSASign(kp.Sym, kp.Pub.K(), msg)
 }
 
-func (pp *prekeyProfile) validate(tag uint32, pub *gotrax.PublicKey) error {
+func (pp *prekeyProfile) validate(tag uint32, pub *gotrx.PublicKey) error {
 	if pp.instanceTag != tag {
 		return errors.New("invalid instance tag in prekey profile")
 	}
@@ -85,7 +85,7 @@ func (pp *prekeyProfile) validate(tag uint32, pub *gotrax.PublicKey) error {
 		return errors.New("prekey profile has expired")
 	}
 
-	if gotrax.ValidatePoint(pp.sharedPrekey.K()) != nil {
+	if gotrx.ValidatePoint(pp.sharedPrekey.K()) != nil {
 		return errors.New("prekey profile shared prekey is not a valid point")
 	}
 
@@ -97,7 +97,7 @@ func (pm *prekeyMessage) validate(tag uint32) error {
 		return errors.New("invalid instance tag in prekey message")
 	}
 
-	if gotrax.ValidatePoint(pm.y) != nil {
+	if gotrx.ValidatePoint(pm.y) != nil {
 		return errors.New("prekey profile Y point is not a valid point")
 	}
 

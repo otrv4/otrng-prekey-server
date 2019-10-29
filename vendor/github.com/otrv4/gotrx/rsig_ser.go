@@ -1,4 +1,4 @@
-package gotrax
+package gotrx
 
 // Deserialize will deserialize a ring signature or return failure
 func (r *RingSignature) Deserialize(buf []byte) ([]byte, bool) {
