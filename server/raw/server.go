@@ -78,7 +78,7 @@ func (rs *rawServer) listenWith() error {
 			go rs.handleRequest(conn)
 		} else {
 			if te, ok := err.(net.Error); !ok {
-				if te.Timeout() {
+				if !te.Timeout() {
 					fmt.Println("Timeout but continuing...")
 				} else {
 					return err
