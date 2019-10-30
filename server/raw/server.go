@@ -77,7 +77,7 @@ func (rs *rawServer) listenWith() error {
 			conn.SetDeadline(time.Now().Add(time.Duration(2) * time.Minute))
 			go rs.handleRequest(conn)
 		} else {
-			if te, ok := err.(net.Error); !ok || !te.Timeout {
+			if te, ok := err.(net.Error); !ok || !te.Timeout() {
 				return err
 			}
 		}
