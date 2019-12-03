@@ -41,3 +41,7 @@ cover:
 ineffassign:
 	go get -u github.com/gordonklaus/ineffassign/...
 	ineffassign .
+
+ci-lint:
+	golangci-lint run
+

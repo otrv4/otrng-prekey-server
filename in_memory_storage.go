@@ -99,9 +99,8 @@ func (s *inMemoryStorage) storePrekeyMessages(from string, pms []*prekeyMessage)
 	se.Lock()
 	defer se.Unlock()
 	spms := se.prekeyMessages[pms[0].instanceTag]
-	for _, pm := range pms {
-		spms = append(spms, pm)
-	}
+	spms = append(spms, pms...)
+
 	se.prekeyMessages[pms[0].instanceTag] = spms
 	return nil
 }
