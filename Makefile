@@ -37,3 +37,7 @@ lint:
 cover:
 	go test ./... -coverprofile=coverage.out
 	go tool cover -html=coverage.out
+
+ineffassign:
+	go get -u github.com/gordonklaus/ineffassign/...
+	ineffassign .

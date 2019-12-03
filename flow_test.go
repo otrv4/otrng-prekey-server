@@ -320,7 +320,7 @@ func (s *GenericServerSuite) Test_flow_invalidDAKE3(c *C) {
 	msg := generateStorageInformationRequestMessage(sitaPrekeyMac)
 
 	d3 := generateDake3(0xBADBADBA, sigma, msg.serialize())
-	r, e = mh.handleMessage("sita@example.org", d3.serialize())
+	_, e = mh.handleMessage("sita@example.org", d3.serialize())
 
 	c.Assert(e, Not(IsNil))
 }
@@ -367,7 +367,7 @@ func (s *GenericServerSuite) Test_flow_invalidMACused(c *C) {
 	msg := generateStorageInformationRequestMessage(sitaBadPrekeyMacK)
 
 	d3 := generateDake3(sita.instanceTag, sigma, msg.serialize())
-	r, e = mh.handleMessage("sita@example.org", d3.serialize())
+	_, e = mh.handleMessage("sita@example.org", d3.serialize())
 
 	c.Assert(e, Not(IsNil))
 }
